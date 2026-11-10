@@ -58,6 +58,7 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 
 - Debe verse profesional y consistente desde la primera pantalla. Usa los componentes de shadcn/ui (`components/ui`) y los colores del tema en `app/globals.css`; no escribas colores sueltos en las páginas.
 - Marca: logotipo en `components/brand/logo.tsx` (solo sobre fondo claro). Primario azul del logo; cian y verde (`marca-cian`, `marca-verde`) solo como acentos.
+- Módulo nuevo: agrega su entrada al menú en `lib/navegacion.ts` con el permiso que lo hace visible. El layout de `(app)` ya pone la barra lateral (escritorio) y el menú desplegable (celular).
 - Tema claro. Cada pantalla se revisa en celular (390 px) y en escritorio antes de darla por terminada.
 
 ## Forma de trabajo
@@ -70,5 +71,5 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 
 ## Estado
 
-- Etapa actual: **0. Cimientos**. Pasos 1 a 4 de 6 hechos (esqueleto; Supabase local, bitácora y parámetros; login, roles, permisos y usuarios; catálogos base); sigue el layout con navegación por rol.
+- Etapa actual: **0. Cimientos**. Pasos 1 a 5 de 6 hechos (esqueleto; Supabase local, bitácora y parámetros; login, roles, permisos y usuarios; catálogos base; menú por rol); falta el seed de Rassini y la prueba final.
 - Preguntas abiertas: DISENO §6.
