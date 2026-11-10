@@ -59,5 +59,13 @@ export function usuarioFormSchema(esEdicion: boolean) {
 }
 export type UsuarioFormValues = z.infer<ReturnType<typeof usuarioFormSchema>>;
 
+export const cambiarPasswordSchema = z
+  .object({ password, confirmar: z.string() })
+  .refine((v) => v.password === v.confirmar, {
+    path: ["confirmar"],
+    message: "Las contraseñas no coinciden.",
+  });
+export type CambiarPasswordInput = z.infer<typeof cambiarPasswordSchema>;
+
 /** Resultado de una acción de formulario. */
 export type ActionResult = { error: string } | undefined;
