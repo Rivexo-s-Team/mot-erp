@@ -1,15 +1,40 @@
-import { BrandScreen } from "@/components/brand/brand-screen";
+import { PageHeader } from "@/components/layout/page-header";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { requireSesion } from "@/lib/auth/session";
 
-export default function InicioPage() {
+export default async function InicioPage() {
+  const sesion = await requireSesion();
+  const primerNombre = sesion.nombre.split(" ")[0];
+
   return (
-    <BrandScreen
-      title="Sistema MOT"
-      description="Plataforma de operación de Molecular Oil Technology: clientes, flota Robox, servicio en campo, laboratorio y facturación."
-    >
-      <p className="inline-flex items-center gap-2 rounded-full border bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
-        <span className="size-1.5 rounded-full bg-marca-verde" aria-hidden />
-        En construcción · Etapa 0: cimientos
-      </p>
-    </BrandScreen>
+    <>
+      <PageHeader
+        title={`Hola, ${primerNombre}`}
+        description="Sistema de operación de Molecular Oil Technology."
+      />
+      <Card className="max-w-xl">
+        <CardHeader>
+          <CardTitle>Tu acceso</CardTitle>
+          <CardDescription>
+            Entraste como{" "}
+            <span className="font-medium text-foreground">
+              {sesion.rol.nombre}
+            </span>
+            {sesion.puesto ? ` · ${sesion.puesto}` : ""}.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          El sistema está en construcción (Etapa 0: cimientos). Los módulos
+          aparecerán aquí conforme se vayan liberando, según los permisos de tu
+          rol.
+        </CardContent>
+      </Card>
+    </>
   );
 }
