@@ -4,4 +4,3 @@ pnpm-lock.yaml
 docs
 CLAUDE.md
 AGENTS.md
-lib/database.types.ts
