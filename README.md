@@ -71,6 +71,7 @@ Para un cambio de esquema:
 
 - Se entra con correo y contraseña en `/login`. No hay registro abierto: Dirección da de alta a cada persona en **Usuarios**.
 - Hay 6 roles (Dirección, Comercial, Técnico, Laboratorio, Administración y Cliente). Qué puede hacer cada uno está en la tabla `rol_permisos`, no en el código.
+- Los catálogos base (aceites, parámetros de laboratorio, partes, actividades y fallas) los ven todos los roles internos. Aceites y parámetros los editan Laboratorio y Dirección; partes, Administración y Dirección; actividades y fallas, solo Dirección.
 - La protección real está en la base (políticas RLS). La app solo oculta lo que el usuario no puede usar.
 - `supabase/tests/002_roles_permisos.test.sql` comprueba que cada rol ve solo lo suyo.
 
@@ -90,11 +91,11 @@ Los valores están en Supabase, en **Project Settings → API Keys**.
 ## Despliegue de previsualización (Vercel)
 
 1. En Vercel, **Add New → Project** e importa `Rivexo-s-Team/mot-erp`. Vercel detecta Next.js y pnpm; no hay que cambiar comandos.
-2. En **Environment Variables**, agrega estas tres con los valores de **mot-dev**, para los ambientes _Preview_ y _Development_:
+2. En **Environment Variables**, agrega estas tres con los valores de **mot-dev**, para los tres ambientes (_Production_, _Preview_ y _Development_):
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
    - `SUPABASE_SECRET_KEY` (márcala como _Sensitive_)
-3. Deja el ambiente _Production_ sin variables por ahora: producción usará `mot-prod` y se configura cuando MOT salga en vivo.
+3. Mientras no exista `mot-prod`, _Production_ (lo que se despliega desde `main`) también apunta a mot-dev. Cuando MOT salga en vivo, solo se cambian los valores de _Production_ por los de `mot-prod`. Después de cambiar variables hay que volver a desplegar (**Deployments → ⋯ → Redeploy**).
 
 Con eso, cada PR recibe su propia URL de previsualización.
 

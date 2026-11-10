@@ -9,6 +9,74 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      aceites: {
+        Row: {
+          activo: boolean;
+          created_at: string;
+          created_by: string | null;
+          grado_iso_vg: number | null;
+          id: string;
+          marca: string;
+          nombre_comercial: string;
+          updated_at: string;
+          viscosidad_nominal_40c: number | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          activo?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          grado_iso_vg?: number | null;
+          id?: string;
+          marca: string;
+          nombre_comercial: string;
+          updated_at?: string;
+          viscosidad_nominal_40c?: number | null;
+        };
+        Update: {
+          activo?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          grado_iso_vg?: number | null;
+          id?: string;
+          marca?: string;
+          nombre_comercial?: string;
+          updated_at?: string;
+          viscosidad_nominal_40c?: number | null;
+        };
+        Relationships: [];
+      };
+      actividades: {
+        Row: {
+          activo: boolean;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          nombre: string;
+          orden: number;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          activo?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          nombre: string;
+          orden?: number;
+          updated_at?: string;
+        };
+        Update: {
+          activo?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          nombre?: string;
+          orden?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       bitacora: {
         Row: {
           created_at: string;
@@ -40,6 +108,95 @@ export type Database = {
           registro_id?: string;
           tabla?: string;
           usuario_id?: string | null;
+        };
+        Relationships: [];
+      };
+      fallas: {
+        Row: {
+          activo: boolean;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          nombre: string;
+          orden: number;
+          permite_cargo_cliente: boolean;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          activo?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          nombre: string;
+          orden?: number;
+          permite_cargo_cliente?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          activo?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          nombre?: string;
+          orden?: number;
+          permite_cargo_cliente?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      parametros_laboratorio: {
+        Row: {
+          activo: boolean;
+          base_comparacion: string | null;
+          clave: string;
+          created_at: string;
+          created_by: string | null;
+          grupo: string;
+          id: string;
+          limite_texto: string | null;
+          limite_valor: number | null;
+          metodo: string | null;
+          nombre: string;
+          orden: number;
+          tipo_regla: string;
+          unidad: string | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          activo?: boolean;
+          base_comparacion?: string | null;
+          clave: string;
+          created_at?: string;
+          created_by?: string | null;
+          grupo: string;
+          id?: string;
+          limite_texto?: string | null;
+          limite_valor?: number | null;
+          metodo?: string | null;
+          nombre: string;
+          orden?: number;
+          tipo_regla: string;
+          unidad?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          activo?: boolean;
+          base_comparacion?: string | null;
+          clave?: string;
+          created_at?: string;
+          created_by?: string | null;
+          grupo?: string;
+          id?: string;
+          limite_texto?: string | null;
+          limite_valor?: number | null;
+          metodo?: string | null;
+          nombre?: string;
+          orden?: number;
+          tipo_regla?: string;
+          unidad?: string | null;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -77,6 +234,43 @@ export type Database = {
           unidad?: string;
           updated_at?: string;
           valor?: number;
+        };
+        Relationships: [];
+      };
+      partes: {
+        Row: {
+          activo: boolean;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          nombre: string;
+          notas: string | null;
+          orden: number;
+          tipo: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          activo?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          nombre: string;
+          notas?: string | null;
+          orden?: number;
+          tipo: string;
+          updated_at?: string;
+        };
+        Update: {
+          activo?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          nombre?: string;
+          notas?: string | null;
+          orden?: number;
+          tipo?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };

@@ -13,7 +13,9 @@ export function AppHeader() {
     <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-3 px-4">
         <Link href="/" aria-label="Inicio" className="shrink-0">
-          <Logo priority className="h-8" />
+          {/* En celular solo el globo, para dejar espacio al menú. */}
+          <Logo variant="icono" priority className="sm:hidden" />
+          <Logo priority className="hidden h-8 sm:block" />
         </Link>
         <Suspense fallback={<Skeleton className="ml-auto h-7 w-40" />}>
           <HeaderSesion />
@@ -29,6 +31,14 @@ async function HeaderSesion() {
   return (
     <>
       <nav className="flex min-w-0 items-center gap-1 text-sm">
+        {tienePermiso(sesion, "catalogos.ver") ? (
+          <Link
+            href="/catalogos"
+            className="rounded-md px-2.5 py-1.5 font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            Catálogos
+          </Link>
+        ) : null}
         {tienePermiso(sesion, "usuarios.administrar") ? (
           <Link
             href="/usuarios"
