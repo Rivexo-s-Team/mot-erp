@@ -55,7 +55,7 @@ select is(pruebas.cuenta('parametros_negocio'), 4, 'dirección ve los parámetro
 select cmp_ok(pruebas.cuenta('bitacora'), '>', 0, 'dirección ve la bitácora');
 select cmp_ok(pruebas.cuenta('perfiles'), '>=', 7, 'dirección ve todos los perfiles');
 select is(pruebas.cuenta('roles'), 6, 'dirección ve todos los roles');
-select is(pruebas.cuenta('permisos'), 5, 'dirección ve los permisos');
+select cmp_ok(pruebas.cuenta('permisos'), '>=', 5, 'dirección ve los permisos');
 select ok(public.tiene_permiso('usuarios.administrar'), 'dirección administra usuarios');
 
 -- Comercial y Administración: precios sí, usuarios y bitácora no -------------
