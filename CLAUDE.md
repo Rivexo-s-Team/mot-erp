@@ -46,5 +46,5 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 
 ## Estado
 
-- Etapa actual: **0. Cimientos** (aún no hay código).
+- Etapa actual: **0. Cimientos**. Paso 1 de 6 hecho (esqueleto del proyecto); sigue Supabase y migraciones.
 - Preguntas abiertas: DISENO §6.
