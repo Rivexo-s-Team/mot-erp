@@ -80,12 +80,161 @@ export type Database = {
         };
         Relationships: [];
       };
+      perfiles: {
+        Row: {
+          activo: boolean;
+          correo: string;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          nombre: string;
+          puesto: string | null;
+          rol_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          activo?: boolean;
+          correo: string;
+          created_at?: string;
+          created_by?: string | null;
+          id: string;
+          nombre: string;
+          puesto?: string | null;
+          rol_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          activo?: boolean;
+          correo?: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          nombre?: string;
+          puesto?: string | null;
+          rol_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "perfiles_rol_id_fkey";
+            columns: ["rol_id"];
+            isOneToOne: false;
+            referencedRelation: "roles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      permisos: {
+        Row: {
+          clave: string;
+          created_at: string;
+          created_by: string | null;
+          descripcion: string;
+          id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          clave: string;
+          created_at?: string;
+          created_by?: string | null;
+          descripcion: string;
+          id?: string;
+          updated_at?: string;
+        };
+        Update: {
+          clave?: string;
+          created_at?: string;
+          created_by?: string | null;
+          descripcion?: string;
+          id?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      rol_permisos: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          permiso_id: string;
+          rol_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          permiso_id: string;
+          rol_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          permiso_id?: string;
+          rol_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "rol_permisos_permiso_id_fkey";
+            columns: ["permiso_id"];
+            isOneToOne: false;
+            referencedRelation: "permisos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "rol_permisos_rol_id_fkey";
+            columns: ["rol_id"];
+            isOneToOne: false;
+            referencedRelation: "roles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      roles: {
+        Row: {
+          clave: string;
+          created_at: string;
+          created_by: string | null;
+          descripcion: string;
+          es_interno: boolean;
+          id: string;
+          nombre: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          clave: string;
+          created_at?: string;
+          created_by?: string | null;
+          descripcion: string;
+          es_interno?: boolean;
+          id?: string;
+          nombre: string;
+          updated_at?: string;
+        };
+        Update: {
+          clave?: string;
+          created_at?: string;
+          created_by?: string | null;
+          descripcion?: string;
+          es_interno?: boolean;
+          id?: string;
+          nombre?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      mi_rol_id: { Args: Record<PropertyKey, never>; Returns: string };
+      mis_permisos: { Args: Record<PropertyKey, never>; Returns: string[] };
+      tiene_permiso: { Args: { p_clave: string }; Returns: boolean };
     };
     Enums: {
       [_ in never]: never;
