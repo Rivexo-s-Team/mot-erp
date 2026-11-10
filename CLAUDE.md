@@ -42,6 +42,13 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 - Tabla nueva: RLS activado, triggers `set_updated_at` y `set_created_by`, y `registrar_bitacora` si es sensible. Cada tabla lleva su prueba en `supabase/tests/`.
 - Datos que producción necesita (parámetros, catálogos, roles) van en migraciones; `seed.sql` es solo para desarrollo.
 
+## Acceso y permisos
+
+- Toda página de `app/(app)` empieza con `requireSesion()` o `requirePermiso("modulo.accion")` (`lib/auth/session.ts`). Eso es comodidad de interfaz: la seguridad real son las políticas RLS con `tiene_permiso('modulo.accion')`.
+- Permiso nuevo: se agrega en una migración a `permisos` y `rol_permisos`, con su caso en `supabase/tests/002_roles_permisos.test.sql`.
+- `lib/supabase/admin.ts` (llave secreta) salta RLS: solo después de verificar el permiso y solo para lo que la sesión no puede hacer.
+- Next 16 con Cache Components: lo que lee la sesión va dentro de `<Suspense>` (el layout de `(app)` ya envuelve las páginas). Antes de usar una API de Next, revisa `node_modules/next/dist/docs/`.
+
 ## Interfaz
 
 - Debe verse profesional y consistente desde la primera pantalla. Usa los componentes de shadcn/ui (`components/ui`) y los colores del tema en `app/globals.css`; no escribas colores sueltos en las páginas.
@@ -58,5 +65,5 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 
 ## Estado
 
-- Etapa actual: **0. Cimientos**. Pasos 1 y 2 de 6 hechos (esqueleto; Supabase local, bitácora y parámetros de negocio); sigue auth, roles y permisos.
+- Etapa actual: **0. Cimientos**. Pasos 1 a 3 de 6 hechos (esqueleto; Supabase local, bitácora y parámetros; login, roles, permisos y usuarios); siguen los catálogos base.
 - Preguntas abiertas: DISENO §6.
