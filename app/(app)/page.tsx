@@ -1,10 +1,15 @@
+import { BrandScreen } from "@/components/brand/brand-screen";
+
 export default function InicioPage() {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
-      <h1 className="text-2xl font-semibold">Sistema MOT</h1>
-      <p className="text-muted-foreground">
-        Molecular Oil Technology · Etapa 0: cimientos
+    <BrandScreen
+      title="Sistema MOT"
+      description="Plataforma de operación de Molecular Oil Technology: clientes, flota Robox, servicio en campo, laboratorio y facturación."
+    >
+      <p className="inline-flex items-center gap-2 rounded-full border bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
+        <span className="size-1.5 rounded-full bg-marca-verde" aria-hidden />
+        En construcción · Etapa 0: cimientos
       </p>
-    </main>
+    </BrandScreen>
   );
 }

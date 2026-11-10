@@ -36,6 +36,12 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 - La sección de campo (`/campo`) se diseña primero para celular y guarda el borrador localmente.
 - Estructura sugerida: `app/(app)/<modulo>/…`, `app/(campo)/…`, `app/(portal)/…`, `lib/`, `components/`, `supabase/`.
 
+## Interfaz
+
+- Debe verse profesional y consistente desde la primera pantalla. Usa los componentes de shadcn/ui (`components/ui`) y los colores del tema en `app/globals.css`; no escribas colores sueltos en las páginas.
+- Marca: logotipo en `components/brand/logo.tsx` (solo sobre fondo claro). Primario azul del logo; cian y verde (`marca-cian`, `marca-verde`) solo como acentos.
+- Tema claro. Cada pantalla se revisa en celular (390 px) y en escritorio antes de darla por terminada.
+
 ## Forma de trabajo
 
 - Trabaja **por etapas** (DISENO §5). No adelantes módulos de etapas futuras.
