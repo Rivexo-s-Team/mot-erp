@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  cambiarPasswordSchema,
   crearUsuarioSchema,
   editarUsuarioSchema,
   loginSchema,
@@ -70,6 +71,30 @@ describe("editarUsuarioSchema", () => {
   it("si se cambia, la contraseña también debe ser larga", () => {
     expect(
       editarUsuarioSchema.safeParse({ ...base, password: "corta" }).success,
+    ).toBe(false);
+  });
+});
+
+describe("cambiarPasswordSchema", () => {
+  it("exige que las dos contraseñas coincidan", () => {
+    expect(
+      cambiarPasswordSchema.safeParse({
+        password: "larga-y-segura",
+        confirmar: "larga-y-otra",
+      }).success,
+    ).toBe(false);
+    expect(
+      cambiarPasswordSchema.safeParse({
+        password: "larga-y-segura",
+        confirmar: "larga-y-segura",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("exige al menos 10 caracteres", () => {
+    expect(
+      cambiarPasswordSchema.safeParse({ password: "corta", confirmar: "corta" })
+        .success,
     ).toBe(false);
   });
 });

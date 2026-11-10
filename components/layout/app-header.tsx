@@ -39,13 +39,21 @@ async function HeaderSesion() {
         ) : null}
       </nav>
       <div className="ml-auto flex min-w-0 items-center gap-3">
-        <div className="hidden min-w-0 text-right leading-tight sm:block">
-          <p className="truncate text-sm font-medium">{sesion.nombre}</p>
-          <p className="truncate text-xs text-muted-foreground">
-            {sesion.correo}
-          </p>
-        </div>
-        <Badge variant="secondary">{sesion.rol.nombre}</Badge>
+        <Link
+          href="/cuenta"
+          title="Mi cuenta"
+          className="flex min-w-0 items-center gap-3 rounded-md px-1.5 py-1 hover:bg-muted"
+        >
+          <span className="hidden min-w-0 text-right leading-tight sm:block">
+            <span className="block truncate text-sm font-medium">
+              {sesion.nombre}
+            </span>
+            <span className="block truncate text-xs text-muted-foreground">
+              {sesion.correo}
+            </span>
+          </span>
+          <Badge variant="secondary">{sesion.rol.nombre}</Badge>
+        </Link>
         <form action={cerrarSesion}>
           <Button type="submit" variant="outline" size="sm">
             Salir
