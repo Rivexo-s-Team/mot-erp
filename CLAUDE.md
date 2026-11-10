@@ -36,6 +36,12 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 - La sección de campo (`/campo`) se diseña primero para celular y guarda el borrador localmente.
 - Estructura sugerida: `app/(app)/<modulo>/…`, `app/(campo)/…`, `app/(portal)/…`, `lib/`, `components/`, `supabase/`.
 
+## Base de datos
+
+- Flujo: migración nueva → `pnpm db:reset` → `pnpm db:test` → `pnpm db:types`. A `mot-dev` solo llegan migraciones ya fusionadas a `main`.
+- Tabla nueva: RLS activado, triggers `set_updated_at` y `set_created_by`, y `registrar_bitacora` si es sensible. Cada tabla lleva su prueba en `supabase/tests/`.
+- Datos que producción necesita (parámetros, catálogos, roles) van en migraciones; `seed.sql` es solo para desarrollo.
+
 ## Interfaz
 
 - Debe verse profesional y consistente desde la primera pantalla. Usa los componentes de shadcn/ui (`components/ui`) y los colores del tema en `app/globals.css`; no escribas colores sueltos en las páginas.
@@ -52,5 +58,5 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 
 ## Estado
 
-- Etapa actual: **0. Cimientos**. Paso 1 de 6 hecho (esqueleto del proyecto); sigue Supabase y migraciones.
+- Etapa actual: **0. Cimientos**. Pasos 1 y 2 de 6 hechos (esqueleto; Supabase local, bitácora y parámetros de negocio); sigue auth, roles y permisos.
 - Preguntas abiertas: DISENO §6.
