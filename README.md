@@ -59,6 +59,8 @@ El esquema solo cambia con migraciones en `supabase/migrations/`. Todo se prueba
 `pnpm db:reset` crea un usuario por rol, todos con la contraseña `mot-local-1234`:
 `direccion@mot.test`, `comercial@mot.test`, `tecnico@mot.test`, `laboratorio@mot.test`, `administracion@mot.test` y `cliente@mot.test`.
 
+El mismo comando carga el caso real de Rassini: la cuenta, la planta BYPASA, los equipos 11B113 y 11B116 y el Robox 545592.
+
 Para que la app use la base local, pon en `.env.local` la URL y las llaves que imprime `pnpm db:start` (`API_URL`, `PUBLISHABLE_KEY` y `SECRET_KEY`). Estos usuarios **no existen en mot-dev**.
 
 Para un cambio de esquema:
