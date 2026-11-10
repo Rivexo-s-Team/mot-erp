@@ -38,3 +38,29 @@ select u.id, n.nombre, u.email, n.puesto, r.id
 from usuarios u
 join nuevos n on n.rol || '@mot.test' = u.email
 join public.roles r on r.clave = n.rol;
+
+-- Caso real de Rassini (DISENO §5, Etapa 0). Datos tomados del formato de
+-- servicio del 2 nov 2026 (equipo 11B116) y del informe FOLAB-26-092 (11B113).
+with cuenta as (
+  insert into public.cuentas (nombre) values ('Rassini') returning id
+),
+planta as (
+  insert into public.plantas (cuenta_id, nombre, direccion, municipio, estado)
+  select id, 'BYPASA', 'Oriente 6, Nuevo San Juan', 'San Juan del Río', 'Querétaro'
+  from cuenta
+  returning id
+)
+insert into public.equipos_cliente (planta_id, identificador, alias, aplicacion, aceite_id, volumen_reservorio_l)
+select planta.id, e.identificador, e.alias, e.aplicacion, aceite.id, e.volumen
+from planta
+cross join (select id from public.aceites where marca = 'Mobil' and nombre_comercial = 'DTE 25') aceite
+cross join (values
+  -- El informe de laboratorio no trae alias, aplicación ni capacidad del 11B113.
+  ('11B113', null, null, null::numeric),
+  ('11B116', 'REP4', 'Prensa vulcanizadora', 280)
+) as e (identificador, alias, aplicacion, volumen);
+
+-- Robox instalado en Rassini. El modelo no se lee bien en el formato en papel;
+-- se captura cuando el área técnica comparta su inventario (P10).
+insert into public.robox (numero_serie, version_programa, estado)
+values ('545592', '6.5', 'en_cliente');
