@@ -1,0 +1,3 @@
+-- Datos de desarrollo. `supabase db reset` aplica las migraciones y luego este archivo.
+-- Los catálogos, los usuarios de prueba y el caso Rassini se agregan en los pasos
+-- 3 a 6 de la Etapa 0. Los parámetros de negocio viven en las migraciones.
