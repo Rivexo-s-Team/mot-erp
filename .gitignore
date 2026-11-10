@@ -1,6 +1,26 @@
+# dependencias
 node_modules/
+.pnpm-debug.log*
+
+# next.js
 .next/
-.env
-.env*.local
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# pruebas
+coverage/
+
+# secretos: solo se versiona .env.example
+.env*
+!.env.example
+*.pem
+
+# supabase
 supabase/.temp/
+supabase/.branches/
+
+# vercel
+.vercel
+
 .DS_Store

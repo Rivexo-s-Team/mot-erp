@@ -1,0 +1,7 @@
+.next
+node_modules
+pnpm-lock.yaml
+docs
+CLAUDE.md
+AGENTS.md
+lib/database.types.ts
