@@ -1,12 +1,14 @@
 import { Suspense } from "react";
-import { AppHeader } from "@/components/layout/app-header";
+import { AppNav, AppNavSkeleton } from "@/components/layout/app-nav";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
-    <div className="flex flex-1 flex-col bg-muted/40">
-      <AppHeader />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:py-8">
+    <div className="flex flex-1 flex-col bg-muted/40 lg:pl-60">
+      <Suspense fallback={<AppNavSkeleton />}>
+        <AppNav />
+      </Suspense>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
       </main>
     </div>
