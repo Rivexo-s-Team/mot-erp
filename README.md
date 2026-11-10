@@ -54,11 +54,25 @@ El esquema solo cambia con migraciones en `supabase/migrations/`. Todo se prueba
 | `pnpm db:types` | Regenera `lib/database.types.ts` a partir de la base local  |
 | `pnpm db:stop`  | Apaga Supabase local                                        |
 
+### Usuarios de prueba (solo base local)
+
+`pnpm db:reset` crea un usuario por rol, todos con la contraseña `mot-local-1234`:
+`direccion@mot.test`, `comercial@mot.test`, `tecnico@mot.test`, `laboratorio@mot.test`, `administracion@mot.test` y `cliente@mot.test`.
+
+Para que la app use la base local, pon en `.env.local` la URL y las llaves que imprime `pnpm db:start` (`API_URL`, `PUBLISHABLE_KEY` y `SECRET_KEY`). Estos usuarios **no existen en mot-dev**.
+
 Para un cambio de esquema:
 
 1. `pnpm exec supabase migration new <nombre>` y escribe el SQL.
 2. `pnpm db:reset`, `pnpm db:test` y `pnpm db:types`.
 3. PR. Ya fusionado, la migración se aplica a mot-dev.
+
+## Acceso y permisos
+
+- Se entra con correo y contraseña en `/login`. No hay registro abierto: Dirección da de alta a cada persona en **Usuarios**.
+- Hay 6 roles (Dirección, Comercial, Técnico, Laboratorio, Administración y Cliente). Qué puede hacer cada uno está en la tabla `rol_permisos`, no en el código.
+- La protección real está en la base (políticas RLS). La app solo oculta lo que el usuario no puede usar.
+- `supabase/tests/002_roles_permisos.test.sql` comprueba que cada rol ve solo lo suyo.
 
 ## Variables de entorno
 
