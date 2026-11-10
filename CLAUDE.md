@@ -49,6 +49,11 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 - `lib/supabase/admin.ts` (llave secreta) salta RLS: solo después de verificar el permiso y solo para lo que la sesión no puede hacer.
 - Next 16 con Cache Components: lo que lee la sesión va dentro de `<Suspense>` (el layout de `(app)` ya envuelve las páginas). Antes de usar una API de Next, revisa `node_modules/next/dist/docs/`.
 
+## Catálogos
+
+- Los catálogos sencillos se definen en `lib/catalogos/config.ts` (campos, columnas, permiso de edición y validación); las pantallas de lista y edición se arman solas a partir de ahí. Para uno nuevo: migración con su tabla y RLS, y una entrada en esa configuración.
+- En catálogos no se borra: se desactiva (`activo = false`).
+
 ## Interfaz
 
 - Debe verse profesional y consistente desde la primera pantalla. Usa los componentes de shadcn/ui (`components/ui`) y los colores del tema en `app/globals.css`; no escribas colores sueltos en las páginas.
@@ -65,5 +70,5 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 
 ## Estado
 
-- Etapa actual: **0. Cimientos**. Pasos 1 a 3 de 6 hechos (esqueleto; Supabase local, bitácora y parámetros; login, roles, permisos y usuarios); siguen los catálogos base.
+- Etapa actual: **0. Cimientos**. Pasos 1 a 4 de 6 hechos (esqueleto; Supabase local, bitácora y parámetros; login, roles, permisos y usuarios; catálogos base); sigue el layout con navegación por rol.
 - Preguntas abiertas: DISENO §6.
