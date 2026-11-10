@@ -72,6 +72,7 @@ Para un cambio de esquema:
 - Se entra con correo y contraseña en `/login`. No hay registro abierto: Dirección da de alta a cada persona en **Usuarios**.
 - Hay 6 roles (Dirección, Comercial, Técnico, Laboratorio, Administración y Cliente). Qué puede hacer cada uno está en la tabla `rol_permisos`, no en el código.
 - Los catálogos base (aceites, parámetros de laboratorio, partes, actividades y fallas) los ven todos los roles internos. Aceites y parámetros los editan Laboratorio y Dirección; partes, Administración y Dirección; actividades y fallas, solo Dirección.
+- El menú muestra solo lo que el rol puede usar (`lib/navegacion.ts`). Los usuarios del rol Cliente entran directo a `/portal` y no ven el sistema interno.
 - La protección real está en la base (políticas RLS). La app solo oculta lo que el usuario no puede usar.
 - `supabase/tests/002_roles_permisos.test.sql` comprueba que cada rol ve solo lo suyo.
 
