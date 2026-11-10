@@ -111,6 +111,92 @@ export type Database = {
         };
         Relationships: [];
       };
+      cuentas: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          id: string;
+          nombre: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          id?: string;
+          nombre: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          id?: string;
+          nombre?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      equipos_cliente: {
+        Row: {
+          aceite_id: string | null;
+          alias: string | null;
+          aplicacion: string | null;
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          id: string;
+          identificador: string;
+          planta_id: string;
+          updated_at: string;
+          volumen_reservorio_l: number | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          aceite_id?: string | null;
+          alias?: string | null;
+          aplicacion?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          id?: string;
+          identificador: string;
+          planta_id: string;
+          updated_at?: string;
+          volumen_reservorio_l?: number | null;
+        };
+        Update: {
+          aceite_id?: string | null;
+          alias?: string | null;
+          aplicacion?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          id?: string;
+          identificador?: string;
+          planta_id?: string;
+          updated_at?: string;
+          volumen_reservorio_l?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "equipos_cliente_aceite_id_fkey";
+            columns: ["aceite_id"];
+            isOneToOne: false;
+            referencedRelation: "aceites";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "equipos_cliente_planta_id_fkey";
+            columns: ["planta_id"];
+            isOneToOne: false;
+            referencedRelation: "plantas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       fallas: {
         Row: {
           activo: boolean;
@@ -344,6 +430,97 @@ export type Database = {
           descripcion?: string;
           id?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      plantas: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          cuenta_id: string;
+          deleted_at: string | null;
+          direccion: string | null;
+          estado: string | null;
+          id: string;
+          municipio: string | null;
+          nombre: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id: string;
+          deleted_at?: string | null;
+          direccion?: string | null;
+          estado?: string | null;
+          id?: string;
+          municipio?: string | null;
+          nombre: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id?: string;
+          deleted_at?: string | null;
+          direccion?: string | null;
+          estado?: string | null;
+          id?: string;
+          municipio?: string | null;
+          nombre?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "plantas_cuenta_id_fkey";
+            columns: ["cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      robox: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          estado: string;
+          fecha_alta: string | null;
+          id: string;
+          modelo: string | null;
+          numero_serie: string;
+          sim: string | null;
+          updated_at: string;
+          version_programa: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          estado?: string;
+          fecha_alta?: string | null;
+          id?: string;
+          modelo?: string | null;
+          numero_serie: string;
+          sim?: string | null;
+          updated_at?: string;
+          version_programa?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          estado?: string;
+          fecha_alta?: string | null;
+          id?: string;
+          modelo?: string | null;
+          numero_serie?: string;
+          sim?: string | null;
+          updated_at?: string;
+          version_programa?: string | null;
         };
         Relationships: [];
       };

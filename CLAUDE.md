@@ -71,5 +71,7 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 
 ## Estado
 
-- Etapa actual: **0. Cimientos**. Pasos 1 a 5 de 6 hechos (esqueleto; Supabase local, bitácora y parámetros; login, roles, permisos y usuarios; catálogos base; menú por rol); falta el seed de Rassini y la prueba final.
+- **Etapa 0. Cimientos: terminada**, pendiente de revisión con MOT. Hay login, roles y permisos con RLS, menú por rol, catálogos base, tablas mínimas de clientes y flota, y seed con el caso Rassini.
+- Siguiente: **Etapa 1. Clientes y comercial**. Las tablas `cuentas`, `plantas` y `equipos_cliente` ya existen en versión mínima: se amplían con migraciones nuevas, no se rehacen.
+- Pendiente fuera de etapa: pantallas de bitácora y de parámetros de negocio; recuperación de contraseña por correo.
 - Preguntas abiertas: DISENO §6.
