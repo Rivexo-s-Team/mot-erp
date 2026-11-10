@@ -49,10 +49,29 @@ export const getSesion = cache(async (): Promise<Sesion | null> => {
   };
 });
 
-/** Exige sesión. Sin ella manda a /login (o a /sin-acceso si el usuario no tiene perfil activo). */
+/**
+ * Exige sesión de un usuario interno. Sin sesión manda a /login; sin perfil
+ * activo, a /sin-acceso; y a los usuarios del portal de clientes, a /portal.
+ */
 export async function requireSesion(): Promise<Sesion> {
   const sesion = await getSesion();
-  if (sesion) return sesion;
+  if (sesion) {
+    if (!sesion.rol.esInterno) redirect("/portal");
+    return sesion;
+  }
+
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  redirect(data?.claims.sub ? "/sin-acceso" : "/login");
+}
+
+/** Exige sesión de un usuario del portal de clientes. Los internos van al inicio. */
+export async function requireSesionPortal(): Promise<Sesion> {
+  const sesion = await getSesion();
+  if (sesion) {
+    if (sesion.rol.esInterno) redirect("/");
+    return sesion;
+  }
 
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
