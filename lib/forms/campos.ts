@@ -16,6 +16,8 @@ export type Campo = {
     | "textoLargo"
     | "correo"
     | "telefono"
+    /** Día del calendario (aaaa-mm-dd), sin hora. */
+    | "fecha"
     | "numero"
     | "entero"
     | "opciones"
@@ -87,6 +89,13 @@ export function esquemaCampos(campos: Campo[], validar?: Validador) {
       s = s.refine(
         vacioO((v) => z.email().safeParse(v).success),
         "Escribe un correo válido.",
+      );
+    } else if (campo.tipo === "fecha") {
+      s = s.refine(
+        vacioO(
+          (v) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v)),
+        ),
+        "Elige una fecha válida.",
       );
     } else if (campo.tipo === "telefono") {
       s = s.regex(/^[0-9+() .-]*$/, "Solo números y los signos + ( ) - .");

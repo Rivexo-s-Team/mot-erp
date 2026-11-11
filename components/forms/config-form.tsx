@@ -169,6 +169,7 @@ export function ConfigForm({
                       ? INPUT_MODE[campo.tipo as keyof typeof INPUT_MODE]
                       : "text"
                   }
+                  type={campo.tipo === "fecha" ? "date" : "text"}
                   readOnly={bloqueado}
                   aria-invalid={Boolean(fieldError)}
                   {...register(campo.name)}

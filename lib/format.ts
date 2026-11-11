@@ -29,6 +29,18 @@ export function formatFecha(fecha: FechaEntrada): string {
   return `${p.day}/${p.month}/${p.year}`;
 }
 
+/** Día del calendario guardado como "aaaa-mm-dd" (columna date) a dd/mm/aaaa, sin mover de zona. */
+export function formatDia(dia: string): string {
+  const [anio, mes, d] = dia.slice(0, 10).split("-");
+  return `${d}/${mes}/${anio}`;
+}
+
+/** El día de hoy en México como "aaaa-mm-dd", para valores iniciales de fecha. */
+export function hoyEnMexico(ahora: Date = new Date()): string {
+  const p = partes(fechaFmt, ahora);
+  return `${p.year}-${p.month}-${p.day}`;
+}
+
 /** dd/mm/aaaa hh:mm (24 h) en hora del centro de México. */
 export function formatFechaHora(fecha: FechaEntrada): string {
   const h = partes(horaFmt, fecha);
