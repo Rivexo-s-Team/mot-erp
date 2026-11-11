@@ -49,6 +49,12 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 - `lib/supabase/admin.ts` (llave secreta) salta RLS: solo después de verificar el permiso y solo para lo que la sesión no puede hacer.
 - Next 16 con Cache Components: lo que lee la sesión va dentro de `<Suspense>` (el layout de `(app)` ya envuelve las páginas). Antes de usar una API de Next, revisa `node_modules/next/dist/docs/`.
 
+## Formularios
+
+- Los formularios se definen como una lista de campos (`lib/forms/campos.ts`) y se pintan con `components/forms/config-form.tsx`. La misma lista valida en el navegador y en el servidor. Úsalo antes de escribir un formulario a mano.
+- Entidades de negocio: no se borran, se marcan con `deleted_at` y las lecturas filtran `deleted_at is null`. Los nombres únicos usan índices parciales (solo registros vigentes).
+- Lo que cuelga de una cuenta (plantas, razones sociales, contactos) lleva `cuenta_id` y llaves foráneas compuestas, para que la base impida mezclar datos de dos cuentas.
+
 ## Catálogos
 
 - Los catálogos sencillos se definen en `lib/catalogos/config.ts` (campos, columnas, permiso de edición y validación); las pantallas de lista y edición se arman solas a partir de ahí. Para uno nuevo: migración con su tabla y RLS, y una entrada en esa configuración.
@@ -71,7 +77,8 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 
 ## Estado
 
-- **Etapa 0. Cimientos: terminada**, pendiente de revisión con MOT. Hay login, roles y permisos con RLS, menú por rol, catálogos base, tablas mínimas de clientes y flota, y seed con el caso Rassini.
-- Siguiente: **Etapa 1. Clientes y comercial**. Las tablas `cuentas`, `plantas` y `equipos_cliente` ya existen en versión mínima: se amplían con migraciones nuevas, no se rehacen.
-- Pendiente fuera de etapa: pantallas de bitácora y de parámetros de negocio; recuperación de contraseña por correo.
+- **Etapa 0. Cimientos: terminada**, pendiente de revisión con MOT.
+- **Etapa 1. Clientes y comercial: en curso.** Plan de 6 pasos: (1) expediente del cliente, hecho; (2) equipos y requisitos de planta; (3) pipeline; (4) cotizador y cotizaciones; (5) cotización en PDF; (6) cierre y carga de los 4 clientes.
+- Decisiones de esta etapa en DISENO §7: D9 (vendedor externo = canal, no usuario), D10 (cotizaciones de partidas libres), D11 (ganar solo marca pendiente de contrato).
+- Pendiente fuera de etapa: pantalla de bitácora; recuperación de contraseña por correo. La pantalla de parámetros de negocio va en el paso 4.
 - Preguntas abiertas: DISENO §6.
