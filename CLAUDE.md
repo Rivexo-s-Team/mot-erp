@@ -79,7 +79,7 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 ## Estado
 
 - **Etapa 0. Cimientos: terminada**, pendiente de revisión con MOT.
-- **Etapa 1. Clientes y comercial: en curso.** Plan de 6 pasos: (1) expediente del cliente, hecho; (2) equipos y requisitos de planta, hecho; (3) pipeline; (4) cotizador y cotizaciones; (5) cotización en PDF; (6) cierre y carga de los 4 clientes.
+- **Etapa 1. Clientes y comercial: en curso.** Plan de 6 pasos: (1) expediente del cliente, hecho; (2) equipos y requisitos de planta, hecho; (3) pipeline, hecho salvo el archivo adjunto de las etapas de muestra y resultados (D11), que requiere Storage; (4) cotizador y cotizaciones; (5) cotización en PDF; (6) cierre y carga de los 4 clientes.
 - Decisiones de esta etapa en DISENO §7: D9 (vendedor externo = canal, no usuario), D10 (cotizaciones de partidas libres), D11 (ganar solo marca pendiente de contrato).
 - Pendiente fuera de etapa: pantalla de bitácora; recuperación de contraseña por correo. La pantalla de parámetros de negocio va en el paso 4.
 - Preguntas abiertas: DISENO §6.

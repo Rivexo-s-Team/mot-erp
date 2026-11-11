@@ -7,8 +7,13 @@ const hrefs = (permisos: string[]) =>
 describe("menuPara", () => {
   it("Dirección ve todo", () => {
     expect(
-      hrefs(["clientes.ver", "catalogos.ver", "usuarios.administrar"]),
-    ).toEqual(["/", "/clientes", "/catalogos", "/usuarios"]);
+      hrefs([
+        "clientes.ver",
+        "oportunidades.ver",
+        "catalogos.ver",
+        "usuarios.administrar",
+      ]),
+    ).toEqual(["/", "/clientes", "/oportunidades", "/catalogos", "/usuarios"]);
   });
 
   it("un técnico ve catálogos pero no usuarios", () => {

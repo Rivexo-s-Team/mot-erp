@@ -9,6 +9,8 @@ import { Card } from "@/components/ui/card";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { direccionPlanta, etiquetaArea } from "@/lib/clientes/campos";
 import { contarEquiposPorPlanta, obtenerCuenta } from "@/lib/clientes/data";
+import { ETAPAS, etiqueta } from "@/lib/pipeline/campos";
+import { oportunidadesDeCuenta } from "@/lib/pipeline/data";
 
 export default async function CuentaPage({
   params,
@@ -24,6 +26,10 @@ export default async function CuentaPage({
   const base = `/clientes/${cuenta.id}`;
   const razonPorId = new Map(cuenta.razonesSociales.map((r) => [r.id, r]));
   const plantaPorId = new Map(cuenta.plantas.map((p) => [p.id, p]));
+  const veOportunidades = tienePermiso(sesion, "oportunidades.ver");
+  const oportunidades = veOportunidades
+    ? await oportunidadesDeCuenta(cuenta.id)
+    : [];
   const equiposPorPlanta = await contarEquiposPorPlanta(
     cuenta.plantas.map((p) => p.id),
   );
@@ -185,6 +191,33 @@ export default async function CuentaPage({
             );
           })}
         </Seccion>
+
+        {veOportunidades ? (
+          <Seccion
+            titulo="Oportunidades"
+            vacio="Esta cuenta aún no tiene oportunidades."
+            agregar={
+              tienePermiso(sesion, "oportunidades.editar")
+                ? {
+                    href: `/oportunidades/nueva?cuenta=${cuenta.id}`,
+                    texto: "Nueva oportunidad",
+                  }
+                : null
+            }
+          >
+            {oportunidades.map((o) => (
+              <Tarjeta key={o.id} href={`/oportunidades/${o.id}`}>
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <p className="font-medium">{o.nombre}</p>
+                  <Badge variant="secondary">{etiqueta(ETAPAS, o.etapa)}</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {o.plantas?.nombre ?? "Toda la cuenta"}
+                </p>
+              </Tarjeta>
+            ))}
+          </Seccion>
+        ) : null}
       </div>
     </>
   );
