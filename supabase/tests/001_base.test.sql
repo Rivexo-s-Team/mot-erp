@@ -47,8 +47,10 @@ select cmp_ok(
 
 update public.parametros_negocio set valor = valor where clave = 'cotizador_piso_precio_litro';
 select is(
-  (select count(*)::int from public.bitacora where operacion = 'UPDATE'),
-  1, 'un cambio que no cambia nada no se registra'
+  (select count(*)::int from public.bitacora
+    where operacion = 'UPDATE' and created_at = now()
+      and datos_nuevos ->> 'clave' = 'cotizador_piso_precio_litro'),
+  0, 'un cambio que no cambia nada no se registra'
 );
 
 -- Sin roles todavía, nadie entra desde la app -------------------------------

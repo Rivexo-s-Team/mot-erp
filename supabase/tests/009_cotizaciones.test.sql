@@ -87,8 +87,15 @@ select throws_ok(
 
 -- Quién ve: es un precio ------------------------------------------------------
 select pruebas.entrar('comercial');
-select is(pruebas.cuenta('cotizaciones'), 1, 'comercial ve la cotización');
-select is(pruebas.cuenta('cotizacion_lineas'), 3, 'comercial ve las partidas');
+select is(
+  (select count(*)::int from public.cotizaciones where id = '00000000-0000-0000-0000-000000000071'),
+  1, 'comercial ve la cotización'
+);
+select is(
+  (select count(*)::int from public.cotizacion_lineas
+    where cotizacion_id = '00000000-0000-0000-0000-000000000071'),
+  3, 'comercial ve las partidas'
+);
 select pruebas.entrar('administracion');
 select is(pruebas.cuenta('cotizaciones'), 0, 'administración no ve cotizaciones (no ve el pipeline)');
 select pruebas.entrar('tecnico');
