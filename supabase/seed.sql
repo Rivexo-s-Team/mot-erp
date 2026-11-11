@@ -45,10 +45,16 @@ with cuenta as (
   insert into public.cuentas (nombre) values ('Rassini') returning id
 ),
 planta as (
-  insert into public.plantas (cuenta_id, nombre, direccion, municipio, estado)
-  select id, 'BYPASA', 'Oriente 6, Nuevo San Juan', 'San Juan del Río', 'Querétaro'
+  insert into public.plantas (cuenta_id, nombre, calle, colonia, municipio, estado)
+  select id, 'BYPASA', 'Oriente 6', 'Nuevo San Juan', 'San Juan del Río', 'Querétaro'
   from cuenta
-  returning id
+  returning id, cuenta_id
+),
+-- Quien firmó de recibido el formato de servicio. Sin teléfono: no se lee con certeza.
+contacto as (
+  insert into public.contactos (cuenta_id, planta_id, nombre, area, puesto, recibe_informes)
+  select cuenta_id, id, 'Jair Ocampo Franco', 'mantenimiento', 'Ing. de Mantenimiento', true
+  from planta
 )
 insert into public.equipos_cliente (planta_id, identificador, alias, aplicacion, aceite_id, volumen_reservorio_l)
 select planta.id, e.identificador, e.alias, e.aplicacion, aceite.id, e.volumen
