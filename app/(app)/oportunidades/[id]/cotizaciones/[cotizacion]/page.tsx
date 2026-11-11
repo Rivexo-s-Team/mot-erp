@@ -7,7 +7,7 @@ import {
   ESTADOS,
   etiqueta,
   FUENTES,
-  UNIDADES,
+  describirCantidad,
 } from "@/lib/cotizaciones/campos";
 import { formatDia, formatFecha, formatImporte } from "@/lib/format";
 import {
@@ -59,6 +59,14 @@ export default async function CotizacionPage({
         >
           Oportunidad
         </Link>
+        <a
+          href={`${base}/pdf`}
+          target="_blank"
+          rel="noreferrer"
+          className={buttonVariants({ variant: "outline", className: "h-9" })}
+        >
+          Ver PDF
+        </a>
         {editable ? (
           <Link
             href={`${base}/editar`}
@@ -117,13 +125,8 @@ export default async function CotizacionPage({
                       </p>
                     </div>
                     <p className="text-sm text-muted-foreground tabular-nums">
-                      {l.cantidad} {etiqueta(UNIDADES, l.unidad).toLowerCase()}
-                      {l.cantidad === 1
-                        ? ""
-                        : l.unidad === "mes"
-                          ? "es"
-                          : "s"}{" "}
-                      × {importe(l.precio_unitario)}
+                      {describirCantidad(l.cantidad, l.unidad)} ×{" "}
+                      {importe(l.precio_unitario)}
                       {l.equipos_cliente
                         ? ` · ${l.equipos_cliente.identificador}${l.equipos_cliente.alias ? ` (${l.equipos_cliente.alias})` : ""}`
                         : ""}

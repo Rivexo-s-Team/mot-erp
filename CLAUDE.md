@@ -66,6 +66,12 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 - Un archivo subido no se reemplaza ni se borra desde la app; quitarlo solo lo oculta.
 - Para probar archivos en local, Supabase debe arrancar con Storage (`pnpm db:start`).
 
+## PDF
+
+- Los PDF se generan en el servidor con `@react-pdf/renderer`, en una ruta (`…/pdf/route.ts`) con los mismos permisos que la pantalla.
+- Separa los datos del dibujo: una función pura arma lo que sale en el documento (`lib/cotizaciones/pdf-datos.ts`, con pruebas) y otro archivo lo dibuja (`pdf-documento.tsx`). Lo que va al cliente nunca incluye datos internos (notas, precios de referencia, costos).
+- Para revisar un PDF en pruebas: `pdftotext` para el texto y `pdftoppm` para verlo como imagen.
+
 ## Catálogos
 
 - Los catálogos sencillos se definen en `lib/catalogos/config.ts` (campos, columnas, permiso de edición y validación); las pantallas de lista y edición se arman solas a partir de ahí. Para uno nuevo: migración con su tabla y RLS, y una entrada en esa configuración.
@@ -89,7 +95,7 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 ## Estado
 
 - **Etapa 0. Cimientos: terminada**, pendiente de revisión con MOT.
-- **Etapa 1. Clientes y comercial: en curso.** Plan de 6 pasos: (1) expediente del cliente, hecho; (2) equipos y requisitos de planta, hecho; (3) pipeline, hecho; (4) cotizador y cotizaciones, hecho (partidas libres, versiones, cotizador por litro y pantalla de parámetros); incluidos los archivos (adjuntos de oportunidad y comprobante del precio de referencia); (5) cotización en PDF; (6) cierre y carga de los 4 clientes.
+- **Etapa 1. Clientes y comercial: en curso.** Plan de 6 pasos: (1) expediente del cliente, hecho; (2) equipos y requisitos de planta, hecho; (3) pipeline, hecho; (4) cotizador y cotizaciones, hecho (partidas libres, versiones, cotizador por litro y pantalla de parámetros); incluidos los archivos (adjuntos de oportunidad y comprobante del precio de referencia); (5) cotización en PDF, hecha con formato provisional (falta ajustarla a una cotización real de MOT y definir el IVA); (6) cierre y carga de los 4 clientes.
 - Decisiones de esta etapa en DISENO §7: D9 (vendedor externo = canal, no usuario), D10 (cotizaciones de partidas libres), D11 (ganar solo marca pendiente de contrato).
 - Pendiente fuera de etapa: pantalla de bitácora; recuperación de contraseña por correo.
 - Preguntas abiertas: DISENO §6.
