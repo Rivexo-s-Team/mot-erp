@@ -55,7 +55,7 @@ export async function oportunidadesDeCuenta(cuentaId: string) {
 
 export async function obtenerOportunidad(id: string) {
   const supabase = await createClient();
-  const [oportunidad, actividades] = await Promise.all([
+  const [oportunidad, actividades, adjuntos] = await Promise.all([
     supabase
       .from("oportunidades")
       .select(COLUMNAS)
@@ -69,13 +69,23 @@ export async function obtenerOportunidad(id: string) {
       .is("deleted_at", null)
       .order("fecha", { ascending: false })
       .order("created_at", { ascending: false }),
+    supabase
+      .from("oportunidad_adjuntos")
+      .select("id, nombre, tipo_mime, tamano_bytes, etapa, created_at")
+      .eq("oportunidad_id", id)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false }),
   ]);
-  if (oportunidad.error || actividades.error) {
+  if (oportunidad.error || actividades.error || adjuntos.error) {
     throw new Error("No se pudo cargar la oportunidad.");
   }
   if (!oportunidad.data || oportunidad.data.cuentas.deleted_at !== null)
     return null;
-  return { ...oportunidad.data, actividades: actividades.data };
+  return {
+    ...oportunidad.data,
+    actividades: actividades.data,
+    adjuntos: adjuntos.data,
+  };
 }
 
 export type Oportunidad = Awaited<

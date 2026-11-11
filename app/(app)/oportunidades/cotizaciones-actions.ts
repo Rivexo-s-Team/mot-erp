@@ -259,6 +259,9 @@ export async function crearNuevaVersion(
         fuente_tipo: l.fuente_tipo,
         fuente_url: l.fuente_url,
         fecha_referencia: l.fecha_referencia,
+        // La versión nueva apunta al mismo comprobante; el archivo no se duplica.
+        fuente_archivo_ruta: l.fuente_archivo_ruta,
+        fuente_archivo_nombre: l.fuente_archivo_nombre,
       })),
     );
     if (errorLineas)
