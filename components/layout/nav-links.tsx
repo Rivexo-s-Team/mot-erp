@@ -1,6 +1,12 @@
 "use client";
 
-import { BookOpen, Home, Users, type LucideIcon } from "lucide-react";
+import {
+  BookOpen,
+  Building2,
+  Home,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -8,6 +14,7 @@ import { estaActiva, type GrupoMenu, type IconoMenu } from "@/lib/navegacion";
 
 const ICONOS: Record<IconoMenu, LucideIcon> = {
   inicio: Home,
+  clientes: Building2,
   catalogos: BookOpen,
   usuarios: Users,
 };

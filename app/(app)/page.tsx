@@ -10,6 +10,7 @@ import { requireSesion } from "@/lib/auth/session";
 import { menuPara } from "@/lib/navegacion";
 
 const DESCRIPCIONES: Record<string, string> = {
+  "/clientes": "Cuentas, plantas, razones sociales y contactos.",
   "/catalogos":
     "Aceites, parámetros de laboratorio, partes, actividades y fallas.",
   "/usuarios": "Quién entra al sistema y con qué rol.",

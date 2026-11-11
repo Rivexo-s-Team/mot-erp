@@ -111,6 +111,79 @@ export type Database = {
         };
         Relationships: [];
       };
+      contactos: {
+        Row: {
+          area: string;
+          correo: string | null;
+          created_at: string;
+          created_by: string | null;
+          cuenta_id: string;
+          deleted_at: string | null;
+          id: string;
+          nombre: string;
+          notas: string | null;
+          planta_id: string | null;
+          puesto: string | null;
+          recibe_facturas: boolean;
+          recibe_informes: boolean;
+          telefono_celular: string | null;
+          telefono_oficina: string | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          area: string;
+          correo?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id: string;
+          deleted_at?: string | null;
+          id?: string;
+          nombre: string;
+          notas?: string | null;
+          planta_id?: string | null;
+          puesto?: string | null;
+          recibe_facturas?: boolean;
+          recibe_informes?: boolean;
+          telefono_celular?: string | null;
+          telefono_oficina?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          area?: string;
+          correo?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id?: string;
+          deleted_at?: string | null;
+          id?: string;
+          nombre?: string;
+          notas?: string | null;
+          planta_id?: string | null;
+          puesto?: string | null;
+          recibe_facturas?: boolean;
+          recibe_informes?: boolean;
+          telefono_celular?: string | null;
+          telefono_oficina?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "contactos_cuenta_id_fkey";
+            columns: ["cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contactos_planta_id_cuenta_id_fkey";
+            columns: ["planta_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "plantas";
+            referencedColumns: ["id", "cuenta_id"];
+          },
+        ];
+      };
       cuentas: {
         Row: {
           created_at: string;
@@ -118,6 +191,8 @@ export type Database = {
           deleted_at: string | null;
           id: string;
           nombre: string;
+          notas: string | null;
+          tipo_industria: string | null;
           updated_at: string;
         };
         ComputedFields: never;
@@ -127,6 +202,8 @@ export type Database = {
           deleted_at?: string | null;
           id?: string;
           nombre: string;
+          notas?: string | null;
+          tipo_industria?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -135,6 +212,8 @@ export type Database = {
           deleted_at?: string | null;
           id?: string;
           nombre?: string;
+          notas?: string | null;
+          tipo_industria?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -435,45 +514,127 @@ export type Database = {
       };
       plantas: {
         Row: {
+          calle: string | null;
+          codigo_postal: string | null;
+          colonia: string | null;
           created_at: string;
           created_by: string | null;
           cuenta_id: string;
           deleted_at: string | null;
-          direccion: string | null;
           estado: string | null;
           id: string;
           municipio: string | null;
           nombre: string;
+          numero_exterior: string | null;
+          numero_interior: string | null;
+          razon_social_id: string | null;
+          referencia: string | null;
           updated_at: string;
         };
         ComputedFields: never;
         Insert: {
+          calle?: string | null;
+          codigo_postal?: string | null;
+          colonia?: string | null;
           created_at?: string;
           created_by?: string | null;
           cuenta_id: string;
           deleted_at?: string | null;
-          direccion?: string | null;
           estado?: string | null;
           id?: string;
           municipio?: string | null;
           nombre: string;
+          numero_exterior?: string | null;
+          numero_interior?: string | null;
+          razon_social_id?: string | null;
+          referencia?: string | null;
           updated_at?: string;
         };
         Update: {
+          calle?: string | null;
+          codigo_postal?: string | null;
+          colonia?: string | null;
           created_at?: string;
           created_by?: string | null;
           cuenta_id?: string;
           deleted_at?: string | null;
-          direccion?: string | null;
           estado?: string | null;
           id?: string;
           municipio?: string | null;
           nombre?: string;
+          numero_exterior?: string | null;
+          numero_interior?: string | null;
+          razon_social_id?: string | null;
+          referencia?: string | null;
           updated_at?: string;
         };
         Relationships: [
           {
             foreignKeyName: "plantas_cuenta_id_fkey";
+            columns: ["cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "plantas_razon_social_fkey";
+            columns: ["razon_social_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "razones_sociales";
+            referencedColumns: ["id", "cuenta_id"];
+          },
+        ];
+      };
+      razones_sociales: {
+        Row: {
+          codigo_postal_fiscal: string | null;
+          created_at: string;
+          created_by: string | null;
+          cuenta_id: string;
+          deleted_at: string | null;
+          id: string;
+          notas: string | null;
+          razon_social: string;
+          regimen_fiscal: string | null;
+          rfc: string;
+          updated_at: string;
+          usa_portal_proveedores: boolean;
+          uso_cfdi: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          codigo_postal_fiscal?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id: string;
+          deleted_at?: string | null;
+          id?: string;
+          notas?: string | null;
+          razon_social: string;
+          regimen_fiscal?: string | null;
+          rfc: string;
+          updated_at?: string;
+          usa_portal_proveedores?: boolean;
+          uso_cfdi?: string | null;
+        };
+        Update: {
+          codigo_postal_fiscal?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id?: string;
+          deleted_at?: string | null;
+          id?: string;
+          notas?: string | null;
+          razon_social?: string;
+          regimen_fiscal?: string | null;
+          rfc?: string;
+          updated_at?: string;
+          usa_portal_proveedores?: boolean;
+          uso_cfdi?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "razones_sociales_cuenta_id_fkey";
             columns: ["cuenta_id"];
             isOneToOne: false;
             referencedRelation: "cuentas";

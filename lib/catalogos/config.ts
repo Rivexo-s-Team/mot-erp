@@ -1,25 +1,20 @@
-import { z } from "zod";
+import {
+  aFila as aFilaCampos,
+  esquemaCampos,
+  valoresIniciales as valoresInicialesCampos,
+  type Campo,
+  type Fila,
+  type Opcion,
+  type Validador,
+  type Valores,
+} from "@/lib/forms/campos";
+
+export type { Campo, Fila, Opcion, Valores };
 
 /**
  * Definición de los catálogos base. Las pantallas de lista y edición se arman
  * a partir de esto, así los cinco catálogos se ven y se comportan igual.
  */
-
-export type Opcion = { value: string; label: string };
-
-export type Campo = {
-  name: string;
-  label: string;
-  tipo: "texto" | "numero" | "entero" | "opciones" | "casilla";
-  opcional?: boolean;
-  opciones?: Opcion[];
-  ayuda?: string;
-  /** No se puede cambiar después de crear el registro. */
-  soloAlCrear?: boolean;
-};
-
-export type Fila = Record<string, string | number | boolean | null>;
-export type Valores = Record<string, string | boolean>;
 
 export type Columna = { titulo: string; valor: (fila: Fila) => string };
 
@@ -39,7 +34,7 @@ export type Catalogo = {
   columnas: Columna[];
   campos: Campo[];
   /** Validación entre campos. Devuelve el campo con error y el mensaje. */
-  validar?: (valores: Valores) => { campo: string; mensaje: string } | null;
+  validar?: Validador;
 };
 
 type Valor = Fila[string] | undefined;
@@ -110,6 +105,7 @@ const campoActivo: Campo = {
   name: "activo",
   label: "Activo (se puede elegir)",
   tipo: "casilla",
+  inicial: true,
 };
 
 export const CATALOGOS: Catalogo[] = [
@@ -341,72 +337,18 @@ export function getCatalogo(slug: string): Catalogo | undefined {
   return CATALOGOS.find((c) => c.slug === slug);
 }
 
-/** Valores del formulario a partir de una fila (o los de un registro nuevo). */
 export function valoresIniciales(catalogo: Catalogo, fila?: Fila): Valores {
-  const valores: Valores = {};
-  for (const campo of catalogo.campos) {
-    const v = fila?.[campo.name];
-    if (campo.tipo === "casilla") {
-      valores[campo.name] = fila ? Boolean(v) : campo.name === "activo";
-    } else if (campo.name === "orden") {
-      valores[campo.name] = fila ? String(v ?? 0) : "0";
-    } else {
-      valores[campo.name] = v === null || v === undefined ? "" : String(v);
-    }
-  }
-  return valores;
+  return valoresInicialesCampos(catalogo.campos, fila);
 }
 
-/** Esquema Zod del formulario; se usa igual en el navegador y en el servidor. */
 export function esquemaCatalogo(catalogo: Catalogo) {
-  const shape: Record<string, z.ZodType<string | boolean>> = {};
-  for (const campo of catalogo.campos) {
-    if (campo.tipo === "casilla") {
-      shape[campo.name] = z.boolean();
-      continue;
-    }
-    let s = z.string().trim().max(200, "Máximo 200 caracteres.");
-    if (!campo.opcional) s = s.min(1, "Este dato es obligatorio.");
-    if (campo.tipo === "numero") {
-      s = s.regex(/^(\d+(\.\d+)?)?$/, "Escribe un número, por ejemplo 0.5.");
-    } else if (campo.tipo === "entero") {
-      s = s.regex(/^\d*$/, "Escribe un número entero.");
-    } else if (campo.tipo === "opciones") {
-      const validos = (campo.opciones ?? []).map((o) => o.value);
-      s = s.refine(
-        (v) => (v === "" && campo.opcional) || validos.includes(v),
-        "Elige una opción.",
-      );
-    }
-    shape[campo.name] = s;
-  }
-  return z.object(shape).superRefine((valores, ctx) => {
-    const problema = catalogo.validar?.(valores);
-    if (problema)
-      ctx.addIssue({
-        code: "custom",
-        path: [problema.campo],
-        message: problema.mensaje,
-      });
-  });
+  return esquemaCampos(catalogo.campos, catalogo.validar);
 }
 
-/** Convierte los valores ya validados a lo que se guarda en la base. */
 export function aFila(
   catalogo: Catalogo,
   valores: Valores,
   esEdicion: boolean,
 ): Fila {
-  const fila: Fila = {};
-  for (const campo of catalogo.campos) {
-    if (esEdicion && campo.soloAlCrear) continue;
-    const v = valores[campo.name];
-    if (typeof v === "boolean") fila[campo.name] = v;
-    else if (v === undefined || v === "")
-      fila[campo.name] = campo.name === "orden" ? 0 : null;
-    else if (campo.tipo === "numero" || campo.tipo === "entero")
-      fila[campo.name] = Number(v);
-    else fila[campo.name] = v;
-  }
-  return fila;
+  return aFilaCampos(catalogo.campos, valores, esEdicion);
 }

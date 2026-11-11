@@ -85,7 +85,8 @@ requisitos_planta       Lo que la planta exige para entrar: REPSE, EPP, alta de 
 ### 4.2 Comercial
 
 ```
-oportunidades           Una venta posible: cuenta, planta, vendedor, tipo (nuevo | ampliación), origen
+oportunidades           Una venta posible: cuenta, planta, responsable interno, canal (vendedor externo, opcional),
+                        tipo (nuevo | ampliación), origen
                         (referencia, recomendación, cliente anterior, prospección), etapa, volumen estimado, motivo de pérdida.
 actividades             Llamadas, correos, presentaciones (email | presencial), visitas, seguimientos. Con fecha y responsable.
 cotizaciones            Versionadas, ligadas a la oportunidad. Moneda USD.
@@ -231,7 +232,7 @@ bitacora                Quién cambió qué y cuándo en tablas sensibles: preci
 | Rol | Ve y hace |
 |---|---|
 | Dirección | Todo, incluidos precios, costos y márgenes. |
-| Comercial | Pipeline, cuentas, contactos y cotizaciones. El vendedor externo ve solo sus oportunidades (por confirmar). |
+| Comercial | Pipeline, cuentas, contactos y cotizaciones. Los vendedores externos no son usuarios (ver D9). |
 | Técnico | Su agenda, órdenes de servicio, flota y equipos del cliente. Sin precios. |
 | Laboratorio | Muestras, resultados e informes. Sin precios. |
 | Administración | Contratos, facturación, cobranza, inventario. |
@@ -301,7 +302,7 @@ Ninguna bloquea el arranque. Cada una se resuelve antes de la etapa indicada.
 | P1 | Regla del **ID de caso** (`RAS1-08`): ¿qué significa cada parte? ¿Es por equipo, por Robox o por carrusel? ¿Y el folio del informe (`25-AT-380-RAS1-01`)? | Área técnica / Laboratorio | Etapa 2 |
 | P2 | **Prueba tecnológica** y **Comodato** en el formato: ¿comodato es lo mismo que renta? ¿La prueba tecnológica es gratuita y tiene duración? | Dirección comercial | Etapa 2 |
 | P3 | **Contratos y anticipos** (estructura real) y **esquema de comisiones**. | Fernando | Etapas 2 y 6 |
-| P4 | **Usuarios y alcances**: nombre, puesto, rol. ¿El vendedor externo ve solo lo suyo? | Director General | Etapa 0 (al cierre) |
+| P4 | **Usuarios y alcances**: nombre, puesto, rol. (Lo del vendedor externo quedó resuelto en D9.) | Director General | Etapa 0 (al cierre) |
 | P5 | ¿Qué incluye cada **nivel de análisis** (Básico, Básico + MPC, Extendido, Premium) y cuál se usa en cada caso? El frasco de ejemplo dice "Entrada": ¿qué tipos de muestra existen (entrada, salida, antes de filtrar…)? | Laboratorio | Etapa 4 |
 | P6 | ¿Exactamente **4 pruebas "no pasa"** da Precaución o Crítico? ¿Qué parámetros cuentan para la condición? ¿El límite de pH es > 5.0 (guía) o > 5.5 (informe)? | Laboratorio | Etapa 4 |
 | P7 | **Reverso del formato de servicio** ("Datos e información al reverso"): foto, por favor. | Área técnica | Etapa 3 |
@@ -324,3 +325,6 @@ Ninguna bloquea el arranque. Cada una se resuelve antes de la etapa indicada.
 | D6 | Los límites de laboratorio son datos configurables (catálogo de parámetros y de aceites). | El laboratorio ajusta criterios sin tocar el código. |
 | D7 | Porcentaje (70 %) y piso (2.5 USD/L) del cotizador son parámetros. | Se pueden cambiar por política comercial. |
 | D8 | Nombres de dominio (tablas y columnas) en español; el código de framework, en inglés. | Facilita que MOT y Rivexo lean la base de datos. |
+| D9 | Los **vendedores externos no son usuarios ni un rol**: son un canal de venta que solo comisiona. La oportunidad guarda el canal y un responsable interno que le da seguimiento. | Definido por Rivexo el 10 nov 2026. Evita dar acceso al sistema a terceros. |
+| D10 | Las **cotizaciones son de partidas libres**: el vendedor captura las partidas (pueden ser recurrentes). El cotizador por litro (70 % con piso) es una ayuda para la partida más común, no una regla obligatoria. La cotización guarda el valor total del contrato si es renta, o los litros estimados si es por litro. | Definido por Rivexo el 10 nov 2026. MOT decide cada cotización. |
+| D11 | En la Etapa 1, **ganar una oportunidad** solo la marca como pendiente de contrato; el contrato se crea en la Etapa 2. Las etapas "muestra" y "resultados de laboratorio" son solo etapas del tablero, con notas y un archivo adjunto opcional, hasta la Etapa 4. | Los módulos de contratos y laboratorio son de etapas posteriores. |
