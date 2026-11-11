@@ -5,6 +5,7 @@ import {
   Building2,
   Home,
   KanbanSquare,
+  SlidersHorizontal,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -18,6 +19,7 @@ const ICONOS: Record<IconoMenu, LucideIcon> = {
   clientes: Building2,
   oportunidades: KanbanSquare,
   catalogos: BookOpen,
+  parametros: SlidersHorizontal,
   usuarios: Users,
 };
 

@@ -4,7 +4,12 @@
  */
 
 export type IconoMenu =
-  "inicio" | "clientes" | "oportunidades" | "catalogos" | "usuarios";
+  | "inicio"
+  | "clientes"
+  | "oportunidades"
+  | "catalogos"
+  | "parametros"
+  | "usuarios";
 
 export type EntradaMenu = {
   href: string;
@@ -46,6 +51,12 @@ const MENU: GrupoMenu[] = [
         label: "Catálogos",
         icono: "catalogos",
         permiso: "catalogos.ver",
+      },
+      {
+        href: "/parametros",
+        label: "Parámetros",
+        icono: "parametros",
+        permiso: "parametros.ver",
       },
       {
         href: "/usuarios",

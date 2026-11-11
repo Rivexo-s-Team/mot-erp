@@ -11,9 +11,17 @@ describe("menuPara", () => {
         "clientes.ver",
         "oportunidades.ver",
         "catalogos.ver",
+        "parametros.ver",
         "usuarios.administrar",
       ]),
-    ).toEqual(["/", "/clientes", "/oportunidades", "/catalogos", "/usuarios"]);
+    ).toEqual([
+      "/",
+      "/clientes",
+      "/oportunidades",
+      "/catalogos",
+      "/parametros",
+      "/usuarios",
+    ]);
   });
 
   it("un técnico ve catálogos pero no usuarios", () => {
