@@ -2,7 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -42,7 +43,15 @@ type UsuarioFormProps = {
 
 type Valores = UsuarioFormValues;
 
-export function UsuarioForm({ roles, usuario }: UsuarioFormProps) {
+/** Cada entrada nueva al formulario empieza limpia (ver ConfigForm). */
+export function UsuarioForm(props: UsuarioFormProps) {
+  const { bfcacheId } = useRouter();
+  return <Formulario key={bfcacheId} {...props} />;
+}
+
+function Formulario({ roles, usuario }: UsuarioFormProps) {
+  // Prefijo propio: Next conserva ocultas las páginas anteriores y los id se repetirían.
+  const uid = useId();
   const esEdicion = Boolean(usuario);
   const [error, setError] = useState<string | null>(null);
   const {
@@ -79,9 +88,9 @@ export function UsuarioForm({ roles, usuario }: UsuarioFormProps) {
         ) : null}
 
         <Field data-invalid={Boolean(errors.nombre)}>
-          <FieldLabel htmlFor="nombre">Nombre completo</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-nombre`}>Nombre completo</FieldLabel>
           <Input
-            id="nombre"
+            id={`${uid}-nombre`}
             className="h-10"
             autoComplete="off"
             {...register("nombre")}
@@ -90,9 +99,9 @@ export function UsuarioForm({ roles, usuario }: UsuarioFormProps) {
         </Field>
 
         <Field data-invalid={Boolean(errors.correo)}>
-          <FieldLabel htmlFor="correo">Correo</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-correo`}>Correo</FieldLabel>
           <Input
-            id="correo"
+            id={`${uid}-correo`}
             type="email"
             inputMode="email"
             autoCapitalize="none"
@@ -110,9 +119,9 @@ export function UsuarioForm({ roles, usuario }: UsuarioFormProps) {
         </Field>
 
         <Field data-invalid={Boolean(errors.puesto)}>
-          <FieldLabel htmlFor="puesto">Puesto (opcional)</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-puesto`}>Puesto (opcional)</FieldLabel>
           <Input
-            id="puesto"
+            id={`${uid}-puesto`}
             className="h-10"
             autoComplete="off"
             {...register("puesto")}
@@ -121,9 +130,9 @@ export function UsuarioForm({ roles, usuario }: UsuarioFormProps) {
         </Field>
 
         <Field data-invalid={Boolean(errors.rolId)}>
-          <FieldLabel htmlFor="rolId">Rol</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-rolId`}>Rol</FieldLabel>
           <NativeSelect
-            id="rolId"
+            id={`${uid}-rolId`}
             className="h-10 w-full"
             {...register("rolId")}
           >
@@ -138,11 +147,11 @@ export function UsuarioForm({ roles, usuario }: UsuarioFormProps) {
         </Field>
 
         <Field data-invalid={Boolean(errors.password)}>
-          <FieldLabel htmlFor="password">
+          <FieldLabel htmlFor={`${uid}-password`}>
             {esEdicion ? "Nueva contraseña (opcional)" : "Contraseña temporal"}
           </FieldLabel>
           <Input
-            id="password"
+            id={`${uid}-password`}
             type="text"
             autoComplete="off"
             className="h-10 font-mono"
@@ -159,12 +168,12 @@ export function UsuarioForm({ roles, usuario }: UsuarioFormProps) {
         {esEdicion ? (
           <Field orientation="horizontal">
             <input
-              id="activo"
+              id={`${uid}-activo`}
               type="checkbox"
               className="size-4 accent-primary"
               {...register("activo")}
             />
-            <FieldLabel htmlFor="activo" className="font-normal">
+            <FieldLabel htmlFor={`${uid}-activo`} className="font-normal">
               Usuario activo (puede entrar al sistema)
             </FieldLabel>
           </Field>

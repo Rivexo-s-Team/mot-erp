@@ -3,7 +3,13 @@
  * permiso indicado. Los módulos de etapas futuras se agregan aquí cuando existan.
  */
 
-export type IconoMenu = "inicio" | "clientes" | "catalogos" | "usuarios";
+export type IconoMenu =
+  | "inicio"
+  | "clientes"
+  | "oportunidades"
+  | "catalogos"
+  | "parametros"
+  | "usuarios";
 
 export type EntradaMenu = {
   href: string;
@@ -29,6 +35,12 @@ const MENU: GrupoMenu[] = [
         icono: "clientes",
         permiso: "clientes.ver",
       },
+      {
+        href: "/oportunidades",
+        label: "Oportunidades",
+        icono: "oportunidades",
+        permiso: "oportunidades.ver",
+      },
     ],
   },
   {
@@ -39,6 +51,12 @@ const MENU: GrupoMenu[] = [
         label: "Catálogos",
         icono: "catalogos",
         permiso: "catalogos.ver",
+      },
+      {
+        href: "/parametros",
+        label: "Parámetros",
+        icono: "parametros",
+        permiso: "parametros.ver",
       },
       {
         href: "/usuarios",

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { iniciarSesion } from "@/app/(auth)/actions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { loginSchema, type LoginInput } from "@/lib/auth/schemas";
 
 export function LoginForm() {
+  // Prefijo propio: Next conserva ocultas las páginas anteriores y los id se repetirían.
+  const uid = useId();
   const [error, setError] = useState<string | null>(null);
   const {
     register,
@@ -41,9 +43,9 @@ export function LoginForm() {
           </Alert>
         ) : null}
         <Field data-invalid={Boolean(errors.correo)}>
-          <FieldLabel htmlFor="correo">Correo</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-correo`}>Correo</FieldLabel>
           <Input
-            id="correo"
+            id={`${uid}-correo`}
             type="email"
             inputMode="email"
             autoComplete="username"
@@ -55,9 +57,9 @@ export function LoginForm() {
           <FieldError errors={[errors.correo]} />
         </Field>
         <Field data-invalid={Boolean(errors.password)}>
-          <FieldLabel htmlFor="password">Contraseña</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-password`}>Contraseña</FieldLabel>
           <Input
-            id="password"
+            id={`${uid}-password`}
             type="password"
             autoComplete="current-password"
             className="h-10"

@@ -4,6 +4,8 @@ import {
   BookOpen,
   Building2,
   Home,
+  KanbanSquare,
+  SlidersHorizontal,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -15,7 +17,9 @@ import { estaActiva, type GrupoMenu, type IconoMenu } from "@/lib/navegacion";
 const ICONOS: Record<IconoMenu, LucideIcon> = {
   inicio: Home,
   clientes: Building2,
+  oportunidades: KanbanSquare,
   catalogos: BookOpen,
+  parametros: SlidersHorizontal,
   usuarios: Users,
 };
 

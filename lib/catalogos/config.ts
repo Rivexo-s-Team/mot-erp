@@ -19,7 +19,12 @@ export type { Campo, Fila, Opcion, Valores };
 export type Columna = { titulo: string; valor: (fila: Fila) => string };
 
 export type TablaCatalogo =
-  "aceites" | "partes" | "actividades" | "fallas" | "parametros_laboratorio";
+  | "aceites"
+  | "partes"
+  | "actividades"
+  | "fallas"
+  | "parametros_laboratorio"
+  | "canales_venta";
 
 export type Catalogo = {
   slug: string;
@@ -27,6 +32,8 @@ export type Catalogo = {
   titulo: string;
   singular: string;
   descripcion: string;
+  /** Permiso para verlo, si no basta con catalogos.ver. */
+  permisoVer?: string;
   permisoEditar: string;
   ordenarPor: string[];
   /** Texto principal de cada fila (título en la vista de celular). */
@@ -328,6 +335,36 @@ export const CATALOGOS: Catalogo[] = [
         tipo: "casilla",
       },
       campoOrden,
+      campoActivo,
+    ],
+  },
+  {
+    slug: "canales-venta",
+    tabla: "canales_venta",
+    titulo: "Canales de venta",
+    singular: "canal de venta",
+    descripcion:
+      "Vendedores externos que traen ventas y comisionan. No son usuarios del sistema.",
+    permisoVer: "oportunidades.ver",
+    permisoEditar: "oportunidades.editar",
+    ordenarPor: ["nombre"],
+    nombre: (f) => texto(f.nombre),
+    columnas: [
+      { titulo: "Nombre", valor: (f) => texto(f.nombre) },
+      { titulo: "Teléfono", valor: (f) => texto(f.telefono) },
+      { titulo: "Correo", valor: (f) => texto(f.correo) },
+    ],
+    campos: [
+      { name: "nombre", label: "Nombre", tipo: "texto" },
+      {
+        name: "telefono",
+        label: "Teléfono",
+        tipo: "telefono",
+        opcional: true,
+        max: 30,
+      },
+      { name: "correo", label: "Correo", tipo: "correo", opcional: true },
+      { name: "notas", label: "Notas", tipo: "textoLargo", opcional: true },
       campoActivo,
     ],
   },

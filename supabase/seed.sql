@@ -70,3 +70,24 @@ cross join (values
 -- se captura cuando el área técnica comparta su inventario (P10).
 insert into public.robox (numero_serie, version_programa, estado)
 values ('545592', '6.5', 'en_cliente');
+
+-- Ejemplo para probar el pipeline en local (inventado, no es una venta real).
+with canal as (
+  insert into public.canales_venta (nombre, notas)
+  values ('Vendedor externo Querétaro', 'Ejemplo de canal de venta.')
+  returning id
+),
+oportunidad as (
+  insert into public.oportunidades
+    (cuenta_id, planta_id, nombre, responsable_id, canal_venta_id, tipo, origen, etapa, volumen_estimado_l)
+  select p.cuenta_id, p.id, 'Ampliación: segundo Robox en BYPASA', pf.id, canal.id,
+         'ampliacion', 'cliente_anterior', 'visita', 560
+  from public.plantas p
+  cross join canal
+  cross join (select id from public.perfiles where correo = 'comercial@mot.test') pf
+  where p.nombre = 'BYPASA'
+  returning id, responsable_id
+)
+insert into public.actividades_comerciales (oportunidad_id, tipo, fecha, responsable_id, notas)
+select id, 'visita', current_date - 3, responsable_id, 'Recorrido por la planta con mantenimiento.'
+from oportunidad;

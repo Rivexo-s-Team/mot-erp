@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -22,6 +22,9 @@ export default async function CatalogoPage({
   const sesion = await requirePermiso("catalogos.ver");
   const catalogo = getCatalogo((await params).catalogo);
   if (!catalogo) notFound();
+  if (catalogo.permisoVer && !tienePermiso(sesion, catalogo.permisoVer)) {
+    redirect("/catalogos");
+  }
 
   const filas = await listarCatalogo(catalogo);
   const puedeEditar = tienePermiso(sesion, catalogo.permisoEditar);

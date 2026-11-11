@@ -2,8 +2,14 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useState } from "react";
-import { useForm, type Resolver } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { useId, useState } from "react";
+import {
+  useForm,
+  useWatch,
+  type Control,
+  type Resolver,
+} from "react-hook-form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -40,6 +46,8 @@ type ConfigFormProps = {
   /** Si viene, muestra el botón Eliminar. */
   eliminar?: () => Promise<Resultado>;
   confirmarEliminar?: string;
+  /** Texto de ayuda que cambia según lo que se va escribiendo, por campo. */
+  ayudaDinamica?: (valores: Valores) => Partial<Record<string, string>>;
 };
 
 const INPUT_MODE = {
@@ -49,8 +57,19 @@ const INPUT_MODE = {
   correo: "email",
 } as const;
 
-/** Formulario armado a partir de una lista de campos. */
-export function ConfigForm({
+/**
+ * Formulario armado a partir de una lista de campos.
+ *
+ * Next conserva el estado de las páginas visitadas. Sin la llave `bfcacheId`,
+ * al abrir otra vez "Agregar…" aparecería lo que se capturó la vez anterior.
+ * Con ella, cada entrada nueva empieza limpia y "atrás" sí conserva el borrador.
+ */
+export function ConfigForm(props: ConfigFormProps) {
+  const { bfcacheId } = useRouter();
+  return <Formulario key={bfcacheId} {...props} />;
+}
+
+function Formulario({
   campos,
   valores,
   esEdicion,
@@ -60,12 +79,18 @@ export function ConfigForm({
   validar,
   eliminar,
   confirmarEliminar,
+  ayudaDinamica,
 }: ConfigFormProps) {
+  // Next conserva ocultas las páginas anteriores: sin un prefijo propio, dos
+  // formularios tendrían los mismos id y las etiquetas apuntarían al equivocado.
+  const uid = useId();
+  const idDe = (nombre: string) => `${uid}-${nombre}`;
   const [error, setError] = useState<string | null>(null);
   const [eliminando, setEliminando] = useState(false);
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<Valores>({
     // Los campos llegan como datos, por eso el tipo se fija a mano.
@@ -113,12 +138,12 @@ export function ConfigForm({
             return (
               <Field key={campo.name} orientation="horizontal">
                 <input
-                  id={campo.name}
+                  id={idDe(campo.name)}
                   type="checkbox"
                   className="size-4 accent-primary"
                   {...register(campo.name)}
                 />
-                <FieldLabel htmlFor={campo.name} className="font-normal">
+                <FieldLabel htmlFor={idDe(campo.name)} className="font-normal">
                   {campo.label}
                 </FieldLabel>
               </Field>
@@ -127,7 +152,7 @@ export function ConfigForm({
 
           return (
             <Field key={campo.name} data-invalid={Boolean(fieldError)}>
-              <FieldLabel htmlFor={campo.name}>
+              <FieldLabel htmlFor={idDe(campo.name)}>
                 {campo.label}
                 {campo.opcional ? (
                   <span className="font-normal text-muted-foreground">
@@ -137,7 +162,7 @@ export function ConfigForm({
               </FieldLabel>
               {campo.tipo === "opciones" || campo.tipo === "referencia" ? (
                 <NativeSelect
-                  id={campo.name}
+                  id={idDe(campo.name)}
                   className="h-10 w-full"
                   {...register(campo.name)}
                 >
@@ -152,7 +177,7 @@ export function ConfigForm({
                 </NativeSelect>
               ) : campo.tipo === "textoLargo" ? (
                 <textarea
-                  id={campo.name}
+                  id={idDe(campo.name)}
                   rows={3}
                   className="w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive md:text-sm"
                   aria-invalid={Boolean(fieldError)}
@@ -160,7 +185,7 @@ export function ConfigForm({
                 />
               ) : (
                 <Input
-                  id={campo.name}
+                  id={idDe(campo.name)}
                   className={campo.mayusculas ? "h-10 uppercase" : "h-10"}
                   autoComplete="off"
                   autoCapitalize={campo.tipo === "correo" ? "none" : undefined}
@@ -169,6 +194,7 @@ export function ConfigForm({
                       ? INPUT_MODE[campo.tipo as keyof typeof INPUT_MODE]
                       : "text"
                   }
+                  type={campo.tipo === "fecha" ? "date" : "text"}
                   readOnly={bloqueado}
                   aria-invalid={Boolean(fieldError)}
                   {...register(campo.name)}
@@ -180,6 +206,13 @@ export function ConfigForm({
                     ? "No se puede cambiar después de crearlo."
                     : campo.ayuda}
                 </FieldDescription>
+              ) : null}
+              {ayudaDinamica ? (
+                <AyudaCampo
+                  control={control}
+                  nombre={campo.name}
+                  calcular={ayudaDinamica}
+                />
               ) : null}
               <FieldError errors={[fieldError]} />
             </Field>
@@ -214,4 +247,21 @@ export function ConfigForm({
       </FieldGroup>
     </form>
   );
+}
+
+type AyudaCampoProps = {
+  control: Control<Valores>;
+  nombre: string;
+  calcular: (valores: Valores) => Partial<Record<string, string>>;
+};
+
+/** Ayuda que cambia al escribir. Va aparte para no repintar todo el formulario. */
+function AyudaCampo({ control, nombre, calcular }: AyudaCampoProps) {
+  const valores = useWatch({ control });
+  const texto = calcular(valores as Valores)[nombre];
+  return texto ? (
+    <p className="rounded-md bg-accent px-2.5 py-1.5 text-sm text-accent-foreground">
+      {texto}
+    </p>
+  ) : null;
 }
