@@ -276,6 +276,155 @@ export type Database = {
           },
         ];
       };
+      cotizacion_lineas: {
+        Row: {
+          cantidad: number;
+          concepto: string;
+          cotizacion_id: string;
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          equipo_cliente_id: string | null;
+          fecha_referencia: string | null;
+          fuente_tipo: string | null;
+          fuente_url: string | null;
+          id: string;
+          importe: number | null;
+          orden: number;
+          precio_referencia: number | null;
+          precio_unitario: number;
+          recurrente: boolean;
+          unidad: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          cantidad: number;
+          concepto: string;
+          cotizacion_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          equipo_cliente_id?: string | null;
+          fecha_referencia?: string | null;
+          fuente_tipo?: string | null;
+          fuente_url?: string | null;
+          id?: string;
+          importe?: never;
+          orden?: number;
+          precio_referencia?: number | null;
+          precio_unitario: number;
+          recurrente?: boolean;
+          unidad: string;
+          updated_at?: string;
+        };
+        Update: {
+          cantidad?: number;
+          concepto?: string;
+          cotizacion_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          equipo_cliente_id?: string | null;
+          fecha_referencia?: string | null;
+          fuente_tipo?: string | null;
+          fuente_url?: string | null;
+          id?: string;
+          importe?: never;
+          orden?: number;
+          precio_referencia?: number | null;
+          precio_unitario?: number;
+          recurrente?: boolean;
+          unidad?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cotizacion_lineas_cotizacion_id_fkey";
+            columns: ["cotizacion_id"];
+            isOneToOne: false;
+            referencedRelation: "cotizacion_totales";
+            referencedColumns: ["cotizacion_id"];
+          },
+          {
+            foreignKeyName: "cotizacion_lineas_cotizacion_id_fkey";
+            columns: ["cotizacion_id"];
+            isOneToOne: false;
+            referencedRelation: "cotizaciones";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cotizacion_lineas_equipo_cliente_id_fkey";
+            columns: ["equipo_cliente_id"];
+            isOneToOne: false;
+            referencedRelation: "equipos_cliente";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      cotizaciones: {
+        Row: {
+          condiciones: string | null;
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          estado: string;
+          id: string;
+          litros_estimados: number | null;
+          moneda: string;
+          notas: string | null;
+          oportunidad_id: string;
+          tipo_cambio: number | null;
+          updated_at: string;
+          valor_total_contrato: number | null;
+          version: number;
+          vigencia: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          condiciones?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          estado?: string;
+          id?: string;
+          litros_estimados?: number | null;
+          moneda?: string;
+          notas?: string | null;
+          oportunidad_id: string;
+          tipo_cambio?: number | null;
+          updated_at?: string;
+          valor_total_contrato?: number | null;
+          version: number;
+          vigencia?: string | null;
+        };
+        Update: {
+          condiciones?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          estado?: string;
+          id?: string;
+          litros_estimados?: number | null;
+          moneda?: string;
+          notas?: string | null;
+          oportunidad_id?: string;
+          tipo_cambio?: number | null;
+          updated_at?: string;
+          valor_total_contrato?: number | null;
+          version?: number;
+          vigencia?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cotizaciones_oportunidad_id_fkey";
+            columns: ["oportunidad_id"];
+            isOneToOne: false;
+            referencedRelation: "oportunidades";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       cuentas: {
         Row: {
           created_at: string;
@@ -1057,7 +1206,16 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      cotizacion_totales: {
+        Row: {
+          cotizacion_id: string;
+          partidas: number | null;
+          total_recurrente: number | null;
+          total_unico: number | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
     };
     Functions: {
       directorio_comercial: {
