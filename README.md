@@ -78,6 +78,7 @@ Para un cambio de esquema:
 - Clientes (cuentas, plantas, razones sociales y contactos) los consultan todos los roles internos. Dirección y Comercial los editan; Administración edita además las razones sociales.
 - Cada planta tiene su página con equipos y requisitos de acceso. El costo del aceite virgen de cada equipo solo lo ven Dirección, Comercial y Administración.
 - El pipeline (oportunidades, actividades y canales de venta) lo ven y editan solo Dirección y Comercial. Los vendedores externos son canales de venta, no usuarios.
+- Las cotizaciones son precios: solo las ven Dirección y Comercial. Una cotización enviada ya no se edita; los cambios van en una versión nueva. El porcentaje y el precio mínimo del cotizador se cambian en Parámetros (solo Dirección).
 - La protección real está en la base (políticas RLS). La app solo oculta lo que el usuario no puede usar.
 - `supabase/tests/002_roles_permisos.test.sql` comprueba que cada rol ve solo lo suyo.
 
