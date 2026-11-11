@@ -26,15 +26,16 @@ const base = {
 };
 
 describe("catálogos", () => {
-  it("define los cinco catálogos con direcciones únicas", () => {
+  it("define los catálogos con direcciones únicas", () => {
     expect(CATALOGOS.map((c) => c.tabla).sort()).toEqual([
       "aceites",
       "actividades",
+      "canales_venta",
       "fallas",
       "parametros_laboratorio",
       "partes",
     ]);
-    expect(new Set(CATALOGOS.map((c) => c.slug)).size).toBe(5);
+    expect(new Set(CATALOGOS.map((c) => c.slug)).size).toBe(CATALOGOS.length);
   });
 
   it("un registro nuevo empieza activo", () => {
