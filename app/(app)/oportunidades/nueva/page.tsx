@@ -40,12 +40,9 @@ export default async function NuevaOportunidadPage({
         <Card>
           <CardContent>
             <form action="/oportunidades/nueva" className="flex flex-col gap-4">
-              <label htmlFor="cuenta" className="text-sm font-medium">
-                Cliente
-              </label>
               <NativeSelect
-                id="cuenta"
                 name="cuenta"
+                aria-label="Cliente"
                 required
                 className="h-10 w-full"
               >

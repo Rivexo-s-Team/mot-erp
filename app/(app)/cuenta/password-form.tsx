@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ import {
 import { cambiarPassword } from "./actions";
 
 export function PasswordForm() {
+  // Prefijo propio: Next conserva ocultas las páginas anteriores y los id se repetirían.
+  const uid = useId();
   const [estado, setEstado] = useState<{
     tipo: "ok" | "error";
     mensaje: string;
@@ -55,9 +57,9 @@ export function PasswordForm() {
           </Alert>
         ) : null}
         <Field data-invalid={Boolean(errors.password)}>
-          <FieldLabel htmlFor="password">Contraseña nueva</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-password`}>Contraseña nueva</FieldLabel>
           <Input
-            id="password"
+            id={`${uid}-password`}
             type="password"
             autoComplete="new-password"
             className="h-10"
@@ -68,9 +70,11 @@ export function PasswordForm() {
           <FieldError errors={[errors.password]} />
         </Field>
         <Field data-invalid={Boolean(errors.confirmar)}>
-          <FieldLabel htmlFor="confirmar">Repite la contraseña</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-confirmar`}>
+            Repite la contraseña
+          </FieldLabel>
           <Input
-            id="confirmar"
+            id={`${uid}-confirmar`}
             type="password"
             autoComplete="new-password"
             className="h-10"
