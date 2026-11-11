@@ -76,6 +76,7 @@ Para un cambio de esquema:
 - Los catálogos base (aceites, parámetros de laboratorio, partes, actividades y fallas) los ven todos los roles internos. Aceites y parámetros los editan Laboratorio y Dirección; partes, Administración y Dirección; actividades y fallas, solo Dirección.
 - El menú muestra solo lo que el rol puede usar (`lib/navegacion.ts`). Los usuarios del rol Cliente entran directo a `/portal` y no ven el sistema interno.
 - Clientes (cuentas, plantas, razones sociales y contactos) los consultan todos los roles internos. Dirección y Comercial los editan; Administración edita además las razones sociales.
+- Cada planta tiene su página con equipos y requisitos de acceso. El costo del aceite virgen de cada equipo solo lo ven Dirección, Comercial y Administración.
 - La protección real está en la base (políticas RLS). La app solo oculta lo que el usuario no puede usar.
 - `supabase/tests/002_roles_permisos.test.sql` comprueba que cada rol ve solo lo suyo.
 

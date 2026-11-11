@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { aFila, esquemaCampos } from "@/lib/forms/campos";
+import { aFila, esquemaCampos, valoresIniciales } from "@/lib/forms/campos";
 import {
+  CAMPOS_COSTO,
   CAMPOS_RAZON_SOCIAL,
+  CAMPOS_REQUISITO,
   camposContacto,
+  camposEquipo,
   camposPlanta,
   direccionPlanta,
 } from "./campos";
@@ -115,5 +118,87 @@ describe("planta", () => {
         codigo_postal: "76800",
       }),
     ).toBe("Av. Uno 12 int. B, C.P. 76800");
+  });
+});
+
+describe("equipo del cliente", () => {
+  const vacio = (campos: ReturnType<typeof camposEquipo>) =>
+    Object.fromEntries(campos.map((c) => [c.name, ""]));
+
+  it("los campos de costo solo existen para quien ve precios", () => {
+    const sin = camposEquipo([], false).map((c) => c.name);
+    const con = camposEquipo([], true).map((c) => c.name);
+    for (const campo of CAMPOS_COSTO) {
+      expect(sin).not.toContain(campo);
+      expect(con).toContain(campo);
+    }
+  });
+
+  it("solo el identificador es obligatorio", () => {
+    const campos = camposEquipo([], false);
+    expect(esquemaCampos(campos).safeParse(vacio(campos)).success).toBe(false);
+    expect(
+      esquemaCampos(campos).safeParse({
+        ...vacio(campos),
+        identificador: "11B116",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("convierte números y deja vacíos como null", () => {
+    const campos = camposEquipo([], false);
+    const fila = aFila(
+      campos,
+      {
+        ...vacio(campos),
+        identificador: "11B116",
+        volumen_reservorio_l: "280",
+        numero_contenedores: "2",
+      },
+      false,
+    );
+    expect(fila.volumen_reservorio_l).toBe(280);
+    expect(fila.numero_contenedores).toBe(2);
+    expect(fila.marca).toBeNull();
+  });
+
+  it("rechaza volúmenes que no son número y quién toma muestras fuera de lista", () => {
+    const campos = camposEquipo([], false);
+    const base = { ...vacio(campos), identificador: "X" };
+    expect(
+      esquemaCampos(campos).safeParse({
+        ...base,
+        volumen_reservorio_l: "mucho",
+      }).success,
+    ).toBe(false);
+    expect(
+      esquemaCampos(campos).safeParse({ ...base, toma_muestras: "nadie" })
+        .success,
+    ).toBe(false);
+  });
+
+  it("un equipo nuevo propone USD como moneda del costo", () => {
+    expect(valoresIniciales(camposEquipo([], true)).moneda).toBe("USD");
+  });
+});
+
+describe("requisito de planta", () => {
+  it("exige tipo y nombre", () => {
+    const esquema = esquemaCampos(CAMPOS_REQUISITO);
+    expect(
+      esquema.safeParse({
+        categoria: "acceso_planta",
+        nombre: "REPSE",
+        detalle: "",
+      }).success,
+    ).toBe(true);
+    expect(
+      esquema.safeParse({ categoria: "", nombre: "REPSE", detalle: "" })
+        .success,
+    ).toBe(false);
+    expect(
+      esquema.safeParse({ categoria: "otro", nombre: "REPSE", detalle: "" })
+        .success,
+    ).toBe(false);
   });
 });

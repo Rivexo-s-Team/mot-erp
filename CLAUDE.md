@@ -53,6 +53,7 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 
 - Los formularios se definen como una lista de campos (`lib/forms/campos.ts`) y se pintan con `components/forms/config-form.tsx`. La misma lista valida en el navegador y en el servidor. Úsalo antes de escribir un formulario a mano.
 - Entidades de negocio: no se borran, se marcan con `deleted_at` y las lecturas filtran `deleted_at is null`. Los nombres únicos usan índices parciales (solo registros vigentes).
+- Precios y costos van en tabla aparte de los datos generales (ej. `equipos_cliente_costos`), con políticas `precios.ver` y bitácora. El formulario solo incluye esos campos para quien puede verlos, y el servidor vuelve a decidirlo por su cuenta.
 - Lo que cuelga de una cuenta (plantas, razones sociales, contactos) lleva `cuenta_id` y llaves foráneas compuestas, para que la base impida mezclar datos de dos cuentas.
 
 ## Catálogos
@@ -78,7 +79,7 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 ## Estado
 
 - **Etapa 0. Cimientos: terminada**, pendiente de revisión con MOT.
-- **Etapa 1. Clientes y comercial: en curso.** Plan de 6 pasos: (1) expediente del cliente, hecho; (2) equipos y requisitos de planta; (3) pipeline; (4) cotizador y cotizaciones; (5) cotización en PDF; (6) cierre y carga de los 4 clientes.
+- **Etapa 1. Clientes y comercial: en curso.** Plan de 6 pasos: (1) expediente del cliente, hecho; (2) equipos y requisitos de planta, hecho; (3) pipeline; (4) cotizador y cotizaciones; (5) cotización en PDF; (6) cierre y carga de los 4 clientes.
 - Decisiones de esta etapa en DISENO §7: D9 (vendedor externo = canal, no usuario), D10 (cotizaciones de partidas libres), D11 (ganar solo marca pendiente de contrato).
 - Pendiente fuera de etapa: pantalla de bitácora; recuperación de contraseña por correo. La pantalla de parámetros de negocio va en el paso 4.
 - Preguntas abiertas: DISENO §6.

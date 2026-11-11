@@ -35,6 +35,8 @@ export type Campo = {
   max?: number;
   /** Valor de una casilla en un registro nuevo. */
   inicial?: boolean;
+  /** Valor de un campo de texto u opciones en un registro nuevo. */
+  valorInicial?: string;
 };
 
 export type Fila = Record<string, string | number | boolean | null>;
@@ -52,7 +54,12 @@ export function valoresIniciales(campos: Campo[], fila?: Fila): Valores {
     } else if (campo.name === "orden") {
       valores[campo.name] = fila ? String(v ?? 0) : "0";
     } else {
-      valores[campo.name] = v === null || v === undefined ? "" : String(v);
+      valores[campo.name] =
+        v === null || v === undefined
+          ? fila
+            ? ""
+            : (campo.valorInicial ?? "")
+          : String(v);
     }
   }
   return valores;

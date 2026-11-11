@@ -8,7 +8,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { direccionPlanta, etiquetaArea } from "@/lib/clientes/campos";
-import { obtenerCuenta } from "@/lib/clientes/data";
+import { contarEquiposPorPlanta, obtenerCuenta } from "@/lib/clientes/data";
 
 export default async function CuentaPage({
   params,
@@ -24,6 +24,9 @@ export default async function CuentaPage({
   const base = `/clientes/${cuenta.id}`;
   const razonPorId = new Map(cuenta.razonesSociales.map((r) => [r.id, r]));
   const plantaPorId = new Map(cuenta.plantas.map((p) => [p.id, p]));
+  const equiposPorPlanta = await contarEquiposPorPlanta(
+    cuenta.plantas.map((p) => p.id),
+  );
 
   return (
     <>
@@ -69,10 +72,7 @@ export default async function CuentaPage({
               ? razonPorId.get(p.razon_social_id)
               : undefined;
             return (
-              <Tarjeta
-                key={p.id}
-                href={editaClientes ? `${base}/plantas/${p.id}` : null}
-              >
+              <Tarjeta key={p.id} href={`${base}/plantas/${p.id}`}>
                 <p className="font-medium">{p.nombre}</p>
                 <p className="text-sm text-muted-foreground">
                   {direccionPlanta(p) || "Sin dirección"}
@@ -85,6 +85,9 @@ export default async function CuentaPage({
                 <p className="text-sm">
                   <span className="text-muted-foreground">Se factura a: </span>
                   {razon ? razon.razon_social : "Sin definir"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {equiposPorPlanta.get(p.id) ?? 0} equipos
                 </p>
               </Tarjeta>
             );

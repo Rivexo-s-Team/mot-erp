@@ -196,3 +196,147 @@ export function direccionPlanta(p: {
     .filter(Boolean)
     .join(", ");
 }
+
+export const CATEGORIAS_REQUISITO: Opcion[] = [
+  { value: "acceso_planta", label: "Acceso a planta" },
+  { value: "alta_proveedor", label: "Alta de proveedor" },
+  { value: "contrato", label: "Contrato" },
+];
+
+export const etiquetaCategoria = (c: string) =>
+  CATEGORIAS_REQUISITO.find((o) => o.value === c)?.label ?? c;
+
+export const CAMPOS_REQUISITO: Campo[] = [
+  {
+    name: "categoria",
+    label: "Tipo de requisito",
+    tipo: "opciones",
+    opciones: CATEGORIAS_REQUISITO,
+  },
+  {
+    name: "nombre",
+    label: "Requisito",
+    tipo: "texto",
+    ayuda:
+      "Ejemplos: REPSE, EPP (casco, chaleco), curso de seguridad, alta en portal.",
+  },
+  { name: "detalle", label: "Detalle", tipo: "textoLargo", opcional: true },
+];
+
+export const TOMA_MUESTRAS: Opcion[] = [
+  { value: "mot", label: "MOT" },
+  { value: "cliente", label: "El cliente" },
+];
+
+export const MONEDAS: Opcion[] = [
+  { value: "USD", label: "USD (dólares)" },
+  { value: "MXN", label: "MXN (pesos)" },
+];
+
+/** Nombres de los campos de costo; se guardan en una tabla aparte por ser precios. */
+export const CAMPOS_COSTO = ["costo_aceite_virgen", "moneda"] as const;
+
+/**
+ * Campos de un equipo del cliente. Los de costo solo se incluyen para quien
+ * puede ver precios.
+ */
+export function camposEquipo(aceites: Opcion[], conCosto: boolean): Campo[] {
+  const campos: Campo[] = [
+    {
+      name: "identificador",
+      label: "Identificador del cliente",
+      tipo: "texto",
+      max: 60,
+      ayuda: "Como lo llama el cliente. Ejemplo: 11B116.",
+    },
+    { name: "alias", label: "Alias", tipo: "texto", opcional: true, max: 60 },
+    {
+      name: "aplicacion",
+      label: "Aplicación",
+      tipo: "texto",
+      opcional: true,
+      ayuda: "Ejemplo: prensa vulcanizadora.",
+    },
+    { name: "marca", label: "Marca del equipo", tipo: "texto", opcional: true },
+    {
+      name: "aceite_id",
+      label: "Aceite",
+      tipo: "referencia",
+      opcional: true,
+      opciones: aceites,
+    },
+    {
+      name: "volumen_reservorio_l",
+      label: "Volumen del reservorio (litros)",
+      tipo: "numero",
+      opcional: true,
+      ayuda: "Es la base del cobro por litro.",
+    },
+    {
+      name: "numero_contenedores",
+      label: "Número de contenedores",
+      tipo: "entero",
+      opcional: true,
+    },
+    {
+      name: "volumen_contenedor_l",
+      label: "Volumen de cada contenedor (litros)",
+      tipo: "numero",
+      opcional: true,
+    },
+    {
+      name: "tipo_conexion",
+      label: "Tipo de conexión",
+      tipo: "texto",
+      opcional: true,
+    },
+    { name: "altura", label: "Altura", tipo: "texto", opcional: true, max: 60 },
+    {
+      name: "localizacion",
+      label: "Localización en la planta",
+      tipo: "texto",
+      opcional: true,
+    },
+    {
+      name: "temperatura_operacion_c",
+      label: "Temperatura de operación (°C)",
+      tipo: "numero",
+      opcional: true,
+    },
+    {
+      name: "frecuencia_cambio_aceite",
+      label: "Cada cuánto cambia el aceite hoy",
+      tipo: "texto",
+      opcional: true,
+      ayuda: "Ejemplo: cada 12 meses.",
+    },
+    {
+      name: "toma_muestras",
+      label: "Quién toma las muestras",
+      tipo: "opciones",
+      opcional: true,
+      opciones: TOMA_MUESTRAS,
+    },
+    { name: "notas", label: "Notas", tipo: "textoLargo", opcional: true },
+  ];
+  if (conCosto) {
+    campos.push(
+      {
+        name: "costo_aceite_virgen",
+        label: "Costo del aceite virgen por litro",
+        tipo: "numero",
+        opcional: true,
+        ayuda:
+          "Lo que paga el cliente por litro de aceite nuevo. Solo lo ven Dirección, Comercial y Administración.",
+      },
+      {
+        name: "moneda",
+        label: "Moneda del costo",
+        tipo: "opciones",
+        opciones: MONEDAS,
+        valorInicial: "USD",
+      },
+    );
+  }
+  return campos;
+}

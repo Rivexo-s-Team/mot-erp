@@ -222,41 +222,71 @@ export type Database = {
         Row: {
           aceite_id: string | null;
           alias: string | null;
+          altura: string | null;
           aplicacion: string | null;
           created_at: string;
           created_by: string | null;
           deleted_at: string | null;
+          frecuencia_cambio_aceite: string | null;
           id: string;
           identificador: string;
+          localizacion: string | null;
+          marca: string | null;
+          notas: string | null;
+          numero_contenedores: number | null;
           planta_id: string;
+          temperatura_operacion_c: number | null;
+          tipo_conexion: string | null;
+          toma_muestras: string | null;
           updated_at: string;
+          volumen_contenedor_l: number | null;
           volumen_reservorio_l: number | null;
         };
         ComputedFields: never;
         Insert: {
           aceite_id?: string | null;
           alias?: string | null;
+          altura?: string | null;
           aplicacion?: string | null;
           created_at?: string;
           created_by?: string | null;
           deleted_at?: string | null;
+          frecuencia_cambio_aceite?: string | null;
           id?: string;
           identificador: string;
+          localizacion?: string | null;
+          marca?: string | null;
+          notas?: string | null;
+          numero_contenedores?: number | null;
           planta_id: string;
+          temperatura_operacion_c?: number | null;
+          tipo_conexion?: string | null;
+          toma_muestras?: string | null;
           updated_at?: string;
+          volumen_contenedor_l?: number | null;
           volumen_reservorio_l?: number | null;
         };
         Update: {
           aceite_id?: string | null;
           alias?: string | null;
+          altura?: string | null;
           aplicacion?: string | null;
           created_at?: string;
           created_by?: string | null;
           deleted_at?: string | null;
+          frecuencia_cambio_aceite?: string | null;
           id?: string;
           identificador?: string;
+          localizacion?: string | null;
+          marca?: string | null;
+          notas?: string | null;
+          numero_contenedores?: number | null;
           planta_id?: string;
+          temperatura_operacion_c?: number | null;
+          tipo_conexion?: string | null;
+          toma_muestras?: string | null;
           updated_at?: string;
+          volumen_contenedor_l?: number | null;
           volumen_reservorio_l?: number | null;
         };
         Relationships: [
@@ -272,6 +302,45 @@ export type Database = {
             columns: ["planta_id"];
             isOneToOne: false;
             referencedRelation: "plantas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      equipos_cliente_costos: {
+        Row: {
+          costo_aceite_virgen: number;
+          created_at: string;
+          created_by: string | null;
+          equipo_cliente_id: string;
+          id: string | null;
+          moneda: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          costo_aceite_virgen: number;
+          created_at?: string;
+          created_by?: string | null;
+          equipo_cliente_id: string;
+          id?: never;
+          moneda: string;
+          updated_at?: string;
+        };
+        Update: {
+          costo_aceite_virgen?: number;
+          created_at?: string;
+          created_by?: string | null;
+          equipo_cliente_id?: string;
+          id?: never;
+          moneda?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "equipos_cliente_costos_equipo_cliente_id_fkey";
+            columns: ["equipo_cliente_id"];
+            isOneToOne: true;
+            referencedRelation: "equipos_cliente";
             referencedColumns: ["id"];
           },
         ];
@@ -638,6 +707,51 @@ export type Database = {
             columns: ["cuenta_id"];
             isOneToOne: false;
             referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      requisitos_planta: {
+        Row: {
+          categoria: string;
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          detalle: string | null;
+          id: string;
+          nombre: string;
+          planta_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          categoria: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          detalle?: string | null;
+          id?: string;
+          nombre: string;
+          planta_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          categoria?: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          detalle?: string | null;
+          id?: string;
+          nombre?: string;
+          planta_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "requisitos_planta_planta_id_fkey";
+            columns: ["planta_id"];
+            isOneToOne: false;
+            referencedRelation: "plantas";
             referencedColumns: ["id"];
           },
         ];

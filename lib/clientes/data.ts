@@ -71,6 +71,99 @@ export async function obtenerCuenta(id: string) {
   };
 }
 
+/** Una planta con sus equipos, requisitos y (si el rol puede) el costo de aceite de cada equipo. */
+export async function obtenerPlanta(cuentaId: string, plantaId: string) {
+  const supabase = await createClient();
+  const [planta, equipos, requisitos] = await Promise.all([
+    supabase
+      .from("plantas")
+      .select(
+        "id, nombre, calle, numero_exterior, numero_interior, colonia, municipio, estado, codigo_postal, referencia, cuentas!inner (id, nombre, deleted_at), razones_sociales (razon_social)",
+      )
+      .eq("id", plantaId)
+      .eq("cuenta_id", cuentaId)
+      .is("deleted_at", null)
+      .maybeSingle(),
+    supabase
+      .from("equipos_cliente")
+      .select(
+        "id, identificador, alias, aplicacion, marca, aceite_id, volumen_reservorio_l, numero_contenedores, volumen_contenedor_l, tipo_conexion, altura, localizacion, temperatura_operacion_c, frecuencia_cambio_aceite, toma_muestras, notas, aceites (marca, nombre_comercial)",
+      )
+      .eq("planta_id", plantaId)
+      .is("deleted_at", null)
+      .order("identificador"),
+    supabase
+      .from("requisitos_planta")
+      .select("id, categoria, nombre, detalle")
+      .eq("planta_id", plantaId)
+      .is("deleted_at", null)
+      .order("categoria")
+      .order("nombre"),
+  ]);
+  if (planta.error || equipos.error || requisitos.error) {
+    throw new Error("No se pudo cargar la planta.");
+  }
+  if (!planta.data || planta.data.cuentas.deleted_at !== null) return null;
+
+  // RLS devuelve los costos solo a quien puede ver precios; a los demás, nada.
+  const ids = equipos.data.map((e) => e.id);
+  const costos = ids.length
+    ? await supabase
+        .from("equipos_cliente_costos")
+        .select("equipo_cliente_id, costo_aceite_virgen, moneda")
+        .in("equipo_cliente_id", ids)
+    : { data: [], error: null };
+  if (costos.error) throw new Error("No se pudo cargar la planta.");
+  const costoPorEquipo = new Map(
+    costos.data.map((c) => [c.equipo_cliente_id, c]),
+  );
+
+  return {
+    ...planta.data,
+    cuenta: { id: planta.data.cuentas.id, nombre: planta.data.cuentas.nombre },
+    equipos: equipos.data.map((e) => ({
+      ...e,
+      costo: costoPorEquipo.get(e.id) ?? null,
+    })),
+    requisitos: requisitos.data,
+  };
+}
+
+export type PlantaCompleta = NonNullable<
+  Awaited<ReturnType<typeof obtenerPlanta>>
+>;
+
+/** Cuántos equipos vigentes tiene cada planta de una cuenta. */
+export async function contarEquiposPorPlanta(plantaIds: string[]) {
+  const conteo = new Map<string, number>();
+  if (plantaIds.length === 0) return conteo;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("equipos_cliente")
+    .select("planta_id")
+    .in("planta_id", plantaIds)
+    .is("deleted_at", null);
+  if (error) throw new Error("No se pudo cargar el cliente.");
+  for (const e of data)
+    conteo.set(e.planta_id, (conteo.get(e.planta_id) ?? 0) + 1);
+  return conteo;
+}
+
+export async function listarAceitesActivos() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("aceites")
+    .select("id, marca, nombre_comercial, grado_iso_vg")
+    .eq("activo", true)
+    .order("marca")
+    .order("nombre_comercial");
+  if (error) throw new Error("No se pudieron cargar los aceites.");
+  return data.map((a) => ({
+    value: a.id,
+    label: `${a.marca} ${a.nombre_comercial}${a.grado_iso_vg ? ` (ISO VG ${a.grado_iso_vg})` : ""}`,
+  }));
+}
+
 export type CuentaCompleta = NonNullable<
   Awaited<ReturnType<typeof obtenerCuenta>>
 >;
