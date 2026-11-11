@@ -191,3 +191,11 @@ export const validarPartida: Validador = (v) => {
   }
   return null;
 };
+
+/** "280 litros", "1 mes", "36 meses", "2 servicios". */
+export function describirCantidad(cantidad: number, unidad: string): string {
+  const nombre = etiqueta(UNIDADES, unidad).toLowerCase();
+  const plural =
+    cantidad === 1 ? nombre : unidad === "mes" ? "meses" : `${nombre}s`;
+  return `${cantidad} ${plural}`;
+}
