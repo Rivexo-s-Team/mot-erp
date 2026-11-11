@@ -58,6 +58,14 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 - Precios y costos van en tabla aparte de los datos generales (ej. `equipos_cliente_costos`), con políticas `precios.ver` y bitácora. El formulario solo incluye esos campos para quien puede verlos, y el servidor vuelve a decidirlo por su cuenta.
 - Lo que cuelga de una cuenta (plantas, razones sociales, contactos) lleva `cuenta_id` y llaves foráneas compuestas, para que la base impida mezclar datos de dos cuentas.
 
+## Archivos
+
+- Los archivos van en buckets privados de Storage, con políticas por permiso en `storage.objects` (ver `20261111050000_archivos_comerciales.sql`). Nunca buckets públicos.
+- Subida en dos pasos (`components/forms/file-uploader.tsx`): el servidor revisa el permiso y da un permiso temporal; el navegador sube directo a Storage; el servidor confirma que llegó y lo registra. Así no se topa con el límite de tamaño del servidor.
+- Para abrirlos, una ruta en `app/(app)/archivos/` revisa el permiso y redirige a un enlace firmado de 60 segundos.
+- Un archivo subido no se reemplaza ni se borra desde la app; quitarlo solo lo oculta.
+- Para probar archivos en local, Supabase debe arrancar con Storage (`pnpm db:start`).
+
 ## Catálogos
 
 - Los catálogos sencillos se definen en `lib/catalogos/config.ts` (campos, columnas, permiso de edición y validación); las pantallas de lista y edición se arman solas a partir de ahí. Para uno nuevo: migración con su tabla y RLS, y una entrada en esa configuración.
@@ -81,7 +89,7 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 ## Estado
 
 - **Etapa 0. Cimientos: terminada**, pendiente de revisión con MOT.
-- **Etapa 1. Clientes y comercial: en curso.** Plan de 6 pasos: (1) expediente del cliente, hecho; (2) equipos y requisitos de planta, hecho; (3) pipeline, hecho; (4) cotizador y cotizaciones, hecho (partidas libres, versiones, cotizador por litro y pantalla de parámetros); falta guardar archivos (comprobante del precio de referencia y adjuntos de oportunidad), que requiere Storage; (5) cotización en PDF; (6) cierre y carga de los 4 clientes.
+- **Etapa 1. Clientes y comercial: en curso.** Plan de 6 pasos: (1) expediente del cliente, hecho; (2) equipos y requisitos de planta, hecho; (3) pipeline, hecho; (4) cotizador y cotizaciones, hecho (partidas libres, versiones, cotizador por litro y pantalla de parámetros); incluidos los archivos (adjuntos de oportunidad y comprobante del precio de referencia); (5) cotización en PDF; (6) cierre y carga de los 4 clientes.
 - Decisiones de esta etapa en DISENO §7: D9 (vendedor externo = canal, no usuario), D10 (cotizaciones de partidas libres), D11 (ganar solo marca pendiente de contrato).
 - Pendiente fuera de etapa: pantalla de bitácora; recuperación de contraseña por correo.
 - Preguntas abiertas: DISENO §6.

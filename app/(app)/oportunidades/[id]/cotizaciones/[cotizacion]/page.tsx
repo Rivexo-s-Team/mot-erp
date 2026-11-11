@@ -132,6 +132,9 @@ export default async function CotizacionPage({
                       <Badge variant="outline">
                         {l.recurrente ? "Recurrente" : "Una sola vez"}
                       </Badge>
+                      {l.fuente_archivo_ruta ? (
+                        <Badge variant="secondary">Con comprobante</Badge>
+                      ) : null}
                       {l.precio_referencia !== null ? (
                         <Badge variant="outline">
                           Aceite nuevo: {importe(l.precio_referencia)} ·{" "}

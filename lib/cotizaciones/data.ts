@@ -82,7 +82,7 @@ export async function obtenerCotizacion(
     supabase
       .from("cotizacion_lineas")
       .select(
-        "id, orden, concepto, equipo_cliente_id, cantidad, unidad, precio_unitario, recurrente, precio_referencia, fuente_tipo, fuente_url, fecha_referencia, importe, equipos_cliente (identificador, alias)",
+        "id, orden, concepto, equipo_cliente_id, cantidad, unidad, precio_unitario, recurrente, precio_referencia, fuente_tipo, fuente_url, fecha_referencia, fuente_archivo_ruta, fuente_archivo_nombre, importe, equipos_cliente (identificador, alias)",
       )
       .eq("cotizacion_id", cotizacionId)
       .is("deleted_at", null)

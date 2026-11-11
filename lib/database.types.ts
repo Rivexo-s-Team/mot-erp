@@ -286,6 +286,8 @@ export type Database = {
           deleted_at: string | null;
           equipo_cliente_id: string | null;
           fecha_referencia: string | null;
+          fuente_archivo_nombre: string | null;
+          fuente_archivo_ruta: string | null;
           fuente_tipo: string | null;
           fuente_url: string | null;
           id: string;
@@ -307,6 +309,8 @@ export type Database = {
           deleted_at?: string | null;
           equipo_cliente_id?: string | null;
           fecha_referencia?: string | null;
+          fuente_archivo_nombre?: string | null;
+          fuente_archivo_ruta?: string | null;
           fuente_tipo?: string | null;
           fuente_url?: string | null;
           id?: string;
@@ -327,6 +331,8 @@ export type Database = {
           deleted_at?: string | null;
           equipo_cliente_id?: string | null;
           fecha_referencia?: string | null;
+          fuente_archivo_nombre?: string | null;
+          fuente_archivo_ruta?: string | null;
           fuente_tipo?: string | null;
           fuente_url?: string | null;
           id?: string;
@@ -619,6 +625,57 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      oportunidad_adjuntos: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          etapa: string;
+          id: string;
+          nombre: string;
+          oportunidad_id: string;
+          ruta: string;
+          tamano_bytes: number;
+          tipo_mime: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          etapa: string;
+          id?: string;
+          nombre: string;
+          oportunidad_id: string;
+          ruta: string;
+          tamano_bytes: number;
+          tipo_mime: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          etapa?: string;
+          id?: string;
+          nombre?: string;
+          oportunidad_id?: string;
+          ruta?: string;
+          tamano_bytes?: number;
+          tipo_mime?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "oportunidad_adjuntos_oportunidad_id_fkey";
+            columns: ["oportunidad_id"];
+            isOneToOne: false;
+            referencedRelation: "oportunidades";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       oportunidades: {
         Row: {

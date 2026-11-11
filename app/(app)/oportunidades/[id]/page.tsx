@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
+import { FileUploader } from "@/components/forms/file-uploader";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatTamano } from "@/lib/archivos/config";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { valoresIniciales } from "@/lib/forms/campos";
 import { ESTADOS } from "@/lib/cotizaciones/campos";
@@ -19,6 +21,11 @@ import {
   TIPOS_ACTIVIDAD,
 } from "@/lib/pipeline/campos";
 import { directorioComercial, obtenerOportunidad } from "@/lib/pipeline/data";
+import {
+  prepararAdjunto,
+  quitarAdjunto,
+  registrarAdjunto,
+} from "../archivos-actions";
 import { crearCotizacion } from "../cotizaciones-actions";
 import { EtapaForm } from "../etapa-form";
 
@@ -181,6 +188,61 @@ export default async function OportunidadPage({
             )}
           </section>
 
+          <section>
+            <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+              <h2 className="text-lg font-semibold tracking-tight">
+                Archivos
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  {o.adjuntos.length}
+                </span>
+              </h2>
+              {edita ? (
+                <FileUploader
+                  texto="Subir archivo"
+                  preparar={prepararAdjunto.bind(null, o.id)}
+                  registrar={registrarAdjunto.bind(null, o.id)}
+                />
+              ) : null}
+            </div>
+            {o.adjuntos.length === 0 ? (
+              <Card className="px-4 py-6 text-center text-sm text-muted-foreground">
+                Aún no hay archivos. Aquí van, por ejemplo, el informe de
+                laboratorio o la foto de la muestra.
+              </Card>
+            ) : (
+              <ul className="space-y-2">
+                {o.adjuntos.map((a) => (
+                  <li key={a.id}>
+                    <Card className="flex-row flex-wrap items-center justify-between gap-3 px-4 py-3">
+                      <div className="min-w-0">
+                        <a
+                          href={`/archivos/adjunto/${a.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-medium break-words text-primary underline-offset-4 hover:underline"
+                        >
+                          {a.nombre}
+                        </a>
+                        <p className="text-sm text-muted-foreground">
+                          {etiqueta(ETAPAS, a.etapa)} ·{" "}
+                          {formatFecha(a.created_at)} ·{" "}
+                          {formatTamano(a.tamano_bytes)}
+                        </p>
+                      </div>
+                      {edita ? (
+                        <form action={quitarAdjunto.bind(null, o.id, a.id)}>
+                          <Button type="submit" variant="ghost" size="sm">
+                            Quitar
+                          </Button>
+                        </form>
+                      ) : null}
+                    </Card>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
           {vePrecios ? (
             <section>
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -222,7 +284,9 @@ export default async function OportunidadPage({
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground tabular-nums">
-                            {c.totales.partidas} partidas · una sola vez{" "}
+                            {c.totales.partidas}{" "}
+                            {c.totales.partidas === 1 ? "partida" : "partidas"}{" "}
+                            · una sola vez{" "}
                             {formatImporte(c.totales.total_unico, c.moneda)} ·
                             recurrente{" "}
                             {formatImporte(
