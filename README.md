@@ -78,6 +78,7 @@ Para un cambio de esquema:
 - Clientes (cuentas, plantas, razones sociales y contactos) los consultan todos los roles internos. Dirección y Comercial los editan; Administración edita además las razones sociales.
 - Cada planta tiene su página con equipos y requisitos de acceso. El costo del aceite virgen de cada equipo solo lo ven Dirección, Comercial y Administración.
 - El pipeline (oportunidades, actividades y canales de venta) lo ven y editan solo Dirección y Comercial. Los vendedores externos son canales de venta, no usuarios.
+- La flota de Robox (`/flota`) la ven todos los roles internos; la editan Dirección y Técnico. El número de serie no se repite entre equipos vigentes.
 - Las cotizaciones son precios: solo las ven Dirección y Comercial. Una cotización enviada ya no se edita; los cambios van en una versión nueva. El porcentaje y el precio mínimo del cotizador se cambian en Parámetros (solo Dirección).
 - Archivos (adjuntos de oportunidad y comprobantes de precio): se guardan en espacios privados; solo los abren Dirección y Comercial, con un enlace que dura un minuto. PDF o imagen, hasta 10 MB.
 - Las cotizaciones llevan folio anual `CMOT AAAA-NNN`, 15 días de vigencia por defecto y estados borrador, enviada, aceptada y rechazada. Los precios son más IVA.
