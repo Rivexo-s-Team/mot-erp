@@ -33,7 +33,11 @@ select is(
   'en_cliente', 'el Robox 545592 está en el cliente'
 );
 select is(
-  (select count(*)::int from public.parametros_negocio), 4, 'los parámetros de negocio están cargados'
+  (select count(*)::int from public.parametros_negocio
+    where clave in ('cotizador_porcentaje_aceite_nuevo', 'cotizador_piso_precio_litro',
+                    'lab_condicion_precaucion_desde', 'lab_condicion_critico_desde',
+                    'cotizacion_vigencia_dias')),
+  5, 'los parámetros de negocio están cargados'
 );
 
 select * from finish();

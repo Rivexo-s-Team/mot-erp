@@ -292,10 +292,13 @@ export type Database = {
           fuente_url: string | null;
           id: string;
           importe: number | null;
+          numero_parte_cliente: string | null;
           orden: number;
           precio_referencia: number | null;
           precio_unitario: number;
           recurrente: boolean;
+          referencia_costo_contenedor: number | null;
+          referencia_litros_contenedor: number | null;
           unidad: string;
           updated_at: string;
         };
@@ -315,10 +318,13 @@ export type Database = {
           fuente_url?: string | null;
           id?: string;
           importe?: never;
+          numero_parte_cliente?: string | null;
           orden?: number;
           precio_referencia?: number | null;
           precio_unitario: number;
           recurrente?: boolean;
+          referencia_costo_contenedor?: number | null;
+          referencia_litros_contenedor?: number | null;
           unidad: string;
           updated_at?: string;
         };
@@ -337,10 +343,13 @@ export type Database = {
           fuente_url?: string | null;
           id?: string;
           importe?: never;
+          numero_parte_cliente?: string | null;
           orden?: number;
           precio_referencia?: number | null;
           precio_unitario?: number;
           recurrente?: boolean;
+          referencia_costo_contenedor?: number | null;
+          referencia_litros_contenedor?: number | null;
           unidad?: string;
           updated_at?: string;
         };
@@ -371,14 +380,18 @@ export type Database = {
       cotizaciones: {
         Row: {
           condiciones: string | null;
+          condiciones_pago: string | null;
+          contacto_id: string | null;
           created_at: string;
           created_by: string | null;
           deleted_at: string | null;
           estado: string;
+          folio: string;
           id: string;
           litros_estimados: number | null;
           moneda: string;
           notas: string | null;
+          numero_requisicion: string | null;
           oportunidad_id: string;
           tipo_cambio: number | null;
           updated_at: string;
@@ -389,14 +402,18 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           condiciones?: string | null;
+          condiciones_pago?: string | null;
+          contacto_id?: string | null;
           created_at?: string;
           created_by?: string | null;
           deleted_at?: string | null;
           estado?: string;
+          folio: string;
           id?: string;
           litros_estimados?: number | null;
           moneda?: string;
           notas?: string | null;
+          numero_requisicion?: string | null;
           oportunidad_id: string;
           tipo_cambio?: number | null;
           updated_at?: string;
@@ -406,14 +423,18 @@ export type Database = {
         };
         Update: {
           condiciones?: string | null;
+          condiciones_pago?: string | null;
+          contacto_id?: string | null;
           created_at?: string;
           created_by?: string | null;
           deleted_at?: string | null;
           estado?: string;
+          folio?: string;
           id?: string;
           litros_estimados?: number | null;
           moneda?: string;
           notas?: string | null;
+          numero_requisicion?: string | null;
           oportunidad_id?: string;
           tipo_cambio?: number | null;
           updated_at?: string;
@@ -422,6 +443,13 @@ export type Database = {
           vigencia?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "cotizaciones_contacto_id_fkey";
+            columns: ["contacto_id"];
+            isOneToOne: false;
+            referencedRelation: "contactos";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "cotizaciones_oportunidad_id_fkey";
             columns: ["oportunidad_id"];
@@ -626,6 +654,59 @@ export type Database = {
         };
         Relationships: [];
       };
+      folios_cotizacion: {
+        Row: {
+          anio: number;
+          created_at: string;
+          ultimo: number;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          anio: number;
+          created_at?: string;
+          ultimo?: number;
+          updated_at?: string;
+        };
+        Update: {
+          anio?: number;
+          created_at?: string;
+          ultimo?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      motivos_perdida: {
+        Row: {
+          activo: boolean;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          nombre: string;
+          orden: number;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          activo?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          nombre: string;
+          orden?: number;
+          updated_at?: string;
+        };
+        Update: {
+          activo?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          nombre?: string;
+          orden?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       oportunidad_adjuntos: {
         Row: {
           created_at: string;
@@ -688,6 +769,7 @@ export type Database = {
           fecha_cierre: string | null;
           id: string;
           motivo_perdida: string | null;
+          motivo_perdida_id: string | null;
           nombre: string;
           notas: string | null;
           origen: string;
@@ -708,6 +790,7 @@ export type Database = {
           fecha_cierre?: string | null;
           id?: string;
           motivo_perdida?: string | null;
+          motivo_perdida_id?: string | null;
           nombre: string;
           notas?: string | null;
           origen: string;
@@ -727,6 +810,7 @@ export type Database = {
           fecha_cierre?: string | null;
           id?: string;
           motivo_perdida?: string | null;
+          motivo_perdida_id?: string | null;
           nombre?: string;
           notas?: string | null;
           origen?: string;
@@ -749,6 +833,13 @@ export type Database = {
             columns: ["cuenta_id"];
             isOneToOne: false;
             referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "oportunidades_motivo_perdida_id_fkey";
+            columns: ["motivo_perdida_id"];
+            isOneToOne: false;
+            referencedRelation: "motivos_perdida";
             referencedColumns: ["id"];
           },
           {
@@ -1285,6 +1376,10 @@ export type Database = {
       };
       mi_rol_id: { Args: Record<PropertyKey, never>; Returns: string };
       mis_permisos: { Args: Record<PropertyKey, never>; Returns: string[] };
+      siguiente_folio_cotizacion: {
+        Args: Record<PropertyKey, never>;
+        Returns: string;
+      };
       tiene_permiso: { Args: { p_clave: string }; Returns: boolean };
     };
     Enums: {
