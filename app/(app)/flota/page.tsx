@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { ESTADOS_ROBOX } from "@/lib/flota/campos";
-import { contarPorEstado, listarRobox } from "@/lib/flota/data";
+import { contarPorEstado, listarRobox, ubicaciones } from "@/lib/flota/data";
 
 export const metadata: Metadata = { title: "Flota" };
 
@@ -23,6 +23,7 @@ export default async function FlotaPage({ searchParams }: PageProps<"/flota">) {
     listarRobox({ estado, busqueda }),
     contarPorEstado(),
   ]);
+  const ubicacion = await ubicaciones({ roboxIds: robox.map((r) => r.id) });
   const href = (e: string) => {
     const params = new URLSearchParams();
     if (e) params.set("estado", e);
@@ -113,6 +114,15 @@ export default async function FlotaPage({ searchParams }: PageProps<"/flota">) {
                       .filter(Boolean)
                       .join(" · ") || "Sin modelo ni versión registrados"}
                   </p>
+                  {ubicacion.has(r.id) ? (
+                    <p className="text-sm">
+                      {ubicacion.get(r.id)?.cuenta} ·{" "}
+                      {ubicacion.get(r.id)?.planta}
+                      {ubicacion.get(r.id)?.tanque
+                        ? ` · ${ubicacion.get(r.id)?.tanque}`
+                        : ""}
+                    </p>
+                  ) : null}
                 </Card>
               </Link>
             </li>

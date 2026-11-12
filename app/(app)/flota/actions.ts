@@ -20,6 +20,8 @@ async function tabla() {
 
 function mensajeError(code: string | undefined): string {
   if (code === "23505") return "Ya existe un Robox con ese número de serie.";
+  if (code === "P0001")
+    return "Este Robox está asignado a un contrato. Termina primero su asignación.";
   if (code === "42501") return "Tu rol no puede modificar la flota.";
   return "No se pudo guardar. Revisa los datos e intenta de nuevo.";
 }
