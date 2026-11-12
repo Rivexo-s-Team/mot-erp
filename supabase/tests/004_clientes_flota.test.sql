@@ -81,7 +81,7 @@ select throws_ok(
   $$insert into public.cuentas (nombre) values ('Inventada')$$, '42501', null, 'técnico no crea cuentas'
 );
 with c as (update public.robox set estado = 'baja' where numero_serie = 'PRUEBA-1' returning 1)
-select is((select count(*)::int from c), 0, 'técnico no edita la flota');
+select is((select count(*)::int from c), 1, 'técnico edita la flota (lleva el inventario)');
 
 select pruebas.entrar('comercial');
 select lives_ok(
@@ -116,7 +116,7 @@ select lives_ok(
   $$insert into public.robox (numero_serie, estado) values ('PRUEBA-2', 'en_taller')$$,
   'dirección da de alta un Robox'
 );
-with c as (update public.robox set estado = 'baja' where numero_serie = 'PRUEBA-1' returning 1)
+with c as (update public.robox set estado = 'disponible' where numero_serie = 'PRUEBA-1' returning 1)
 select is((select count(*)::int from c), 1, 'dirección edita la flota');
 
 select * from finish();
