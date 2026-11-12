@@ -90,13 +90,27 @@ export async function tarifasDeContrato(contratoId: string) {
   const { data, error } = await supabase
     .from("contrato_tarifas")
     .select(
-      "id, orden, concepto, unidad, precio, equipo_cliente_id, notas, equipos_cliente (identificador, alias)",
+      "id, orden, concepto, unidad, precio, equipo_cliente_id, orden_compra_id, notas, equipos_cliente (identificador, alias), ordenes_compra (numero)",
     )
     .eq("contrato_id", contratoId)
     .is("deleted_at", null)
     .order("orden")
     .order("created_at");
   if (error) throw new Error("No se pudieron cargar las tarifas.");
+  return data;
+}
+
+/** Órdenes de compra de un contrato (solo las ve quien puede ver precios). */
+export async function ordenesDeContrato(contratoId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("ordenes_compra")
+    .select("id, numero, monto, fecha_inicio, fecha_termino, notas")
+    .eq("contrato_id", contratoId)
+    .is("deleted_at", null)
+    .order("fecha_termino", { ascending: true, nullsFirst: false })
+    .order("numero");
+  if (error) throw new Error("No se pudieron cargar las órdenes de compra.");
   return data;
 }
 
