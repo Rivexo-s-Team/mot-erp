@@ -12,7 +12,7 @@ import {
 import { formatDia, formatFecha, formatImporte } from "@/lib/format";
 import {
   crearNuevaVersion,
-  marcarEnviada,
+  cambiarEstadoCotizacion,
 } from "../../../cotizaciones-actions";
 import { cargarCotizacion } from "./contexto";
 
@@ -38,8 +38,12 @@ export default async function CotizacionPage({
         : c.moneda,
     ],
     ["Creada", formatFecha(c.created_at)],
-    ["Vigente hasta", c.vigencia ? formatDia(c.vigencia) : "—"],
+    ["Válida hasta", c.vigencia ? formatDia(c.vigencia) : "—"],
+    ["Atención", c.contactos?.nombre ?? "—"],
+    ["Condiciones de pago", c.condiciones_pago ?? "—"],
   ];
+  if (c.numero_requisicion)
+    datos.push(["No. de requisición", c.numero_requisicion]);
   if (c.valor_total_contrato !== null) {
     datos.push(["Valor total del contrato", importe(c.valor_total_contrato)]);
   }
@@ -50,8 +54,8 @@ export default async function CotizacionPage({
     <>
       <title>{`Cotización v${c.version} · ${oportunidad.nombre} · Sistema MOT`}</title>
       <PageHeader
-        title={`Cotización versión ${c.version}`}
-        description={oportunidad.nombre}
+        title={`Cotización ${c.folio}`}
+        description={`Versión ${c.version} · ${oportunidad.nombre}`}
       >
         <Link
           href={`/oportunidades/${id}`}
@@ -78,10 +82,10 @@ export default async function CotizacionPage({
       </PageHeader>
 
       <div className="mb-6 flex flex-wrap items-center gap-2">
-        <Badge variant={c.estado === "enviada" ? "default" : "secondary"}>
+        <Badge variant={c.estado === "borrador" ? "secondary" : "default"}>
           {etiqueta(ESTADOS, c.estado)}
         </Badge>
-        {c.estado === "enviada" ? (
+        {c.estado !== "borrador" ? (
           <span className="text-sm text-muted-foreground">
             Ya no se puede editar. Para cambiarla, crea una versión nueva.
           </span>
@@ -168,7 +172,7 @@ export default async function CotizacionPage({
           {c.condiciones ? (
             <div className="mt-6">
               <h2 className="mb-2 text-lg font-semibold tracking-tight">
-                Condiciones comerciales
+                Notas para el cliente
               </h2>
               <p className="text-sm whitespace-pre-line">{c.condiciones}</p>
             </div>
@@ -203,9 +207,8 @@ export default async function CotizacionPage({
                   {importe(c.totales.total_recurrente)}
                 </dd>
               </dl>
-              {/* PENDIENTE(P8): falta confirmar con MOT si la cotización muestra IVA. */}
               <p className="mt-3 text-xs text-muted-foreground">
-                Importes sin IVA.
+                Precios más IVA.
               </p>
             </CardContent>
           </Card>
@@ -229,13 +232,52 @@ export default async function CotizacionPage({
           {puedeEditar ? (
             <div className="flex flex-col gap-2">
               {editable ? (
-                <form action={marcarEnviada.bind(null, id, c.id)}>
+                <form
+                  action={cambiarEstadoCotizacion.bind(
+                    null,
+                    id,
+                    c.id,
+                    "enviada",
+                  )}
+                >
                   <Button
                     type="submit"
                     className="h-10 w-full"
                     disabled={c.lineas.length === 0}
                   >
                     Marcar como enviada
+                  </Button>
+                </form>
+              ) : null}
+              {c.estado === "enviada" || c.estado === "rechazada" ? (
+                <form
+                  action={cambiarEstadoCotizacion.bind(
+                    null,
+                    id,
+                    c.id,
+                    "aceptada",
+                  )}
+                >
+                  <Button type="submit" className="h-10 w-full">
+                    Marcar como aceptada
+                  </Button>
+                </form>
+              ) : null}
+              {c.estado === "enviada" || c.estado === "aceptada" ? (
+                <form
+                  action={cambiarEstadoCotizacion.bind(
+                    null,
+                    id,
+                    c.id,
+                    "rechazada",
+                  )}
+                >
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    className="h-10 w-full"
+                  >
+                    Marcar como rechazada
                   </Button>
                 </form>
               ) : null}

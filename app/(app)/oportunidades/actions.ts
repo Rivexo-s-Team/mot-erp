@@ -8,7 +8,7 @@ import type { ActionResult } from "@/lib/auth/schemas";
 import { requirePermiso } from "@/lib/auth/session";
 import { aFila, esquemaCampos, type Valores } from "@/lib/forms/campos";
 import {
-  CAMPOS_ETAPA,
+  camposEtapa,
   camposActividad,
   camposOportunidad,
   validarEtapa,
@@ -78,17 +78,23 @@ export async function cambiarEtapa(
 ): Promise<ActionResult> {
   await requirePermiso(PERMISO);
   if (!esId(id)) return { error: "Registro no válido." };
-  const parsed = esquemaCampos(CAMPOS_ETAPA, validarEtapa).safeParse(valores);
+  const parsed = esquemaCampos(camposEtapa([]), validarEtapa).safeParse(
+    valores,
+  );
   if (!parsed.success)
     return { error: "Si la marcas como perdida, escribe el motivo." };
 
-  const { etapa, motivo_perdida } = parsed.data;
+  const { etapa } = parsed.data;
+  const perdida = etapa === "perdida";
   const { data, error } = await (
     await tabla("oportunidades")
   )
     .update({
       etapa,
-      motivo_perdida: etapa === "perdida" ? motivo_perdida : null,
+      motivo_perdida_id: perdida ? parsed.data.motivo_perdida_id || null : null,
+      motivo_perdida: perdida
+        ? String(parsed.data.motivo_perdida).trim() || null
+        : null,
     })
     .eq("id", id)
     .select("id");

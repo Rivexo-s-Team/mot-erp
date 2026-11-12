@@ -7,17 +7,24 @@ import { z } from "zod";
 import type { ActionResult } from "@/lib/auth/schemas";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import {
-  CAMPOS_COTIZACION,
+  camposCotizacion,
   camposPartida,
   validarCotizacion,
   validarPartida,
 } from "@/lib/cotizaciones/campos";
-import { precioSugeridoPorLitro } from "@/lib/cotizaciones/cotizador";
+import {
+  precioReferenciaDeContenedor,
+  precioSugeridoPorLitro,
+} from "@/lib/cotizaciones/cotizador";
 import {
   obtenerCotizacion,
   parametrosCotizador,
+  contactosDeCuenta,
+  vigenciaPorDefectoDias,
 } from "@/lib/cotizaciones/data";
+import { obtenerOportunidad } from "@/lib/pipeline/data";
 import { aFila, esquemaCampos, type Valores } from "@/lib/forms/campos";
+import { hoyEnMexico, sumarDias } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 
 const esId = (v: unknown): v is string => z.uuid().safeParse(v).success;
@@ -62,12 +69,14 @@ async function siguienteVersion(oportunidadId: string): Promise<number> {
 export async function crearCotizacion(oportunidadId: string): Promise<void> {
   await requireCotizar();
   if (!esId(oportunidadId)) throw new Error("Oportunidad no válida.");
+  const dias = await vigenciaPorDefectoDias();
   const { data, error } = await (
     await tabla("cotizaciones")
   )
     .insert({
       oportunidad_id: oportunidadId,
       version: await siguienteVersion(oportunidadId),
+      vigencia: dias ? sumarDias(hoyEnMexico(), dias) : null,
     })
     .select("id");
   if (error || !data?.[0]) throw new Error("No se pudo crear la cotización.");
@@ -84,13 +93,23 @@ export async function guardarCotizacion(
   await requireCotizar();
   if (!esId(oportunidadId) || !esId(cotizacionId))
     return { error: "Registro no válido." };
-  const parsed = esquemaCampos(CAMPOS_COTIZACION, validarCotizacion).safeParse(
-    valores,
-  );
+  const parsed = esquemaCampos(
+    camposCotizacion([]),
+    validarCotizacion,
+  ).safeParse(valores);
   if (!parsed.success) return { error: "Revisa los datos del formulario." };
 
-  const fila = aFila(CAMPOS_COTIZACION, parsed.data, true);
+  const fila = aFila(camposCotizacion([]), parsed.data, true);
   if (fila.moneda === "USD") fila.tipo_cambio = null;
+  if (fila.contacto_id !== null) {
+    const oportunidad = await obtenerOportunidad(oportunidadId);
+    const contactos = oportunidad
+      ? await contactosDeCuenta(oportunidad.cuenta_id)
+      : [];
+    if (!contactos.some((c) => c.value === fila.contacto_id)) {
+      return { error: "El contacto elegido no es de este cliente." };
+    }
+  }
   const { data, error } = await (
     await tabla("cotizaciones")
   )
@@ -127,12 +146,26 @@ export async function guardarPartida(
   if (!parsed.success) return { error: "Revisa los datos del formulario." };
   const fila = aFila(campos, parsed.data, id !== null);
 
+  // Con costo y litros del contenedor, el precio de referencia se calcula.
+  if (
+    fila.referencia_costo_contenedor !== null &&
+    fila.referencia_litros_contenedor !== null
+  ) {
+    const calculado = precioReferenciaDeContenedor(
+      String(parsed.data.referencia_costo_contenedor),
+      String(parsed.data.referencia_litros_contenedor),
+    );
+    if (!calculado)
+      return { error: "Revisa el costo y los litros del contenedor." };
+    fila.precio_referencia = Number(calculado);
+  }
+
   // Sin precio capturado, se usa el que sugiere el cotizador.
   if (fila.precio_unitario === null) {
     const parametros = await parametrosCotizador();
     const sugerencia = parametros
       ? precioSugeridoPorLitro(
-          String(parsed.data.precio_referencia),
+          String(fila.precio_referencia),
           parametros,
           cotizacion.moneda,
           cotizacion.tipo_cambio,
@@ -184,17 +217,31 @@ export async function eliminarPartida(
   redirect(ruta(oportunidadId, cotizacionId));
 }
 
-/** La marca como enviada: desde ahí ya no se puede editar. */
-export async function marcarEnviada(
+const ESTADOS_SIGUIENTES: Record<string, string[]> = {
+  borrador: ["enviada"],
+  enviada: ["aceptada", "rechazada"],
+  aceptada: ["rechazada"],
+  rechazada: ["aceptada"],
+};
+
+/**
+ * Cambia el estado: borrador → enviada → aceptada o rechazada. Al enviarla ya
+ * no se puede editar; aceptada y rechazada se pueden corregir entre sí.
+ */
+export async function cambiarEstadoCotizacion(
   oportunidadId: string,
   cotizacionId: string,
+  estado: "enviada" | "aceptada" | "rechazada",
 ): Promise<void> {
   await requireCotizar();
   if (!esId(oportunidadId) || !esId(cotizacionId))
     throw new Error("Cotización no válida.");
   const cotizacion = await obtenerCotizacion(oportunidadId, cotizacionId);
   if (!cotizacion) throw new Error("La cotización no existe.");
-  if (cotizacion.lineas.length === 0) {
+  if (!ESTADOS_SIGUIENTES[cotizacion.estado]?.includes(estado)) {
+    throw new Error("Ese cambio de estado no está permitido.");
+  }
+  if (estado === "enviada" && cotizacion.lineas.length === 0) {
     throw new Error(
       "Agrega al menos una partida antes de marcarla como enviada.",
     );
@@ -202,10 +249,10 @@ export async function marcarEnviada(
   const { error } = await (
     await tabla("cotizaciones")
   )
-    .update({ estado: "enviada" })
+    .update({ estado })
     .eq("id", cotizacionId)
     .eq("oportunidad_id", oportunidadId);
-  if (error) throw new Error("No se pudo marcar como enviada.");
+  if (error) throw new Error("No se pudo cambiar el estado de la cotización.");
 
   revalidatePath(ruta(oportunidadId));
   revalidatePath(ruta(oportunidadId, cotizacionId));
@@ -232,6 +279,9 @@ export async function crearNuevaVersion(
       moneda: origen.moneda,
       tipo_cambio: origen.tipo_cambio,
       vigencia: origen.vigencia,
+      contacto_id: origen.contacto_id,
+      numero_requisicion: origen.numero_requisicion,
+      condiciones_pago: origen.condiciones_pago,
       valor_total_contrato: origen.valor_total_contrato,
       litros_estimados: origen.litros_estimados,
       condiciones: origen.condiciones,
@@ -255,6 +305,9 @@ export async function crearNuevaVersion(
         unidad: l.unidad,
         precio_unitario: l.precio_unitario,
         recurrente: l.recurrente,
+        numero_parte_cliente: l.numero_parte_cliente,
+        referencia_costo_contenedor: l.referencia_costo_contenedor,
+        referencia_litros_contenedor: l.referencia_litros_contenedor,
         precio_referencia: l.precio_referencia,
         fuente_tipo: l.fuente_tipo,
         fuente_url: l.fuente_url,

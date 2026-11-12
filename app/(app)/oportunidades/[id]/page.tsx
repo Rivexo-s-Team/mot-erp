@@ -13,14 +13,18 @@ import { ESTADOS } from "@/lib/cotizaciones/campos";
 import { cotizacionesDeOportunidad } from "@/lib/cotizaciones/data";
 import { formatDia, formatFecha, formatImporte } from "@/lib/format";
 import {
-  CAMPOS_ETAPA,
+  camposEtapa,
   ETAPAS,
   etiqueta,
   ORIGENES,
   TIPOS,
   TIPOS_ACTIVIDAD,
 } from "@/lib/pipeline/campos";
-import { directorioComercial, obtenerOportunidad } from "@/lib/pipeline/data";
+import {
+  directorioComercial,
+  obtenerOportunidad,
+  listarMotivosPerdida,
+} from "@/lib/pipeline/data";
 import {
   prepararAdjunto,
   quitarAdjunto,
@@ -42,6 +46,19 @@ export default async function OportunidadPage({
   if (!o) notFound();
 
   const edita = tienePermiso(sesion, "oportunidades.editar");
+  // Si el motivo guardado ya se desactivó en el catálogo, se conserva en la lista.
+  const motivos = edita ? await listarMotivosPerdida() : [];
+  if (
+    o.motivo_perdida_id &&
+    o.motivos_perdida &&
+    !motivos.some((m) => m.value === o.motivo_perdida_id)
+  ) {
+    motivos.push({
+      value: o.motivo_perdida_id,
+      label: o.motivos_perdida.nombre,
+    });
+  }
+  const camposDeEtapa = camposEtapa(motivos);
   // Las cotizaciones son precios: solo para quien puede verlos.
   const vePrecios = tienePermiso(sesion, "precios.ver");
   const cotizaciones = vePrecios ? await cotizacionesDeOportunidad(o.id) : [];
@@ -59,7 +76,10 @@ export default async function OportunidadPage({
   ];
   if (o.fecha_cierre)
     datos.push(["Fecha de cierre", formatFecha(o.fecha_cierre)]);
-  if (o.motivo_perdida) datos.push(["Motivo de la pérdida", o.motivo_perdida]);
+  const motivo = [o.motivos_perdida?.nombre, o.motivo_perdida]
+    .filter(Boolean)
+    .join(". ");
+  if (motivo) datos.push(["Motivo de la pérdida", motivo]);
 
   return (
     <>
@@ -274,10 +294,18 @@ export default async function OportunidadPage({
                       >
                         <Card className="gap-1 px-4 py-3 transition-colors hover:border-primary/40 hover:bg-accent/40">
                           <div className="flex flex-wrap items-center justify-between gap-2">
-                            <p className="font-medium">Versión {c.version}</p>
+                            <p className="font-medium">
+                              {c.folio}
+                              <span className="font-normal text-muted-foreground">
+                                {" "}
+                                · versión {c.version}
+                              </span>
+                            </p>
                             <Badge
                               variant={
-                                c.estado === "enviada" ? "default" : "secondary"
+                                c.estado === "borrador"
+                                  ? "secondary"
+                                  : "default"
                               }
                             >
                               {etiqueta(ESTADOS, c.estado)}
@@ -318,10 +346,12 @@ export default async function OportunidadPage({
             <CardContent>
               <EtapaForm
                 // Al cambiar de etapa el formulario se reinicia con los datos guardados.
-                key={`${o.etapa}:${o.motivo_perdida ?? ""}`}
+                key={`${o.etapa}:${o.motivo_perdida_id ?? ""}:${o.motivo_perdida ?? ""}`}
                 id={o.id}
-                valores={valoresIniciales(CAMPOS_ETAPA, {
+                campos={camposDeEtapa}
+                valores={valoresIniciales(camposDeEtapa, {
                   etapa: o.etapa,
+                  motivo_perdida_id: o.motivo_perdida_id,
                   motivo_perdida: o.motivo_perdida,
                 })}
               />

@@ -1,26 +1,29 @@
 "use client";
 
 import { ConfigForm } from "@/components/forms/config-form";
-import {
-  CAMPOS_COTIZACION,
-  validarCotizacion,
-} from "@/lib/cotizaciones/campos";
-import type { Valores } from "@/lib/forms/campos";
+import { validarCotizacion } from "@/lib/cotizaciones/campos";
+import type { Campo, Valores } from "@/lib/forms/campos";
 import {
   eliminarCotizacion,
   guardarCotizacion,
 } from "../../../cotizaciones-actions";
 
-type Props = { oportunidadId: string; cotizacionId: string; valores: Valores };
+type Props = {
+  oportunidadId: string;
+  cotizacionId: string;
+  campos: Campo[];
+  valores: Valores;
+};
 
 export function CotizacionForm({
   oportunidadId,
   cotizacionId,
+  campos,
   valores,
 }: Props) {
   return (
     <ConfigForm
-      campos={CAMPOS_COTIZACION}
+      campos={campos}
       valores={valores}
       esEdicion
       validar={validarCotizacion}

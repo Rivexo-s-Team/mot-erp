@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { CAMPOS_COTIZACION } from "@/lib/cotizaciones/campos";
+import { camposCotizacion } from "@/lib/cotizaciones/campos";
+import { contactosDeCuenta } from "@/lib/cotizaciones/data";
 import { valoresIniciales } from "@/lib/forms/campos";
 import { cargarCotizacion } from "../contexto";
 import { CotizacionForm } from "../cotizacion-form";
@@ -19,18 +20,26 @@ export default async function EditarCotizacionPage({
   );
   if (!editable) redirect(`/oportunidades/${id}/cotizaciones/${cotizacionId}`);
 
+  const campos = camposCotizacion(
+    await contactosDeCuenta(oportunidad.cuenta_id),
+  );
+
   return (
     <div className="mx-auto max-w-xl">
       <PageHeader
         title="Datos de la cotización"
-        description={`Versión ${cotizacion.version} · ${oportunidad.nombre}`}
+        description={`${cotizacion.folio} · versión ${cotizacion.version} · ${oportunidad.nombre}`}
       />
       <Card>
         <CardContent>
           <CotizacionForm
             oportunidadId={id}
             cotizacionId={cotizacionId}
-            valores={valoresIniciales(CAMPOS_COTIZACION, {
+            campos={campos}
+            valores={valoresIniciales(campos, {
+              contacto_id: cotizacion.contacto_id,
+              numero_requisicion: cotizacion.numero_requisicion,
+              condiciones_pago: cotizacion.condiciones_pago,
               moneda: cotizacion.moneda,
               tipo_cambio: cotizacion.tipo_cambio,
               vigencia: cotizacion.vigencia,
