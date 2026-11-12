@@ -116,3 +116,27 @@ with oc as (
 )
 update public.contrato_tarifas t set orden_compra_id = oc.id
 from oc where t.contrato_id = oc.contrato_id;
+
+-- El Robox 545592 trabaja en Rassini BYPASA, en rotación entre los dos equipos.
+-- El ID de caso RAS1-08 viene del formato de servicio en papel (DISENO §4.3).
+with asignacion as (
+  insert into public.asignaciones_robox (robox_id, contrato_id, planta_id, fecha_inicio)
+  select r.id, c.id, c.planta_id, date '2025-06-01'
+  from public.robox r, public.contratos c
+  where r.numero_serie = '545592' and c.notas = 'Contrato de ejemplo.'
+  returning id, planta_id
+),
+carrusel as (
+  insert into public.carrusel_equipos (asignacion_id, planta_id, equipo_cliente_id, orden, id_caso)
+  select a.id, a.planta_id, e.id,
+         case e.identificador when '11B116' then 1 else 2 end,
+         case e.identificador when '11B116' then 'RAS1-08' end
+  from asignacion a
+  join public.equipos_cliente e on e.planta_id = a.planta_id and e.identificador in ('11B116', '11B113')
+  returning asignacion_id
+)
+insert into public.movimientos_robox (asignacion_id, planta_id, fecha, equipo_destino_id, movido_por, notas)
+select a.id, a.planta_id, date '2025-06-01', e.id, 'mot', 'Instalación.'
+from asignacion a
+join public.equipos_cliente e on e.planta_id = a.planta_id and e.identificador = '11B116'
+where exists (select 1 from carrusel);

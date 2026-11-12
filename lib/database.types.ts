@@ -132,6 +132,64 @@ export type Database = {
           },
         ];
       };
+      asignaciones_robox: {
+        Row: {
+          contrato_id: string;
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          fecha_fin: string | null;
+          fecha_inicio: string;
+          id: string;
+          notas: string | null;
+          planta_id: string;
+          robox_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          contrato_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          fecha_fin?: string | null;
+          fecha_inicio: string;
+          id?: string;
+          notas?: string | null;
+          planta_id: string;
+          robox_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          contrato_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          fecha_fin?: string | null;
+          fecha_inicio?: string;
+          id?: string;
+          notas?: string | null;
+          planta_id?: string;
+          robox_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "asignaciones_robox_contrato_id_planta_id_fkey";
+            columns: ["contrato_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "contratos";
+            referencedColumns: ["id", "planta_id"];
+          },
+          {
+            foreignKeyName: "asignaciones_robox_robox_id_fkey";
+            columns: ["robox_id"];
+            isOneToOne: false;
+            referencedRelation: "robox";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       bitacora: {
         Row: {
           created_at: string;
@@ -202,6 +260,68 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      carrusel_equipos: {
+        Row: {
+          asignacion_id: string;
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          equipo_cliente_id: string;
+          id: string;
+          id_caso: string | null;
+          orden: number;
+          planta_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          asignacion_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          equipo_cliente_id: string;
+          id?: string;
+          id_caso?: string | null;
+          orden?: number;
+          planta_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          asignacion_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          equipo_cliente_id?: string;
+          id?: string;
+          id_caso?: string | null;
+          orden?: number;
+          planta_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "carrusel_equipos_asignacion_id_planta_id_fkey";
+            columns: ["asignacion_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "asignaciones_robox";
+            referencedColumns: ["id", "planta_id"];
+          },
+          {
+            foreignKeyName: "carrusel_equipos_asignacion_id_planta_id_fkey";
+            columns: ["asignacion_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "robox_ubicacion";
+            referencedColumns: ["asignacion_id", "planta_id"];
+          },
+          {
+            foreignKeyName: "carrusel_equipos_equipo_cliente_id_planta_id_fkey";
+            columns: ["equipo_cliente_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "equipos_cliente";
+            referencedColumns: ["id", "planta_id"];
+          },
+        ];
       };
       contactos: {
         Row: {
@@ -896,6 +1016,81 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      movimientos_robox: {
+        Row: {
+          asignacion_id: string;
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          equipo_destino_id: string;
+          equipo_origen_id: string | null;
+          fecha: string;
+          id: string;
+          movido_por: string;
+          notas: string | null;
+          planta_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          asignacion_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          equipo_destino_id: string;
+          equipo_origen_id?: string | null;
+          fecha: string;
+          id?: string;
+          movido_por: string;
+          notas?: string | null;
+          planta_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          asignacion_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          equipo_destino_id?: string;
+          equipo_origen_id?: string | null;
+          fecha?: string;
+          id?: string;
+          movido_por?: string;
+          notas?: string | null;
+          planta_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "movimientos_robox_asignacion_id_planta_id_fkey";
+            columns: ["asignacion_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "asignaciones_robox";
+            referencedColumns: ["id", "planta_id"];
+          },
+          {
+            foreignKeyName: "movimientos_robox_asignacion_id_planta_id_fkey";
+            columns: ["asignacion_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "robox_ubicacion";
+            referencedColumns: ["asignacion_id", "planta_id"];
+          },
+          {
+            foreignKeyName: "movimientos_robox_equipo_destino_id_planta_id_fkey";
+            columns: ["equipo_destino_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "equipos_cliente";
+            referencedColumns: ["id", "planta_id"];
+          },
+          {
+            foreignKeyName: "movimientos_robox_equipo_origen_id_planta_id_fkey";
+            columns: ["equipo_origen_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "equipos_cliente";
+            referencedColumns: ["id", "planta_id"];
+          },
+        ];
       };
       oportunidad_adjuntos: {
         Row: {
@@ -1624,6 +1819,41 @@ export type Database = {
         };
         ComputedFields: never;
         Relationships: [];
+      };
+      robox_ubicacion: {
+        Row: {
+          asignacion_id: string;
+          contrato_id: string;
+          cuenta_id: string;
+          equipo_cliente_id: string | null;
+          fecha_inicio: string;
+          planta_id: string;
+          robox_id: string;
+        };
+        ComputedFields: never;
+        Relationships: [
+          {
+            foreignKeyName: "asignaciones_robox_contrato_id_planta_id_fkey";
+            columns: ["contrato_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "contratos";
+            referencedColumns: ["id", "planta_id"];
+          },
+          {
+            foreignKeyName: "asignaciones_robox_robox_id_fkey";
+            columns: ["robox_id"];
+            isOneToOne: false;
+            referencedRelation: "robox";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contratos_cuenta_id_fkey";
+            columns: ["cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Functions: {
