@@ -61,3 +61,10 @@ export function formatImporte(
   }).format(importe as Intl.StringNumericLiteral);
   return `${numero} ${moneda}`;
 }
+
+/** Suma días a un día "aaaa-mm-dd" y lo devuelve en el mismo formato. */
+export function sumarDias(dia: string, dias: number): string {
+  const fecha = new Date(`${dia}T12:00:00Z`);
+  fecha.setUTCDate(fecha.getUTCDate() + dias);
+  return fecha.toISOString().slice(0, 10);
+}

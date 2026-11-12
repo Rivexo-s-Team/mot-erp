@@ -13,6 +13,8 @@ export const UNIDADES: Opcion[] = [
 export const ESTADOS: Opcion[] = [
   { value: "borrador", label: "Borrador" },
   { value: "enviada", label: "Enviada" },
+  { value: "aceptada", label: "Aceptada" },
+  { value: "rechazada", label: "Rechazada" },
 ];
 
 export const FUENTES: Opcion[] = [
@@ -23,53 +25,82 @@ export const FUENTES: Opcion[] = [
 export const etiqueta = (opciones: Opcion[], valor: string | null) =>
   opciones.find((o) => o.value === valor)?.label ?? valor ?? "—";
 
-export const CAMPOS_COTIZACION: Campo[] = [
-  {
-    name: "moneda",
-    label: "Moneda",
-    tipo: "opciones",
-    opciones: MONEDAS,
-    valorInicial: "USD",
-  },
-  {
-    name: "tipo_cambio",
-    label: "Tipo de cambio (pesos por dólar)",
-    tipo: "numero",
-    opcional: true,
-    ayuda:
-      "Solo si la cotización es en pesos. Sirve para comparar contra el precio mínimo por litro.",
-  },
-  { name: "vigencia", label: "Vigente hasta", tipo: "fecha", opcional: true },
-  {
-    name: "valor_total_contrato",
-    label: "Valor total del contrato",
-    tipo: "numero",
-    opcional: true,
-    ayuda:
-      "Si es una renta: lo que vale todo el contrato, en la moneda de la cotización.",
-  },
-  {
-    name: "litros_estimados",
-    label: "Litros estimados a vender",
-    tipo: "numero",
-    opcional: true,
-    ayuda: "Si se cotiza por litro.",
-  },
-  {
-    name: "condiciones",
-    label: "Condiciones comerciales",
-    tipo: "textoLargo",
-    opcional: true,
-    ayuda:
-      "Lo que verá el cliente: forma de pago, anticipo, plazo, qué incluye.",
-  },
-  {
-    name: "notas",
-    label: "Notas internas",
-    tipo: "textoLargo",
-    opcional: true,
-  },
-];
+/** Datos generales de la cotización. `contactos` son las personas del cliente. */
+export function camposCotizacion(contactos: Opcion[]): Campo[] {
+  return [
+    {
+      name: "contacto_id",
+      label: "Atención (a quién va dirigida)",
+      tipo: "referencia",
+      opcional: true,
+      opciones: contactos,
+      ayuda:
+        contactos.length === 0
+          ? "Este cliente aún no tiene contactos. Agrégalos en su ficha para elegir uno."
+          : "En el PDF salen su nombre, teléfono y correo.",
+    },
+    {
+      name: "numero_requisicion",
+      label: "No. de requisición del cliente",
+      tipo: "texto",
+      opcional: true,
+      max: 60,
+    },
+    {
+      name: "moneda",
+      label: "Moneda",
+      tipo: "opciones",
+      opciones: MONEDAS,
+      valorInicial: "USD",
+    },
+    {
+      name: "tipo_cambio",
+      label: "Tipo de cambio (pesos por dólar)",
+      tipo: "numero",
+      opcional: true,
+      ayuda:
+        "Solo si la cotización es en pesos. Sirve para comparar contra el precio mínimo por litro.",
+    },
+    { name: "vigencia", label: "Válida hasta", tipo: "fecha", opcional: true },
+    {
+      name: "condiciones_pago",
+      label: "Condiciones de pago",
+      tipo: "texto",
+      opcional: true,
+      max: 120,
+      ayuda: "Ejemplos: Contado, 30 días.",
+    },
+    {
+      name: "valor_total_contrato",
+      label: "Valor total del contrato",
+      tipo: "numero",
+      opcional: true,
+      ayuda:
+        "Si es una renta: lo que vale todo el contrato, en la moneda de la cotización.",
+    },
+    {
+      name: "litros_estimados",
+      label: "Litros estimados a vender",
+      tipo: "numero",
+      opcional: true,
+      ayuda: "Si se cotiza por litro.",
+    },
+    {
+      name: "condiciones",
+      label: "Notas para el cliente",
+      tipo: "textoLargo",
+      opcional: true,
+      ayuda:
+        'Una nota por renglón; en el PDF salen numeradas después de "Precios más IVA" y la moneda.',
+    },
+    {
+      name: "notas",
+      label: "Notas internas (no salen en el PDF)",
+      tipo: "textoLargo",
+      opcional: true,
+    },
+  ];
+}
 
 export const validarCotizacion: Validador = (v) =>
   v.moneda !== "USD" && String(v.tipo_cambio ?? "").trim() === ""
@@ -81,6 +112,8 @@ export const validarCotizacion: Validador = (v) =>
 
 /** Campos del cotizador por litro; solo aplican a partidas por litro. */
 export const CAMPOS_REFERENCIA = [
+  "referencia_costo_contenedor",
+  "referencia_litros_contenedor",
   "precio_referencia",
   "fuente_tipo",
   "fuente_url",
@@ -120,6 +153,27 @@ export function camposPartida(equipos: Opcion[]): Campo[] {
       name: "recurrente",
       label: "Partida recurrente (se cobra cada periodo)",
       tipo: "casilla",
+    },
+    {
+      name: "numero_parte_cliente",
+      label: "No. de parte del cliente",
+      tipo: "texto",
+      opcional: true,
+      max: 80,
+    },
+    {
+      name: "referencia_costo_contenedor",
+      label: "Costo de un contenedor de aceite nuevo",
+      tipo: "numero",
+      opcional: true,
+      ayuda:
+        "Opcional. Con el costo y los litros del contenedor se calcula el precio por litro.",
+    },
+    {
+      name: "referencia_litros_contenedor",
+      label: "Litros del contenedor",
+      tipo: "numero",
+      opcional: true,
     },
     {
       name: "precio_referencia",
@@ -166,24 +220,46 @@ export function camposPartida(equipos: Opcion[]): Campo[] {
 }
 
 export const validarPartida: Validador = (v) => {
-  const precio = String(v.precio_unitario ?? "").trim();
-  const referencia = String(v.precio_referencia ?? "").trim();
-  if (precio === "" && (v.unidad !== "litro" || referencia === "")) {
+  const t = (campo: string) => String(v[campo] ?? "").trim();
+  const precio = t("precio_unitario");
+  const costo = t("referencia_costo_contenedor");
+  const litros = t("referencia_litros_contenedor");
+  const hayContenedor = costo !== "" && litros !== "";
+  const hayReferencia = t("precio_referencia") !== "" || hayContenedor;
+
+  if ((costo === "") !== (litros === "")) {
+    return {
+      campo:
+        costo === ""
+          ? "referencia_costo_contenedor"
+          : "referencia_litros_contenedor",
+      mensaje: "Captura el costo del contenedor y también sus litros.",
+    };
+  }
+  if (litros !== "" && Number(litros) === 0) {
+    return {
+      campo: "referencia_litros_contenedor",
+      mensaje: "Los litros deben ser mayores que cero.",
+    };
+  }
+  if (precio === "" && (v.unidad !== "litro" || !hayReferencia)) {
     return {
       campo: "precio_unitario",
       mensaje:
         v.unidad === "litro"
-          ? "Escribe el precio, o el precio del aceite nuevo para usar el sugerido."
+          ? "Escribe el precio, o el costo del aceite nuevo para usar el sugerido."
           : "Escribe el precio unitario.",
     };
   }
-  if (referencia !== "" && v.unidad !== "litro") {
+  if (hayReferencia && v.unidad !== "litro") {
     return {
-      campo: "precio_referencia",
-      mensaje: "El precio del aceite nuevo solo aplica a partidas por litro.",
+      campo: hayContenedor
+        ? "referencia_costo_contenedor"
+        : "precio_referencia",
+      mensaje: "El costo del aceite nuevo solo aplica a partidas por litro.",
     };
   }
-  if (referencia !== "" && String(v.fuente_tipo ?? "") === "") {
+  if (hayReferencia && t("fuente_tipo") === "") {
     return {
       campo: "fuente_tipo",
       mensaje: "Indica de dónde salió el precio del aceite nuevo.",

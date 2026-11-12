@@ -1,15 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { esquemaCampos, valoresIniciales } from "@/lib/forms/campos";
 import {
-  CAMPOS_COTIZACION,
+  camposCotizacion,
   camposPartida,
   validarCotizacion,
   validarPartida,
 } from "./campos";
 
 describe("cotización", () => {
-  const esquema = esquemaCampos(CAMPOS_COTIZACION, validarCotizacion);
+  const esquema = esquemaCampos(camposCotizacion([]), validarCotizacion);
   const base = {
+    contacto_id: "",
+    numero_requisicion: "",
+    condiciones_pago: "",
     moneda: "USD",
     tipo_cambio: "",
     vigencia: "",
@@ -20,7 +23,7 @@ describe("cotización", () => {
   };
 
   it("una cotización nueva es en USD", () => {
-    expect(valoresIniciales(CAMPOS_COTIZACION).moneda).toBe("USD");
+    expect(valoresIniciales(camposCotizacion([])).moneda).toBe("USD");
   });
 
   it("en USD no pide tipo de cambio; en pesos sí", () => {
@@ -54,6 +57,9 @@ describe("partida", () => {
     unidad: "litro",
     cantidad: "280",
     recurrente: false,
+    numero_parte_cliente: "",
+    referencia_costo_contenedor: "",
+    referencia_litros_contenedor: "",
     precio_referencia: "",
     fuente_tipo: "",
     fuente_url: "",
@@ -108,5 +114,27 @@ describe("partida", () => {
   it("valida unidad y cantidad", () => {
     expect(esquema.safeParse({ ...base, unidad: "kilo" }).success).toBe(false);
     expect(esquema.safeParse({ ...base, cantidad: "" }).success).toBe(false);
+  });
+
+  it("acepta el costo del contenedor con sus litros en lugar del precio por litro", () => {
+    const contenedor = {
+      ...base,
+      precio_unitario: "",
+      referencia_costo_contenedor: "2900",
+      referencia_litros_contenedor: "200",
+      fuente_tipo: "comprobante_cliente",
+    };
+    expect(esquema.safeParse(contenedor).success).toBe(true);
+    expect(
+      esquema.safeParse({ ...contenedor, referencia_litros_contenedor: "" })
+        .success,
+    ).toBe(false);
+    expect(
+      esquema.safeParse({ ...contenedor, referencia_litros_contenedor: "0" })
+        .success,
+    ).toBe(false);
+    expect(esquema.safeParse({ ...contenedor, fuente_tipo: "" }).success).toBe(
+      false,
+    );
   });
 });

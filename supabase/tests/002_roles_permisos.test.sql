@@ -20,6 +20,10 @@ begin
   return v_id;
 end $$;
 
+-- Cuántos parámetros hay en total (para no fijar el número en las pruebas).
+create table pruebas.total_parametros as select count(*)::int as n from public.parametros_negocio;
+grant select on pruebas.total_parametros to authenticated;
+
 create table pruebas.u (rol text primary key, id uuid);
 insert into pruebas.u
 select clave, pruebas.crear_usuario(clave) from public.roles;
@@ -51,7 +55,7 @@ select is(
 
 -- Dirección: ve todo --------------------------------------------------------
 select pruebas.entrar('direccion');
-select is(pruebas.cuenta('parametros_negocio'), 4, 'dirección ve los parámetros');
+select is(pruebas.cuenta('parametros_negocio'), (select n from pruebas.total_parametros), 'dirección ve los parámetros');
 select cmp_ok(pruebas.cuenta('bitacora'), '>', 0, 'dirección ve la bitácora');
 select cmp_ok(pruebas.cuenta('perfiles'), '>=', 7, 'dirección ve todos los perfiles');
 select is(pruebas.cuenta('roles'), 6, 'dirección ve todos los roles');
@@ -60,7 +64,7 @@ select ok(public.tiene_permiso('usuarios.administrar'), 'dirección administra u
 
 -- Comercial y Administración: precios sí, usuarios y bitácora no -------------
 select pruebas.entrar('comercial');
-select is(pruebas.cuenta('parametros_negocio'), 4, 'comercial ve los parámetros');
+select is(pruebas.cuenta('parametros_negocio'), (select n from pruebas.total_parametros), 'comercial ve los parámetros');
 select is(pruebas.cuenta('bitacora'), 0, 'comercial no ve la bitácora');
 select is(pruebas.cuenta('perfiles'), 1, 'comercial solo ve su perfil');
 select is(pruebas.cuenta('roles'), 1, 'comercial solo ve su rol');
@@ -75,7 +79,7 @@ with cambio as (
 select is((select count(*)::int from cambio), 0, 'comercial no puede cambiar parámetros');
 
 select pruebas.entrar('administracion');
-select is(pruebas.cuenta('parametros_negocio'), 4, 'administración ve los parámetros');
+select is(pruebas.cuenta('parametros_negocio'), (select n from pruebas.total_parametros), 'administración ve los parámetros');
 select is(pruebas.cuenta('bitacora'), 0, 'administración no ve la bitácora');
 select ok(public.tiene_permiso('precios.ver'), 'administración ve precios');
 

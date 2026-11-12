@@ -52,6 +52,9 @@ export default async function PartidaPage({
       unidad: linea.unidad,
       cantidad: linea.cantidad,
       recurrente: linea.recurrente,
+      numero_parte_cliente: linea.numero_parte_cliente,
+      referencia_costo_contenedor: linea.referencia_costo_contenedor,
+      referencia_litros_contenedor: linea.referencia_litros_contenedor,
       precio_referencia: linea.precio_referencia,
       fuente_tipo: linea.fuente_tipo,
       fuente_url: linea.fuente_url,
@@ -69,7 +72,7 @@ export default async function PartidaPage({
       <title>{`${titulo} · Sistema MOT`}</title>
       <PageHeader
         title={titulo}
-        description={`Cotización versión ${cotizacion.version} (${cotizacion.moneda}) · ${oportunidad.nombre}`}
+        description={`${cotizacion.folio} · versión ${cotizacion.version} (${cotizacion.moneda}) · ${oportunidad.nombre}`}
       />
       <Card>
         <CardContent>

@@ -18,6 +18,8 @@ export function describirValor(p: {
       return `${p.valor.toFixed(2)} ${p.moneda ?? ""} por litro`;
     case "pruebas_no_pasa":
       return `${p.valor} pruebas "no pasa"`;
+    case "dias":
+      return `${p.valor} días`;
     default:
       return String(p.valor);
   }
@@ -32,6 +34,8 @@ export function ayudaValor(unidad: string, moneda: string | null): string {
       return `Importe en ${moneda ?? "la moneda indicada"} por litro.`;
     case "pruebas_no_pasa":
       return "Número entero de pruebas.";
+    case "dias":
+      return "Número entero de días.";
     default:
       return "";
   }

@@ -128,9 +128,9 @@ function TarjetaOportunidad({
             <Badge variant="outline">{formatFecha(o.fecha_cierre)}</Badge>
           ) : null}
         </div>
-        {o.etapa === "perdida" && o.motivo_perdida ? (
+        {o.etapa === "perdida" ? (
           <p className="text-xs text-muted-foreground">
-            Motivo: {o.motivo_perdida}
+            Motivo: {o.motivos_perdida?.nombre ?? o.motivo_perdida ?? "—"}
           </p>
         ) : null}
       </Card>

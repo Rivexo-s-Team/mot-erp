@@ -79,6 +79,25 @@ export function precioSugeridoPorLitro(
   };
 }
 
+/**
+ * Precio de referencia por litro a partir de lo que cuesta un contenedor de
+ * aceite nuevo y sus litros (ej. 2,900 USD ÷ 200 L = 14.50). Null si falta un dato.
+ */
+export function precioReferenciaDeContenedor(
+  costo: string | number,
+  litros: string | number,
+): string | null {
+  const c = String(costo).trim();
+  const l = String(litros).trim();
+  if (!/^\d+(\.\d+)?$/.test(c) || !/^\d+(\.\d+)?$/.test(l)) return null;
+  const divisor = aMillonesimas(l);
+  if (divisor === 0n) return null;
+  // Cuatro decimales: suficiente para no perder precisión antes de aplicar el porcentaje.
+  const diezmilesimas = (aMillonesimas(c) * 10_000n + divisor / 2n) / divisor;
+  const texto = `${diezmilesimas / 10_000n}.${(diezmilesimas % 10_000n).toString().padStart(4, "0")}`;
+  return texto.replace(/0{1,2}$/, "");
+}
+
 /** 0.70 → "70 %". */
 export function comoPorcentaje(fraccion: string | number): string {
   const centesimas = aMillonesimas(fraccion) / 100n; // diezmilésimas

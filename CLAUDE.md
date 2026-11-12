@@ -70,6 +70,7 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 
 - Los PDF se generan en el servidor con `@react-pdf/renderer`, en una ruta (`…/pdf/route.ts`) con los mismos permisos que la pantalla.
 - Separa los datos del dibujo: una función pura arma lo que sale en el documento (`lib/cotizaciones/pdf-datos.ts`, con pruebas) y otro archivo lo dibuja (`pdf-documento.tsx`). Lo que va al cliente nunca incluye datos internos (notas, precios de referencia, costos).
+- Los datos fiscales de MOT que se imprimen están en `lib/empresa.ts`. El PDF no parte palabras con guion (`Font.registerHyphenationCallback`).
 - Para revisar un PDF en pruebas: `pdftotext` para el texto y `pdftoppm` para verlo como imagen.
 
 ## Catálogos
@@ -95,7 +96,7 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 ## Estado
 
 - **Etapa 0. Cimientos: terminada**, pendiente de revisión con MOT.
-- **Etapa 1. Clientes y comercial: en curso.** Plan de 6 pasos: (1) expediente del cliente, hecho; (2) equipos y requisitos de planta, hecho; (3) pipeline, hecho; (4) cotizador y cotizaciones, hecho (partidas libres, versiones, cotizador por litro y pantalla de parámetros); incluidos los archivos (adjuntos de oportunidad y comprobante del precio de referencia); (5) cotización en PDF, hecha con formato provisional (falta ajustarla a una cotización real de MOT y definir el IVA); (6) cierre y carga de los 4 clientes.
-- Decisiones de esta etapa en DISENO §7: D9 (vendedor externo = canal, no usuario), D10 (cotizaciones de partidas libres), D11 (ganar solo marca pendiente de contrato).
+- **Etapa 1. Clientes y comercial: en curso.** Plan de 6 pasos: (1) expediente del cliente, hecho; (2) equipos y requisitos de planta, hecho; (3) pipeline, hecho; (4) cotizador y cotizaciones, hecho (partidas libres, versiones, cotizador por litro y pantalla de parámetros); incluidos los archivos (adjuntos de oportunidad y comprobante del precio de referencia); (5) cotización en PDF, hecha con el formato de la cotización tipo de MOT (folio anual, precios más IVA, notas numeradas); (6) cierre: los 3 clientes actuales (GOPLAS, NACOBRE, TT Green Metals) ya están en `mot-dev` con plantas y contactos; razones sociales, equipos y demás los captura MOT. Sus 13 rentas son datos de contrato (Etapa 2).
+- Decisiones de esta etapa en DISENO §7: D9 (vendedor externo = canal, no usuario), D10 (cotizaciones de partidas libres), D11 (ganar solo marca pendiente de contrato), D12 a D17 (precios más IVA, folio CMOT, estados, comodato, renta a 3 años, contenedor, motivos de pérdida).
 - Pendiente fuera de etapa: pantalla de bitácora; recuperación de contraseña por correo.
 - Preguntas abiertas: DISENO §6.

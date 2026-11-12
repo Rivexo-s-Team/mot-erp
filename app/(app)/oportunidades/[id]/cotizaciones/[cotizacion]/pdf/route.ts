@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { direccionDePlanta } from "@/lib/cotizaciones/data";
 import { datosParaPdf } from "@/lib/cotizaciones/pdf-datos";
 import { generarPdfCotizacion } from "@/lib/cotizaciones/pdf-documento";
 import { cargarCotizacion } from "../contexto";
@@ -16,9 +17,11 @@ export async function GET(
 
   const datos = datosParaPdf({
     oportunidad: {
-      nombre: oportunidad.nombre,
       cliente: oportunidad.cuentas.nombre,
       planta: oportunidad.plantas?.nombre ?? null,
+      direccion: oportunidad.planta_id
+        ? await direccionDePlanta(oportunidad.planta_id)
+        : null,
     },
     cotizacion,
   });
