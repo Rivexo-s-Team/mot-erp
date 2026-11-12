@@ -8,9 +8,11 @@ import type { ActionResult } from "@/lib/auth/schemas";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import {
   camposContrato,
+  camposOrdenCompra,
   camposTarifa,
   partidasATarifas,
   validarContrato,
+  validarOrdenCompra,
 } from "@/lib/contratos/campos";
 import { cotizacionAceptada, obtenerContrato } from "@/lib/contratos/data";
 import { aFila, esquemaCampos, type Valores } from "@/lib/forms/campos";
@@ -21,13 +23,15 @@ const PERMISO = "contratos.editar";
 const esId = (v: unknown): v is string => z.uuid().safeParse(v).success;
 
 /** Las tablas se nombran aquí, nunca con datos del usuario; RLS decide el acceso. */
-async function tabla(nombre: "contratos" | "contrato_tarifas") {
+async function tabla(
+  nombre: "contratos" | "contrato_tarifas" | "ordenes_compra",
+) {
   const supabase = (await createClient()) as unknown as SupabaseClient;
   return supabase.from(nombre);
 }
 
 function mensajeError(code: string | undefined): string {
-  if (code === "23505") return "Esa oportunidad ya tiene un contrato.";
+  if (code === "23505") return "Ese registro ya existe en este contrato.";
   if (code === "23503")
     return "Uno de los datos elegidos no pertenece a este cliente o a esta planta.";
   if (code === "23514") return "Revisa las fechas y los importes.";
@@ -104,6 +108,8 @@ export async function guardarContrato(
       cotizacion_id: cotizacion?.id ?? null,
     })
     .select("id, planta_id");
+  if (error?.code === "23505")
+    return { error: "Esa oportunidad ya tiene un contrato." };
   if (error || !data?.[0])
     return { error: mensajeError(error?.code ?? "42501") };
   const contrato = data[0] as { id: string; planta_id: string };
@@ -208,6 +214,67 @@ export async function eliminarTarifa(
     return { error: mensajeError(error?.code ?? "42501") };
 
   revalidatePath("/contratos");
+  revalidatePath(`/contratos/${contratoId}`);
+  redirect(`/contratos/${contratoId}`);
+}
+
+export async function guardarOrdenCompra(
+  contratoId: string,
+  id: string | null,
+  valores: Valores,
+): Promise<ActionResult> {
+  await requireTarifas();
+  if (!esId(contratoId) || (id !== null && !esId(id)))
+    return { error: "Registro no válido." };
+  const contrato = await obtenerContrato(contratoId);
+  if (!contrato) return { error: "El contrato ya no existe." };
+
+  const campos = camposOrdenCompra(contrato.moneda);
+  const parsed = esquemaCampos(campos, validarOrdenCompra).safeParse(valores);
+  if (!parsed.success) return { error: "Revisa los datos del formulario." };
+
+  const fila = aFila(campos, parsed.data, id !== null);
+  const t = await tabla("ordenes_compra");
+  const { data, error } = id
+    ? await t
+        .update(fila)
+        .eq("id", id)
+        .eq("contrato_id", contratoId)
+        .select("id")
+    : await t.insert({ ...fila, contrato_id: contratoId }).select("id");
+  if (error?.code === "23505")
+    return { error: "Ese número de orden de compra ya está en este contrato." };
+  if (error || !data?.[0])
+    return { error: mensajeError(error?.code ?? "42501") };
+
+  revalidatePath(`/contratos/${contratoId}`);
+  redirect(`/contratos/${contratoId}`);
+}
+
+/** Quita la orden de la lista y la desliga de las tarifas que cubría. */
+export async function eliminarOrdenCompra(
+  contratoId: string,
+  id: string,
+): Promise<ActionResult> {
+  await requireTarifas();
+  if (!esId(contratoId) || !esId(id)) return { error: "Registro no válido." };
+  const desligar = await (
+    await tabla("contrato_tarifas")
+  )
+    .update({ orden_compra_id: null })
+    .eq("orden_compra_id", id)
+    .eq("contrato_id", contratoId);
+  if (desligar.error) return { error: mensajeError(desligar.error.code) };
+  const { data, error } = await (
+    await tabla("ordenes_compra")
+  )
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("contrato_id", contratoId)
+    .select("id");
+  if (error || !data?.[0])
+    return { error: mensajeError(error?.code ?? "42501") };
+
   revalidatePath(`/contratos/${contratoId}`);
   redirect(`/contratos/${contratoId}`);
 }

@@ -6,10 +6,13 @@ import {
 } from "@/lib/forms/campos";
 import {
   camposContrato,
+  camposOrdenCompra,
   camposTarifa,
+  ordenVencida,
   partidasATarifas,
   textoVigencia,
   validarContrato,
+  validarOrdenCompra,
   type PartidaCotizada,
 } from "./campos";
 
@@ -165,5 +168,55 @@ describe("textoVigencia", () => {
     expect(textoVigencia(null, "2027-03-31", f)).toBe("Hasta el 31/03/2027");
     expect(textoVigencia("2024-04-01", null, f)).toBe("Desde el 01/04/2024");
     expect(textoVigencia(null, null, f)).toBe("Sin fechas");
+  });
+});
+
+describe("orden de compra", () => {
+  const campos = camposOrdenCompra("USD");
+  const esquema = esquemaCampos(campos, validarOrdenCompra);
+  const base: Valores = { ...valoresIniciales(campos), numero: "5300402443" };
+
+  it("solo exige el número", () => {
+    expect(esquema.safeParse(base).success).toBe(true);
+    expect(esquema.safeParse({ ...base, numero: " " }).success).toBe(false);
+  });
+
+  it("acepta números de orden con letras y diagonales", () => {
+    expect(
+      esquema.safeParse({ ...base, numero: "CMOT 2025/001" }).success,
+    ).toBe(true);
+  });
+
+  it("valida el monto y la vigencia", () => {
+    expect(esquema.safeParse({ ...base, monto: "abc" }).success).toBe(false);
+    expect(esquema.safeParse({ ...base, monto: "41400" }).success).toBe(true);
+    expect(
+      esquema.safeParse({
+        ...base,
+        fecha_inicio: "2027-01-01",
+        fecha_termino: "2026-12-31",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("vence al día siguiente de su término", () => {
+    expect(ordenVencida("2027-11-30", "2027-11-30")).toBe(false);
+    expect(ordenVencida("2027-11-30", "2027-12-01")).toBe(true);
+    expect(ordenVencida(null, "2027-12-01")).toBe(false);
+  });
+});
+
+describe("tarifa con orden de compra", () => {
+  it("la orden de compra es opcional", () => {
+    const campos = camposTarifa([], "USD", []);
+    const campo = campos.find((c) => c.name === "orden_compra_id");
+    expect(campo?.opcional).toBe(true);
+    expect(
+      esquemaCampos(campos).safeParse({
+        ...valoresIniciales(campos),
+        concepto: "Renta",
+        precio: "289",
+      }).success,
+    ).toBe(true);
   });
 });

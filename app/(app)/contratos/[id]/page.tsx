@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import {
   etiqueta,
+  ordenVencida,
   textoVigencia,
   TIPOS_CONTRATO,
   UNIDADES_TARIFA,
@@ -17,10 +18,16 @@ import {
   ampliacionesDe,
   nombreContrato,
   obtenerContrato,
+  ordenesDeContrato,
   tarifasDeContrato,
   totalesDeContratos,
 } from "@/lib/contratos/data";
-import { formatDia, formatFecha, formatImporte } from "@/lib/format";
+import {
+  formatDia,
+  formatFecha,
+  formatImporte,
+  hoyEnMexico,
+} from "@/lib/format";
 
 const enlace = "text-primary underline-offset-4 hover:underline";
 
@@ -38,12 +45,22 @@ export default async function ContratoPage({
   const edita = tienePermiso(sesion, "contratos.editar");
   // Las tarifas son precios: solo para quien puede verlos.
   const vePrecios = tienePermiso(sesion, "precios.ver");
-  const [origen, ampliaciones, tarifas, totales] = await Promise.all([
+  const [origen, ampliaciones, tarifas, totales, ordenes] = await Promise.all([
     c.contrato_origen_id ? obtenerContrato(c.contrato_origen_id) : null,
     ampliacionesDe(c.id),
     vePrecios ? tarifasDeContrato(c.id) : [],
     vePrecios ? totalesDeContratos([c.id]) : new Map(),
+    vePrecios ? ordenesDeContrato(c.id) : [],
   ]);
+  const hoy = hoyEnMexico();
+  const tarifasPorOrden = new Map<string, number>();
+  for (const t of tarifas) {
+    if (t.orden_compra_id)
+      tarifasPorOrden.set(
+        t.orden_compra_id,
+        (tarifasPorOrden.get(t.orden_compra_id) ?? 0) + 1,
+      );
+  }
   const total = totales.get(c.id);
   const titulo = `${c.cuentas.nombre} · ${nombreContrato(c)}`;
 
@@ -195,6 +212,9 @@ export default async function ContratoPage({
                           {t.equipos_cliente
                             ? ` · Equipo ${t.equipos_cliente.identificador}${t.equipos_cliente.alias ? ` (${t.equipos_cliente.alias})` : ""}`
                             : ""}
+                          {t.ordenes_compra
+                            ? ` · OC ${t.ordenes_compra.numero}`
+                            : ""}
                         </p>
                         {t.notas ? (
                           <p className="text-sm whitespace-pre-line">
@@ -239,6 +259,91 @@ export default async function ContratoPage({
                   </dt>
                 </dl>
               ) : null}
+            </section>
+          ) : null}
+
+          {vePrecios ? (
+            <section>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Órdenes de compra
+                  <span className="ml-2 text-sm font-normal text-muted-foreground">
+                    {ordenes.length}
+                  </span>
+                </h2>
+                {edita ? (
+                  <Link
+                    href={`/contratos/${c.id}/ordenes-compra/nueva`}
+                    className={buttonVariants({
+                      variant: "outline",
+                      className: "h-9",
+                    })}
+                  >
+                    Agregar orden de compra
+                  </Link>
+                ) : null}
+              </div>
+              {ordenes.length === 0 ? (
+                <Card className="px-4 py-6 text-center text-sm text-muted-foreground">
+                  Aún no hay órdenes de compra. Regístralas si el cliente las
+                  exige y luego elige en cada tarifa cuál la cubre.
+                </Card>
+              ) : (
+                <ul className="space-y-2">
+                  {ordenes.map((o) => {
+                    const cubre = tarifasPorOrden.get(o.id) ?? 0;
+                    const tarjeta = (
+                      <Card
+                        className={`gap-1 px-4 py-3 ${edita ? "transition-colors hover:border-primary/40 hover:bg-accent/40" : ""}`}
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
+                          <p className="font-medium break-all">OC {o.numero}</p>
+                          <div className="flex items-center gap-2">
+                            {ordenVencida(o.fecha_termino, hoy) ? (
+                              <Badge variant="destructive">Vencida</Badge>
+                            ) : null}
+                            {o.monto !== null ? (
+                              <p className="font-medium tabular-nums">
+                                {formatImporte(o.monto, c.moneda)}
+                              </p>
+                            ) : null}
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {textoVigencia(
+                            o.fecha_inicio,
+                            o.fecha_termino,
+                            formatDia,
+                          )}{" "}
+                          ·{" "}
+                          {cubre === 0
+                            ? "General (sin tarifas ligadas)"
+                            : `Cubre ${cubre} ${cubre === 1 ? "tarifa" : "tarifas"}`}
+                        </p>
+                        {o.notas ? (
+                          <p className="text-sm whitespace-pre-line">
+                            {o.notas}
+                          </p>
+                        ) : null}
+                      </Card>
+                    );
+                    return (
+                      <li key={o.id}>
+                        {edita ? (
+                          <Link
+                            href={`/contratos/${c.id}/ordenes-compra/${o.id}`}
+                            className="block"
+                          >
+                            {tarjeta}
+                          </Link>
+                        ) : (
+                          tarjeta
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </section>
           ) : null}
 

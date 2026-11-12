@@ -80,6 +80,7 @@ Para un cambio de esquema:
 - El pipeline (oportunidades, actividades y canales de venta) lo ven y editan solo Dirección y Comercial. Los vendedores externos son canales de venta, no usuarios.
 - La flota de Robox (`/flota`) la ven todos los roles internos; la editan Dirección y Técnico. El número de serie no se repite entre equipos vigentes.
 - Los contratos (`/contratos`) los ven todos los roles internos y los editan Dirección y Administración. Sus tarifas son precios: solo las ven Dirección, Comercial y Administración.
+- Las órdenes de compra del cliente se registran en la ficha del contrato y siguen la misma regla que las tarifas (son precios).
 - Las cotizaciones son precios: solo las ven Dirección y Comercial. Una cotización enviada ya no se edita; los cambios van en una versión nueva. El porcentaje y el precio mínimo del cotizador se cambian en Parámetros (solo Dirección).
 - Archivos (adjuntos de oportunidad y comprobantes de precio): se guardan en espacios privados; solo los abren Dirección y Comercial, con un enlace que dura un minuto. PDF o imagen, hasta 10 MB.
 - Las cotizaciones llevan folio anual `CMOT AAAA-NNN`, 15 días de vigencia por defecto y estados borrador, enviada, aceptada y rechazada. Los precios son más IVA.

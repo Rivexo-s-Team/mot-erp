@@ -287,6 +287,7 @@ export type Database = {
           id: string;
           notas: string | null;
           orden: number;
+          orden_compra_id: string | null;
           planta_id: string;
           precio: number;
           unidad: string;
@@ -303,6 +304,7 @@ export type Database = {
           id?: string;
           notas?: string | null;
           orden?: number;
+          orden_compra_id?: string | null;
           planta_id: string;
           precio: number;
           unidad: string;
@@ -318,6 +320,7 @@ export type Database = {
           id?: string;
           notas?: string | null;
           orden?: number;
+          orden_compra_id?: string | null;
           planta_id?: string;
           precio?: number;
           unidad?: string;
@@ -337,6 +340,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "equipos_cliente";
             referencedColumns: ["id", "planta_id"];
+          },
+          {
+            foreignKeyName: "contrato_tarifas_orden_compra_fkey";
+            columns: ["orden_compra_id", "contrato_id"];
+            isOneToOne: false;
+            referencedRelation: "ordenes_compra";
+            referencedColumns: ["id", "contrato_id"];
           },
         ];
       };
@@ -1034,6 +1044,64 @@ export type Database = {
             columns: ["responsable_id"];
             isOneToOne: false;
             referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ordenes_compra: {
+        Row: {
+          contrato_id: string;
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          fecha_inicio: string | null;
+          fecha_termino: string | null;
+          id: string;
+          monto: number | null;
+          notas: string | null;
+          numero: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          contrato_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          fecha_inicio?: string | null;
+          fecha_termino?: string | null;
+          id?: string;
+          monto?: number | null;
+          notas?: string | null;
+          numero: string;
+          updated_at?: string;
+        };
+        Update: {
+          contrato_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          fecha_inicio?: string | null;
+          fecha_termino?: string | null;
+          id?: string;
+          monto?: number | null;
+          notas?: string | null;
+          numero?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ordenes_compra_contrato_id_fkey";
+            columns: ["contrato_id"];
+            isOneToOne: false;
+            referencedRelation: "contrato_totales";
+            referencedColumns: ["contrato_id"];
+          },
+          {
+            foreignKeyName: "ordenes_compra_contrato_id_fkey";
+            columns: ["contrato_id"];
+            isOneToOne: false;
+            referencedRelation: "contratos";
             referencedColumns: ["id"];
           },
         ];

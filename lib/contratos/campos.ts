@@ -127,7 +127,11 @@ export const validarContrato: Validador = (v) =>
       }
     : null;
 
-export function camposTarifa(equipos: Opcion[], moneda: string): Campo[] {
+export function camposTarifa(
+  equipos: Opcion[],
+  moneda: string,
+  ordenesCompra: Opcion[] = [],
+): Campo[] {
   return [
     {
       name: "concepto",
@@ -157,6 +161,17 @@ export function camposTarifa(equipos: Opcion[], moneda: string): Campo[] {
       opcional: true,
       opciones: equipos,
       ayuda: "Solo si el precio es de un equipo o tanque en particular.",
+    },
+    {
+      name: "orden_compra_id",
+      label: "Orden de compra que la cubre",
+      tipo: "referencia",
+      opcional: true,
+      opciones: ordenesCompra,
+      ayuda:
+        ordenesCompra.length === 0
+          ? "Este contrato aún no tiene órdenes de compra. Se agregan en su ficha."
+          : "Déjalo en Ninguno si el cliente no exige orden de compra.",
     },
     {
       name: "orden",
@@ -222,3 +237,48 @@ export function textoVigencia(
   if (termino) return `Hasta el ${formato(termino)}`;
   return "Sin fechas";
 }
+
+/** Orden de compra del cliente. El monto va en la moneda del contrato. */
+export function camposOrdenCompra(moneda: string): Campo[] {
+  return [
+    {
+      name: "numero",
+      label: "Número de orden de compra",
+      tipo: "texto",
+      max: 60,
+      ayuda: "Tal como lo da el cliente. Ejemplo: 5300402443.",
+    },
+    {
+      name: "monto",
+      label: `Monto sin IVA (${moneda})`,
+      tipo: "numero",
+      opcional: true,
+      ayuda: "Déjalo vacío si la orden no fija un monto.",
+    },
+    {
+      name: "fecha_inicio",
+      label: "Vigente desde",
+      tipo: "fecha",
+      opcional: true,
+    },
+    {
+      name: "fecha_termino",
+      label: "Vigente hasta",
+      tipo: "fecha",
+      opcional: true,
+    },
+    { name: "notas", label: "Notas", tipo: "textoLargo", opcional: true },
+  ];
+}
+
+export const validarOrdenCompra: Validador = (v) =>
+  v.fecha_inicio && v.fecha_termino && v.fecha_termino < v.fecha_inicio
+    ? {
+        campo: "fecha_termino",
+        mensaje: "El término no puede ser anterior al inicio.",
+      }
+    : null;
+
+/** Una orden está vencida cuando su último día de vigencia ya pasó. */
+export const ordenVencida = (fechaTermino: string | null, hoy: string) =>
+  fechaTermino !== null && fechaTermino < hoy;

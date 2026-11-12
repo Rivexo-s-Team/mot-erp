@@ -9,6 +9,7 @@ import {
   equiposDePlanta,
   nombreContrato,
   obtenerContrato,
+  ordenesDeContrato,
   tarifasDeContrato,
 } from "@/lib/contratos/data";
 import { valoresIniciales } from "@/lib/forms/campos";
@@ -26,9 +27,10 @@ export default async function TarifaPage({
   if (!c) notFound();
 
   const esNueva = registro === "nueva";
-  const [tarifas, equipos] = await Promise.all([
+  const [tarifas, equipos, ordenes] = await Promise.all([
     tarifasDeContrato(c.id),
     equiposDePlanta(c.planta_id),
+    ordenesDeContrato(c.id),
   ]);
   const tarifa = esNueva ? undefined : tarifas.find((t) => t.id === registro);
   if (!esNueva && !tarifa) notFound();
@@ -43,7 +45,11 @@ export default async function TarifaPage({
     });
   }
 
-  const campos = camposTarifa(equipos, c.moneda);
+  const campos = camposTarifa(
+    equipos,
+    c.moneda,
+    ordenes.map((o) => ({ value: o.id, label: o.numero })),
+  );
   const valores = valoresIniciales(
     campos,
     tarifa && {
@@ -51,6 +57,7 @@ export default async function TarifaPage({
       unidad: tarifa.unidad,
       precio: tarifa.precio,
       equipo_cliente_id: tarifa.equipo_cliente_id,
+      orden_compra_id: tarifa.orden_compra_id,
       orden: tarifa.orden,
       notas: tarifa.notas,
     },
