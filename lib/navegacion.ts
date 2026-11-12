@@ -7,6 +7,7 @@ export type IconoMenu =
   | "inicio"
   | "clientes"
   | "oportunidades"
+  | "contratos"
   | "flota"
   | "catalogos"
   | "parametros"
@@ -41,6 +42,12 @@ const MENU: GrupoMenu[] = [
         label: "Oportunidades",
         icono: "oportunidades",
         permiso: "oportunidades.ver",
+      },
+      {
+        href: "/contratos",
+        label: "Contratos",
+        icono: "contratos",
+        permiso: "contratos.ver",
       },
     ],
   },

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { z } from "zod";
+import { EstadoContratoBadge } from "@/components/contrato-estado-badge";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -9,6 +10,9 @@ import { Card } from "@/components/ui/card";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { direccionPlanta, etiquetaArea } from "@/lib/clientes/campos";
 import { contarEquiposPorPlanta, obtenerCuenta } from "@/lib/clientes/data";
+import { textoVigencia } from "@/lib/contratos/campos";
+import { listarContratos, nombreContrato } from "@/lib/contratos/data";
+import { formatDia } from "@/lib/format";
 import { ETAPAS, etiqueta } from "@/lib/pipeline/campos";
 import { oportunidadesDeCuenta } from "@/lib/pipeline/data";
 
@@ -21,6 +25,10 @@ export default async function CuentaPage({
   const cuenta = await obtenerCuenta(id);
   if (!cuenta) notFound();
 
+  const veContratos = tienePermiso(sesion, "contratos.ver");
+  const contratos = veContratos
+    ? await listarContratos({ cuentaId: cuenta.id })
+    : [];
   const editaClientes = tienePermiso(sesion, "clientes.editar");
   const editaRazones = tienePermiso(sesion, "razones_sociales.editar");
   const base = `/clientes/${cuenta.id}`;
@@ -191,6 +199,36 @@ export default async function CuentaPage({
             );
           })}
         </Seccion>
+
+        {veContratos ? (
+          <Seccion
+            titulo="Contratos"
+            vacio="Esta cuenta aún no tiene contratos."
+            agregar={
+              tienePermiso(sesion, "contratos.editar")
+                ? {
+                    href: `/contratos/nuevo?cuenta=${cuenta.id}`,
+                    texto: "Nuevo contrato",
+                  }
+                : null
+            }
+          >
+            {contratos.map((c) => (
+              <Tarjeta key={c.id} href={`/contratos/${c.id}`}>
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <p className="font-medium">
+                    {nombreContrato(c)}
+                    {c.referencia ? ` · ${c.referencia}` : ""}
+                  </p>
+                  <EstadoContratoBadge estado={c.estado} />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {textoVigencia(c.fecha_inicio, c.fecha_termino, formatDia)}
+                </p>
+              </Tarjeta>
+            ))}
+          </Seccion>
+        ) : null}
 
         {veOportunidades ? (
           <Seccion

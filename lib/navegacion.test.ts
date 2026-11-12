@@ -10,6 +10,7 @@ describe("menuPara", () => {
       hrefs([
         "clientes.ver",
         "oportunidades.ver",
+        "contratos.ver",
         "flota.ver",
         "catalogos.ver",
         "parametros.ver",
@@ -19,6 +20,7 @@ describe("menuPara", () => {
       "/",
       "/clientes",
       "/oportunidades",
+      "/contratos",
       "/flota",
       "/catalogos",
       "/parametros",
