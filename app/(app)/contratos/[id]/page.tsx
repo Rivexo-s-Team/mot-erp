@@ -22,6 +22,7 @@ import {
   tarifasDeContrato,
   totalesDeContratos,
 } from "@/lib/contratos/data";
+import { roboxDeContrato } from "@/lib/flota/data";
 import {
   formatDia,
   formatFecha,
@@ -45,13 +46,15 @@ export default async function ContratoPage({
   const edita = tienePermiso(sesion, "contratos.editar");
   // Las tarifas son precios: solo para quien puede verlos.
   const vePrecios = tienePermiso(sesion, "precios.ver");
-  const [origen, ampliaciones, tarifas, totales, ordenes] = await Promise.all([
-    c.contrato_origen_id ? obtenerContrato(c.contrato_origen_id) : null,
-    ampliacionesDe(c.id),
-    vePrecios ? tarifasDeContrato(c.id) : [],
-    vePrecios ? totalesDeContratos([c.id]) : new Map(),
-    vePrecios ? ordenesDeContrato(c.id) : [],
-  ]);
+  const [origen, ampliaciones, tarifas, totales, ordenes, robox] =
+    await Promise.all([
+      c.contrato_origen_id ? obtenerContrato(c.contrato_origen_id) : null,
+      ampliacionesDe(c.id),
+      vePrecios ? tarifasDeContrato(c.id) : [],
+      vePrecios ? totalesDeContratos([c.id]) : new Map(),
+      vePrecios ? ordenesDeContrato(c.id) : [],
+      tienePermiso(sesion, "flota.ver") ? roboxDeContrato(c.id) : [],
+    ]);
   const hoy = hoyEnMexico();
   const tarifasPorOrden = new Map<string, number>();
   for (const t of tarifas) {
@@ -166,6 +169,45 @@ export default async function ContratoPage({
         </Card>
 
         <div className="space-y-6">
+          {tienePermiso(sesion, "flota.ver") ? (
+            <section>
+              <h2 className="mb-3 text-lg font-semibold tracking-tight">
+                Robox asignados
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  {robox.length}
+                </span>
+              </h2>
+              {robox.length === 0 ? (
+                <Card className="px-4 py-6 text-center text-sm text-muted-foreground">
+                  Ningún Robox está asignado a este contrato. Se asignan desde
+                  la ficha de cada Robox, en Flota.
+                </Card>
+              ) : (
+                <ul className="space-y-2">
+                  {robox.map((r) => (
+                    <li key={r.id}>
+                      <Link href={`/flota/${r.id}`} className="block">
+                        <Card className="gap-1 px-4 py-3 transition-colors hover:border-primary/40 hover:bg-accent/40">
+                          <p className="font-medium tabular-nums">
+                            Robox {r.numero_serie}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {r.ubicacion?.tanque
+                              ? `En ${r.ubicacion.tanque}`
+                              : "Tanque sin definir"}
+                            {r.ubicacion
+                              ? ` · desde el ${formatDia(r.ubicacion.fechaInicio)}`
+                              : ""}
+                          </p>
+                        </Card>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          ) : null}
+
           {vePrecios ? (
             <section>
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
