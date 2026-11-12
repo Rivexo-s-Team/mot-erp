@@ -5,6 +5,7 @@ import {
   formatFechaHora,
   formatImporte,
   hoyEnMexico,
+  sumarDias,
 } from "./format";
 
 describe("formatFecha", () => {
@@ -49,5 +50,13 @@ describe("hoyEnMexico", () => {
   it("usa el día de México aunque en UTC ya sea el siguiente", () => {
     expect(hoyEnMexico(new Date("2026-11-03T03:00:00Z"))).toBe("2026-11-02");
     expect(hoyEnMexico(new Date("2026-11-02T18:00:00Z"))).toBe("2026-11-02");
+  });
+});
+
+describe("sumarDias", () => {
+  it("suma días cruzando meses y años", () => {
+    expect(sumarDias("2026-11-11", 15)).toBe("2026-11-26");
+    expect(sumarDias("2026-12-25", 15)).toBe("2027-01-09");
+    expect(sumarDias("2028-02-20", 15)).toBe("2028-03-06");
   });
 });

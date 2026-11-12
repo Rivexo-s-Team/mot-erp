@@ -2,106 +2,166 @@ import { describe, expect, it } from "vitest";
 import { describirCantidad } from "./campos";
 import { datosParaPdf, nombreArchivo, type EntradaPdf } from "./pdf-datos";
 
+// El ejemplo de la cotización tipo de MOT: CMOT 2026-050.
 const entrada: EntradaPdf = {
   oportunidad: {
-    nombre: "Ampliación: segundo Robox",
-    cliente: "Rassini",
-    planta: "BYPASA",
+    cliente: "CONTICON",
+    planta: null,
+    direccion: "Parque Industrial Villagrán, Guanajuato",
   },
   cotizacion: {
-    version: 2,
+    folio: "CMOT 2026-050",
+    version: 1,
     estado: "enviada",
     moneda: "USD",
-    vigencia: "2026-12-31",
-    valor_total_contrato: 54000,
-    litros_estimados: null,
-    condiciones: "  Pago a 30 días.  ",
-    created_at: "2026-11-10T18:00:00Z",
+    vigencia: "2026-11-26",
+    valor_total_contrato: null,
+    litros_estimados: 3120,
+    condiciones:
+      "Limpieza de aceite por evento, recomendamos su repetición cada 6 meses.\n\n3.- Precio válido por 1 año.  ",
+    condiciones_pago: "Contado",
+    numero_requisicion: null,
+    created_at: "2026-11-11T18:00:00Z",
+    contactos: {
+      nombre: "Juan Pérez",
+      telefono_celular: null,
+      telefono_oficina: "461 123 4567",
+      correo: "juan@cliente.test",
+    },
     lineas: [
       {
-        concepto: "Limpieza de aceite por litro",
-        cantidad: 280,
+        concepto: "Limpieza por litro de aceite hidráulico",
+        cantidad: 3120,
         unidad: "litro",
-        precio_unitario: 3.64,
+        precio_unitario: 10.15,
         recurrente: false,
-        importe: 1019.2,
-        equipos_cliente: { identificador: "11B116", alias: "REP4" },
-      },
-      {
-        concepto: "Renta mensual de Robox",
-        cantidad: 1,
-        unidad: "mes",
-        precio_unitario: 1500,
-        recurrente: true,
-        importe: 1500,
+        importe: 31668,
+        numero_parte_cliente: "Limpieza por Litro",
         equipos_cliente: null,
       },
     ],
-    totales: { total_unico: 1019.2, total_recurrente: 1500 },
+    totales: { total_unico: 31668, total_recurrente: 0 },
   },
+};
+
+const renta = {
+  concepto: "Renta mensual de Robox",
+  cantidad: 1,
+  unidad: "mes",
+  precio_unitario: 289,
+  recurrente: true,
+  importe: 289,
+  numero_parte_cliente: null,
+  equipos_cliente: { identificador: "11B116", alias: "REP4" },
 };
 
 describe("datosParaPdf", () => {
   const d = datosParaPdf(entrada);
+  const valor = (
+    lista: { etiqueta: string; valor: string }[],
+    etiqueta: string,
+  ) => lista.find((r) => r.etiqueta === etiqueta)?.valor;
 
-  it("arma encabezado, fechas y cliente", () => {
-    expect(d.titulo).toBe("Cotización · versión 2");
-    expect(d.cliente).toBe("Rassini");
-    expect(d.planta).toBe("BYPASA");
-    expect(d.fecha).toBe("10/11/2026");
-    expect(d.vigencia).toBe("31/12/2026");
-    expect(d.esBorrador).toBe(false);
+  it("arma el encabezado como la cotización tipo de MOT", () => {
+    expect(valor(d.encabezado, "Cotización No.")).toBe("CMOT 2026-050");
+    expect(valor(d.encabezado, "Fecha")).toBe("11/11/2026");
+    expect(valor(d.encabezado, "Válido hasta")).toBe("26/11/2026");
+    expect(valor(d.encabezado, "Condiciones de pago")).toBe("Contado");
+    expect(valor(d.encabezado, "No. Requisición")).toBe("—");
+    expect(valor(d.encabezado, "Servicio")).toBe("Planta Cliente");
   });
 
-  it("formatea las partidas con cantidad, precio e importe", () => {
-    expect(d.partidas[0]).toEqual({
-      concepto: "Limpieza de aceite por litro",
-      equipo: "11B116 (REP4)",
-      cantidad: "280 litros",
-      precioUnitario: "3.64 USD",
-      importe: "1,019.20 USD",
-      tipo: "Una sola vez",
+  it("dirige la cotización al contacto elegido", () => {
+    expect(valor(d.cliente, "Empresa")).toBe("CONTICON");
+    expect(valor(d.cliente, "Atención")).toBe("Juan Pérez");
+    expect(valor(d.cliente, "Teléfono")).toBe("461 123 4567");
+    expect(valor(d.cliente, "Email")).toBe("juan@cliente.test");
+  });
+
+  it("sin contacto deja guiones, no espacios vacíos", () => {
+    const sin = datosParaPdf({
+      ...entrada,
+      cotizacion: { ...entrada.cotizacion, contactos: null },
     });
-    expect(d.partidas[1]?.cantidad).toBe("1 mes");
-    expect(d.partidas[1]?.tipo).toBe("Recurrente");
+    expect(valor(sin.cliente, "Atención")).toBe("—");
+    expect(valor(sin.cliente, "Email")).toBe("—");
   });
 
-  it("separa el total de una sola vez del recurrente", () => {
-    expect(d.totales).toEqual([
-      { etiqueta: "Total (una sola vez)", valor: "1,019.20 USD" },
-      { etiqueta: "Total recurrente (por periodo)", valor: "1,500.00 USD" },
+  it("reproduce la partida del ejemplo: 3,120 L × 10.15 = 31,668.00 USD", () => {
+    expect(d.partidas[0]).toEqual({
+      descripcion: "Limpieza por litro de aceite hidráulico",
+      detalle: null,
+      numeroParte: "Limpieza por Litro",
+      cantidad: "3120 litros",
+      precioUnitario: "10.15 USD",
+      subtotal: "31,668.00 USD",
+    });
+    expect(d.totales).toEqual([{ etiqueta: "TOTAL", valor: "31,668.00 USD" }]);
+  });
+
+  it("empieza las notas con IVA y moneda, y numera las del vendedor una por renglón", () => {
+    expect(d.notas).toEqual([
+      "Precios más IVA.",
+      "Tipo de moneda USD.",
+      "Limpieza de aceite por evento, recomendamos su repetición cada 6 meses.",
+      "Precio válido por 1 año.",
     ]);
   });
 
-  it("solo muestra el total que aplica", () => {
+  it("separa los totales cuando hay partidas de una vez y recurrentes", () => {
+    const mixta = datosParaPdf({
+      ...entrada,
+      cotizacion: {
+        ...entrada.cotizacion,
+        lineas: [...entrada.cotizacion.lineas, renta],
+        totales: { total_unico: 31668, total_recurrente: 289 },
+      },
+    });
+    expect(mixta.totales).toEqual([
+      { etiqueta: "TOTAL (una sola vez)", valor: "31,668.00 USD" },
+      { etiqueta: "TOTAL recurrente (por periodo)", valor: "289.00 USD" },
+    ]);
+    expect(mixta.partidas[1]?.detalle).toBe(
+      "Equipo 11B116 (REP4) · Recurrente",
+    );
+    expect(mixta.partidas[1]?.numeroParte).toBe("—");
+  });
+
+  it("una cotización solo de renta muestra el total por periodo", () => {
     const soloRenta = datosParaPdf({
       ...entrada,
       cotizacion: {
         ...entrada.cotizacion,
-        lineas: [entrada.cotizacion.lineas[1]!],
+        lineas: [renta],
+        totales: { total_unico: 0, total_recurrente: 289 },
       },
     });
-    expect(soloRenta.totales.map((t) => t.etiqueta)).toEqual([
-      "Total recurrente (por periodo)",
+    expect(soloRenta.totales).toEqual([
+      { etiqueta: "TOTAL (por periodo)", valor: "289.00 USD" },
     ]);
   });
 
-  it("incluye el valor total del contrato y las condiciones, ya limpias", () => {
-    expect(d.datosAdicionales).toEqual([
-      { etiqueta: "Valor total del contrato", valor: "54,000.00 USD" },
-    ]);
-    expect(d.condiciones).toBe("Pago a 30 días.");
-  });
-
-  it("marca como borrador lo que no se ha enviado", () => {
-    const borrador = datosParaPdf({
+  it("las versiones posteriores lo indican junto al folio", () => {
+    const v2 = datosParaPdf({
       ...entrada,
-      cotizacion: { ...entrada.cotizacion, estado: "borrador" },
+      cotizacion: { ...entrada.cotizacion, version: 2 },
     });
-    expect(borrador.esBorrador).toBe(true);
+    expect(v2.folio).toBe("CMOT 2026-050 (versión 2)");
+    expect(v2.nombreArchivo).toBe("Cotizacion-CMOT-2026-050-v2.pdf");
   });
 
-  it("no lleva datos internos: ni notas ni precio de referencia", () => {
+  it("solo el borrador se marca como tal", () => {
+    const estado = (e: string) =>
+      datosParaPdf({
+        ...entrada,
+        cotizacion: { ...entrada.cotizacion, estado: e },
+      }).esBorrador;
+    expect(estado("borrador")).toBe(true);
+    expect(estado("enviada")).toBe(false);
+    expect(estado("aceptada")).toBe(false);
+  });
+
+  it("no lleva datos internos: ni notas, ni costo del contenedor, ni precio de referencia", () => {
     const conInternos = {
       ...entrada,
       cotizacion: {
@@ -109,25 +169,27 @@ describe("datosParaPdf", () => {
         notas: "NOTA INTERNA: margen alto",
         lineas: entrada.cotizacion.lineas.map((l) => ({
           ...l,
-          precio_referencia: 5.2,
+          precio_referencia: 14.5,
+          referencia_costo_contenedor: 2900,
+          referencia_litros_contenedor: 200,
           fuente_url: "https://interno.test",
         })),
       },
     };
     const texto = JSON.stringify(datosParaPdf(conInternos));
     expect(texto).not.toContain("NOTA INTERNA");
-    expect(texto).not.toContain("5.2");
+    expect(texto).not.toContain("14.5");
+    expect(texto).not.toContain("2900");
     expect(texto).not.toContain("interno.test");
   });
 });
 
 describe("nombreArchivo", () => {
-  it("quita acentos y caracteres raros", () => {
-    expect(nombreArchivo("Rassini", 1)).toBe("Cotizacion-Rassini-v1.pdf");
-    expect(nombreArchivo("Química del Bajío, S.A. de C.V.", 3)).toBe(
-      "Cotizacion-Quimica-del-Bajio-S-A-de-C-V-v3.pdf",
+  it("usa el folio, sin espacios", () => {
+    expect(nombreArchivo("CMOT 2026-050", 1)).toBe(
+      "Cotizacion-CMOT-2026-050.pdf",
     );
-    expect(nombreArchivo("///", 1)).toBe("Cotizacion-MOT-v1.pdf");
+    expect(nombreArchivo("///", 1)).toBe("Cotizacion-MOT.pdf");
   });
 });
 

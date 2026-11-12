@@ -1,4 +1,5 @@
 import "server-only";
+import { direccionPlanta } from "@/lib/clientes/campos";
 import { createClient } from "@/lib/supabase/server";
 import type { ParametrosCotizador } from "./cotizador";
 
@@ -32,7 +33,7 @@ export async function cotizacionesDeOportunidad(oportunidadId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("cotizaciones")
-    .select("id, version, estado, moneda, vigencia, created_at")
+    .select("id, folio, version, estado, moneda, vigencia, created_at")
     .eq("oportunidad_id", oportunidadId)
     .is("deleted_at", null)
     .order("version", { ascending: false });
@@ -73,7 +74,7 @@ export async function obtenerCotizacion(
     supabase
       .from("cotizaciones")
       .select(
-        "id, version, estado, moneda, tipo_cambio, vigencia, valor_total_contrato, litros_estimados, condiciones, notas, created_at",
+        "id, folio, version, estado, moneda, tipo_cambio, vigencia, valor_total_contrato, litros_estimados, condiciones, notas, created_at, contacto_id, numero_requisicion, condiciones_pago, contactos (nombre, telefono_celular, telefono_oficina, correo)",
       )
       .eq("id", cotizacionId)
       .eq("oportunidad_id", oportunidadId)
@@ -82,7 +83,7 @@ export async function obtenerCotizacion(
     supabase
       .from("cotizacion_lineas")
       .select(
-        "id, orden, concepto, equipo_cliente_id, cantidad, unidad, precio_unitario, recurrente, precio_referencia, fuente_tipo, fuente_url, fecha_referencia, fuente_archivo_ruta, fuente_archivo_nombre, importe, equipos_cliente (identificador, alias)",
+        "id, orden, concepto, equipo_cliente_id, cantidad, unidad, precio_unitario, recurrente, numero_parte_cliente, referencia_costo_contenedor, referencia_litros_contenedor, precio_referencia, fuente_tipo, fuente_url, fecha_referencia, fuente_archivo_ruta, fuente_archivo_nombre, importe, equipos_cliente (identificador, alias)",
       )
       .eq("cotizacion_id", cotizacionId)
       .is("deleted_at", null)
@@ -123,4 +124,46 @@ export async function equiposParaCotizar(
     value: e.id,
     label: `${e.identificador}${e.alias ? ` (${e.alias})` : ""} · ${e.plantas.nombre}`,
   }));
+}
+
+/** Personas del cliente a quienes puede dirigirse una cotización. */
+export async function contactosDeCuenta(cuentaId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("contactos")
+    .select("id, nombre, puesto")
+    .eq("cuenta_id", cuentaId)
+    .is("deleted_at", null)
+    .order("nombre");
+  if (error) throw new Error("No se pudieron cargar los contactos.");
+  return data.map((c) => ({
+    value: c.id,
+    label: c.puesto ? `${c.nombre} (${c.puesto})` : c.nombre,
+  }));
+}
+
+/** Días de vigencia que se proponen al crear una cotización; null si el rol no ve parámetros. */
+export async function vigenciaPorDefectoDias(): Promise<number | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("parametros_negocio")
+    .select("valor")
+    .eq("clave", "cotizacion_vigencia_dias")
+    .maybeSingle();
+  return data ? data.valor : null;
+}
+
+/** Dirección de una planta en una línea, para el PDF. Null si no está capturada. */
+export async function direccionDePlanta(
+  plantaId: string,
+): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("plantas")
+    .select(
+      "calle, numero_exterior, numero_interior, colonia, municipio, estado, codigo_postal",
+    )
+    .eq("id", plantaId)
+    .maybeSingle();
+  return data ? direccionPlanta(data) || null : null;
 }

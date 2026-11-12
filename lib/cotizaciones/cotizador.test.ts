@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { comoPorcentaje, precioSugeridoPorLitro } from "./cotizador";
+import {
+  comoPorcentaje,
+  precioReferenciaDeContenedor,
+  precioSugeridoPorLitro,
+} from "./cotizador";
 
 const P = { porcentaje: "0.70", piso: "2.50", monedaPiso: "USD" };
 
@@ -71,5 +75,24 @@ describe("comoPorcentaje", () => {
     expect(comoPorcentaje(0.7)).toBe("70 %");
     expect(comoPorcentaje("0.655")).toBe("65.5 %");
     expect(comoPorcentaje("1")).toBe("100 %");
+  });
+});
+
+describe("precioReferenciaDeContenedor", () => {
+  it("el ejemplo de MOT: 2,900 USD entre 200 L da 14.50, y el 70 % es 10.15", () => {
+    const referencia = precioReferenciaDeContenedor("2900", "200");
+    expect(referencia).toBe("14.50");
+    expect(precioSugeridoPorLitro(referencia!, P, "USD")?.precio).toBe("10.15");
+  });
+
+  it("redondea a cuatro decimales cuando la división no es exacta", () => {
+    expect(precioReferenciaDeContenedor("1000", "208")).toBe("4.8077");
+    expect(precioReferenciaDeContenedor("100", "3")).toBe("33.3333");
+  });
+
+  it("sin los dos datos, o con litros en cero, no calcula", () => {
+    expect(precioReferenciaDeContenedor("2900", "")).toBeNull();
+    expect(precioReferenciaDeContenedor("", "200")).toBeNull();
+    expect(precioReferenciaDeContenedor("2900", "0")).toBeNull();
   });
 });

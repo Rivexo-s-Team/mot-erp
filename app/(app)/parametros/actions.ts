@@ -31,7 +31,10 @@ export async function guardarParametro(
       error: "El porcentaje va como fracción entre 0 y 1 (0.70 es 70 %).",
     };
   }
-  if (actual.unidad === "pruebas_no_pasa" && !Number.isInteger(valor)) {
+  if (
+    ["pruebas_no_pasa", "dias"].includes(actual.unidad) &&
+    !Number.isInteger(valor)
+  ) {
     return { error: "Debe ser un número entero." };
   }
   if (valor <= 0) return { error: "El valor debe ser mayor que cero." };
