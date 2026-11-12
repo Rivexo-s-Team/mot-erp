@@ -276,6 +276,186 @@ export type Database = {
           },
         ];
       };
+      contrato_tarifas: {
+        Row: {
+          concepto: string;
+          contrato_id: string;
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          equipo_cliente_id: string | null;
+          id: string;
+          notas: string | null;
+          orden: number;
+          planta_id: string;
+          precio: number;
+          unidad: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          concepto: string;
+          contrato_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          equipo_cliente_id?: string | null;
+          id?: string;
+          notas?: string | null;
+          orden?: number;
+          planta_id: string;
+          precio: number;
+          unidad: string;
+          updated_at?: string;
+        };
+        Update: {
+          concepto?: string;
+          contrato_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          equipo_cliente_id?: string | null;
+          id?: string;
+          notas?: string | null;
+          orden?: number;
+          planta_id?: string;
+          precio?: number;
+          unidad?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "contrato_tarifas_contrato_id_planta_id_fkey";
+            columns: ["contrato_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "contratos";
+            referencedColumns: ["id", "planta_id"];
+          },
+          {
+            foreignKeyName: "contrato_tarifas_equipo_cliente_id_planta_id_fkey";
+            columns: ["equipo_cliente_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "equipos_cliente";
+            referencedColumns: ["id", "planta_id"];
+          },
+        ];
+      };
+      contratos: {
+        Row: {
+          contrato_origen_id: string | null;
+          cotizacion_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          cuenta_id: string;
+          deleted_at: string | null;
+          estado: string;
+          fecha_inicio: string | null;
+          fecha_termino: string | null;
+          frecuencia_visitas: string | null;
+          id: string;
+          incluye_filtros: boolean;
+          incluye_laboratorio: boolean;
+          moneda: string;
+          notas: string | null;
+          oportunidad_id: string | null;
+          planta_id: string;
+          razon_social_id: string | null;
+          referencia: string | null;
+          tipo: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          contrato_origen_id?: string | null;
+          cotizacion_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id: string;
+          deleted_at?: string | null;
+          estado?: string;
+          fecha_inicio?: string | null;
+          fecha_termino?: string | null;
+          frecuencia_visitas?: string | null;
+          id?: string;
+          incluye_filtros?: boolean;
+          incluye_laboratorio?: boolean;
+          moneda?: string;
+          notas?: string | null;
+          oportunidad_id?: string | null;
+          planta_id: string;
+          razon_social_id?: string | null;
+          referencia?: string | null;
+          tipo: string;
+          updated_at?: string;
+        };
+        Update: {
+          contrato_origen_id?: string | null;
+          cotizacion_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id?: string;
+          deleted_at?: string | null;
+          estado?: string;
+          fecha_inicio?: string | null;
+          fecha_termino?: string | null;
+          frecuencia_visitas?: string | null;
+          id?: string;
+          incluye_filtros?: boolean;
+          incluye_laboratorio?: boolean;
+          moneda?: string;
+          notas?: string | null;
+          oportunidad_id?: string | null;
+          planta_id?: string;
+          razon_social_id?: string | null;
+          referencia?: string | null;
+          tipo?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "contratos_contrato_origen_id_cuenta_id_fkey";
+            columns: ["contrato_origen_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "contratos";
+            referencedColumns: ["id", "cuenta_id"];
+          },
+          {
+            foreignKeyName: "contratos_cotizacion_id_oportunidad_id_fkey";
+            columns: ["cotizacion_id", "oportunidad_id"];
+            isOneToOne: false;
+            referencedRelation: "cotizaciones";
+            referencedColumns: ["id", "oportunidad_id"];
+          },
+          {
+            foreignKeyName: "contratos_cuenta_id_fkey";
+            columns: ["cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contratos_oportunidad_id_cuenta_id_fkey";
+            columns: ["oportunidad_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "oportunidades";
+            referencedColumns: ["id", "cuenta_id"];
+          },
+          {
+            foreignKeyName: "contratos_planta_id_cuenta_id_fkey";
+            columns: ["planta_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "plantas";
+            referencedColumns: ["id", "cuenta_id"];
+          },
+          {
+            foreignKeyName: "contratos_razon_social_id_cuenta_id_fkey";
+            columns: ["razon_social_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "razones_sociales";
+            referencedColumns: ["id", "cuenta_id"];
+          },
+        ];
+      };
       cotizacion_lineas: {
         Row: {
           cantidad: number;
@@ -1357,6 +1537,16 @@ export type Database = {
       };
     };
     Views: {
+      contrato_totales: {
+        Row: {
+          contrato_id: string;
+          tarifas: number | null;
+          total_mensual: number | null;
+          total_unico: number | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
       cotizacion_totales: {
         Row: {
           cotizacion_id: string;
