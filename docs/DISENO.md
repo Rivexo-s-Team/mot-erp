@@ -108,7 +108,8 @@ contratos               Planta, razón social a facturar, tipo (renta | por_even
                         nuevo o ampliación (contrato_origen_id), vigencia (inicio, término,
                         renovación), anticipo, incluye_filtros, incluye_laboratorio, frecuencia de visitas, estado.
   └─ contrato_tarifas   Concepto, unidad (mes | litro | evento | servicio | unico), precio, equipo del cliente (opcional).
-  └─ ordenes_compra     Número de OC del cliente, general o por equipo, monto, vigencia y saldo.
+  └─ ordenes_compra     Número de OC del cliente, monto y vigencia. Cada tarifa apunta a la OC que la cubre
+                        (sin tarifas ligadas = general). El saldo se calcula con las facturas (Etapa 5).
 asignaciones_robox      Qué Robox está en qué contrato y planta, y entre qué fechas.
   └─ carrusel_equipos   Tanques del cliente que atiende un Robox en rotación, con su orden.
 movimientos_robox       Cada rotación de un tanque a otro: fecha, origen, destino, quién lo movió (MOT | cliente).
@@ -338,3 +339,4 @@ Ninguna bloquea el arranque. Cada una se resuelve antes de la etapa indicada.
 | D19 | La **flota** la editan Dirección y Técnico; los **contratos**, Dirección y Administración (Comercial solo consulta). Tentativo hasta cerrar P4. | El técnico es quien conoce los equipos; el contrato es un documento administrativo. |
 | D20 | El **anticipo y la instalación** de un contrato se capturan como tarifas de "pago único", junto a las tarifas por mes, litro, evento o servicio. Los estados del contrato son borrador, vigente, terminado y cancelado. Tentativo. | Es lo más sencillo y deja todos los precios del contrato en un solo lugar, con la misma protección y bitácora. |
 | D21 | Un contrato se puede **crear desde una oportunidad ganada**: queda ligado a ella y copia como tarifas las partidas de la cotización aceptada. Solo lo hace quien edita contratos y además ve el pipeline (hoy, Dirección); Administración los captura directo en Contratos. | Para no recapturar (§4.2) sin abrir el pipeline a más roles antes de cerrar P4. |
+| D22 | Una **orden de compra** pertenece a un contrato y cada tarifa indica qué orden la cubre; una orden sin tarifas ligadas es general. Lleva importes, así que la ven solo quienes ven precios. El **saldo** se calculará cuando existan las facturas (Etapa 5). | En las rentas actuales hay órdenes por Robox y órdenes que cubren dos Robox. |
