@@ -164,7 +164,14 @@ function Formulario({
                 <NativeSelect
                   id={idDe(campo.name)}
                   className="h-10 w-full"
-                  {...register(campo.name)}
+                  // Bloqueado: se muestra el valor guardado y no se registra,
+                  // así el formulario conserva el valor original.
+                  {...(bloqueado
+                    ? {
+                        disabled: true,
+                        defaultValue: String(valores[campo.name] ?? ""),
+                      }
+                    : register(campo.name))}
                 >
                   <NativeSelectOption value="">
                     {campo.opcional ? "Ninguno" : "Elige una opción…"}

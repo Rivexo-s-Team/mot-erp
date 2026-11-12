@@ -56,6 +56,7 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 - Importes: se calculan con enteros o en SQL (`numeric`), nunca multiplicando decimales en JavaScript. Ver `lib/cotizaciones/cotizador.ts`.
 - Entidades de negocio: no se borran, se marcan con `deleted_at` y las lecturas filtran `deleted_at is null`. Los nombres únicos usan índices parciales (solo registros vigentes).
 - Precios y costos van en tabla aparte de los datos generales (ej. `equipos_cliente_costos`), con políticas `precios.ver` y bitácora. El formulario solo incluye esos campos para quien puede verlos, y el servidor vuelve a decidirlo por su cuenta.
+- Una función (como `validar`) no se puede pasar de una página del servidor a `ConfigForm`: se envuelve en un componente de cliente (ver `app/(app)/contratos/contrato-form.tsx`).
 - Lo que cuelga de una cuenta (plantas, razones sociales, contactos) lleva `cuenta_id` y llaves foráneas compuestas, para que la base impida mezclar datos de dos cuentas.
 
 ## Archivos
@@ -97,7 +98,7 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 
 - **Etapa 0. Cimientos: terminada**, pendiente de revisión con MOT.
 - **Etapa 1. Clientes y comercial: terminada.** Plan de 6 pasos: (1) expediente del cliente, hecho; (2) equipos y requisitos de planta, hecho; (3) pipeline, hecho; (4) cotizador y cotizaciones, hecho (partidas libres, versiones, cotizador por litro y pantalla de parámetros); incluidos los archivos (adjuntos de oportunidad y comprobante del precio de referencia); (5) cotización en PDF, hecha con el formato de la cotización tipo de MOT (folio anual, precios más IVA, notas numeradas); (6) cierre: los 3 clientes actuales (GOPLAS, NACOBRE, TT Green Metals) ya están en `mot-dev` con plantas y contactos; razones sociales, equipos y demás los captura MOT. Sus 13 rentas son datos de contrato (Etapa 2).
-- **Etapa 2. Flota y contratos: en curso.** Plan de 5 pasos: (1) flota de Robox (lista, ficha, alta y edición), hecho; (2) contratos; (3) órdenes de compra; (4) asignaciones, carrusel y movimientos; (5) carga de las 13 rentas a `mot-dev` y cierre. Decisiones D18 y D19.
+- **Etapa 2. Flota y contratos: en curso.** Plan de 5 pasos: (1) flota de Robox (lista, ficha, alta y edición), hecho; (2) contratos con tarifas (lista, ficha, alta desde una oportunidad ganada copiando la cotización aceptada), hecho; (3) órdenes de compra; (4) asignaciones, carrusel y movimientos; (5) carga de las 13 rentas a `mot-dev` y cierre. Decisiones D18 a D21.
 - Decisiones de la Etapa 1 en DISENO §7: D9 (vendedor externo = canal, no usuario), D10 (cotizaciones de partidas libres), D11 (ganar solo marca pendiente de contrato), D12 a D17 (precios más IVA, folio CMOT, estados, comodato, renta a 3 años, contenedor, motivos de pérdida).
 - Pendiente fuera de etapa: pantalla de bitácora; recuperación de contraseña por correo.
 - Preguntas abiertas: DISENO §6.

@@ -10,6 +10,7 @@ import { formatTamano } from "@/lib/archivos/config";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { valoresIniciales } from "@/lib/forms/campos";
 import { ESTADOS } from "@/lib/cotizaciones/campos";
+import { contratoDeOportunidad } from "@/lib/contratos/data";
 import { cotizacionesDeOportunidad } from "@/lib/cotizaciones/data";
 import { formatDia, formatFecha, formatImporte } from "@/lib/format";
 import {
@@ -62,6 +63,11 @@ export default async function OportunidadPage({
   // Las cotizaciones son precios: solo para quien puede verlos.
   const vePrecios = tienePermiso(sesion, "precios.ver");
   const cotizaciones = vePrecios ? await cotizacionesDeOportunidad(o.id) : [];
+  // Ganada = pendiente de contrato, hasta que el contrato exista (D11).
+  const contrato =
+    o.etapa === "ganada" && tienePermiso(sesion, "contratos.ver")
+      ? await contratoDeOportunidad(o.id)
+      : null;
   const datos: [string, string][] = [
     ["Cliente", o.cuentas.nombre],
     ["Planta", o.plantas?.nombre ?? "Sin definir"],
@@ -103,8 +109,30 @@ export default async function OportunidadPage({
 
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <Badge>{etiqueta(ETAPAS, o.etapa)}</Badge>
-        {o.etapa === "ganada" ? (
+        {o.etapa === "ganada" && !contrato ? (
           <Badge variant="secondary">Pendiente de contrato</Badge>
+        ) : null}
+        {contrato ? (
+          <Link
+            href={`/contratos/${contrato.id}`}
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              className: "h-8",
+            })}
+          >
+            Ver contrato
+          </Link>
+        ) : null}
+        {o.etapa === "ganada" &&
+        !contrato &&
+        tienePermiso(sesion, "contratos.editar") ? (
+          <Link
+            href={`/contratos/nuevo?oportunidad=${o.id}`}
+            className={buttonVariants({ size: "sm", className: "h-8" })}
+          >
+            Crear contrato
+          </Link>
         ) : null}
       </div>
 

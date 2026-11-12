@@ -91,3 +91,18 @@ oportunidad as (
 insert into public.actividades_comerciales (oportunidad_id, tipo, fecha, responsable_id, notas)
 select id, 'visita', current_date - 3, responsable_id, 'Recorrido por la planta con mantenimiento.'
 from oportunidad;
+
+-- Ejemplo para probar los contratos en local (inventado: Rassini no aparece en
+-- la lista de rentas del director comercial).
+with contrato as (
+  insert into public.contratos
+    (cuenta_id, planta_id, tipo, estado, fecha_inicio, fecha_termino, incluye_laboratorio, notas)
+  select p.cuenta_id, p.id, 'renta', 'vigente', date '2025-06-01', date '2028-05-31', true,
+         'Contrato de ejemplo.'
+  from public.plantas p where p.nombre = 'BYPASA'
+  returning id, planta_id
+)
+insert into public.contrato_tarifas (contrato_id, planta_id, orden, concepto, unidad, precio, equipo_cliente_id)
+select c.id, c.planta_id, 1, 'Renta mensual de Robox', 'mes', 300, e.id
+from contrato c
+join public.equipos_cliente e on e.planta_id = c.planta_id and e.identificador = '11B116';
