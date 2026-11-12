@@ -268,6 +268,8 @@ Cada etapa termina cuando se cumplen sus criterios de aceptación y se revisa co
 
 **Criterios:** para cada Robox se ve dónde está, de qué contrato es y en qué tanque trabaja. Los contratos de los 4 clientes quedan capturados.
 
+**Cierre (13 nov 2026):** las 13 rentas de la lista del director comercial quedaron en `mot-dev` como 5 contratos vigentes: GOPLAS Lechería (4 Robox, termina el 31/03/2027), GOPLAS Lechería (1 Robox, termina el 30/09/2028), NACOBRE Celaya (2), NACOBRE SLP (5) y TT Green Metals Guanajuato (1); en total 4,871 USD al mes más IVA, cada tarifa con su orden de compra. Quedó pendiente con MOT: (a) los números de serie de los Robox y en qué tanque está cada uno (P10), para darlos de alta y asignarlos; (b) las fechas de inicio, que se estimaron como término menos 3 años; (c) si cada renta incluye filtros y laboratorio; (d) si el segundo contrato de GOPLAS es ampliación del primero; (e) si "CMOT 2025/001" es la orden de compra de TT Green Metals; (f) el contrato de Rassini, que no viene en la lista.
+
 ### Etapa 3. Operación en campo
 - Orden de servicio móvil (la versión digital del formato en papel), con lecturas inicial y posterior, actividades, fallas, partes, fotos y firma.
 - Agenda de visitas, inventario de filtros y partes, alertas de cambio de filtro y lista de acceso a planta.
