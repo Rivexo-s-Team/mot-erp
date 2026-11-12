@@ -107,7 +107,7 @@ robox                   Equipo MOT: número de serie (ej. 545592), modelo, versi
 contratos               Planta, razón social a facturar, tipo (renta | por_evento | unico | servicio | laboratorio),
                         nuevo o ampliación (contrato_origen_id), vigencia (inicio, término,
                         renovación), anticipo, incluye_filtros, incluye_laboratorio, frecuencia de visitas, estado.
-  └─ contrato_tarifas   Concepto, unidad (mes | litro | evento | servicio), precio, equipo del cliente (opcional).
+  └─ contrato_tarifas   Concepto, unidad (mes | litro | evento | servicio | unico), precio, equipo del cliente (opcional).
   └─ ordenes_compra     Número de OC del cliente, general o por equipo, monto, vigencia y saldo.
 asignaciones_robox      Qué Robox está en qué contrato y planta, y entre qué fechas.
   └─ carrusel_equipos   Tanques del cliente que atiende un Robox en rotación, con su orden.
@@ -336,3 +336,5 @@ Ninguna bloquea el arranque. Cada una se resuelve antes de la etapa indicada.
 | D17 | Los **motivos de pérdida** son un catálogo (7 iniciales del director comercial), con detalle libre opcional. | Para poder contar por qué se pierden las ventas. |
 | D18 | Un **contrato** es por planta y por negociación, con una línea por cada Robox rentado (precio mensual y orden de compra). | Así vienen las 13 rentas actuales: varias máquinas por planta, cada una con su precio y su OC. |
 | D19 | La **flota** la editan Dirección y Técnico; los **contratos**, Dirección y Administración (Comercial solo consulta). Tentativo hasta cerrar P4. | El técnico es quien conoce los equipos; el contrato es un documento administrativo. |
+| D20 | El **anticipo y la instalación** de un contrato se capturan como tarifas de "pago único", junto a las tarifas por mes, litro, evento o servicio. Los estados del contrato son borrador, vigente, terminado y cancelado. Tentativo. | Es lo más sencillo y deja todos los precios del contrato en un solo lugar, con la misma protección y bitácora. |
+| D21 | Un contrato se puede **crear desde una oportunidad ganada**: queda ligado a ella y copia como tarifas las partidas de la cotización aceptada. Solo lo hace quien edita contratos y además ve el pipeline (hoy, Dirección); Administración los captura directo en Contratos. | Para no recapturar (§4.2) sin abrir el pipeline a más roles antes de cerrar P4. |
