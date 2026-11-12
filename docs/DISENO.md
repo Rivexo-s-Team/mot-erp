@@ -2,10 +2,10 @@
 
 **Cliente:** Molecular Oil Technology, S.A.P.I. de C.V. (MOT)
 **Desarrolla:** Rivexo, S.A. de C.V.
-**Versión:** 0.1, 9 de noviembre de 2026
+**Versión:** 0.2, 12 de noviembre de 2026
 **Estado:** borrador para arrancar el desarrollo. Se corrige sobre la marcha.
 
-Fuentes: plantilla de campos del director comercial (`BASE_DE_DATOS_MOT_09Nov26.xlsx`, hojas "BASE DE DATOS" y "Respuestas"), presentación comercial 2026, formato de servicio RecondOil Box (ejemplo Rassini, 2 nov 2026), informe de laboratorio FOLAB-26-092 (Rassini BYPASA, equipo 11B113), guía de interpretación de informes y respuestas del área técnica por WhatsApp. Las copias están en `docs/referencias/`.
+Fuentes: plantilla de campos del director comercial (`BASE_DE_DATOS_MOT_09Nov26.xlsx`, hojas "BASE DE DATOS" y "Respuestas"), presentación comercial 2026, formato de servicio RecondOil Box (ejemplo Rassini, 2 nov 2026), informe de laboratorio FOLAB-26-092 (Rassini BYPASA, equipo 11B113), guía de interpretación de informes y respuestas del área técnica por WhatsApp. Además, las respuestas del director comercial del 12 nov 2026 (archivo `BASE_DE_DATOS_MOT_06Nov26.xlsx`, hojas "Respuestas2", "RENTAS" y "Cotizacion Tipo"; no está en el repositorio porque trae datos de contacto de clientes). Las copias están en `docs/referencias/`.
 
 ---
 
@@ -21,7 +21,7 @@ MOT vende tres cosas:
 | **Por evento** | MOT lleva el Robox, filtra un tanque y lo retira. Se propone repetir cada semestre o según el desgaste. | **Por litro del volumen del tanque**, facturado por evento. | Se retira |
 | **Único / Servicio / Laboratorio** | Único: cualquier servicio de una sola vez. Servicio: cualquier trabajo distinto a la limpieza. Laboratorio: solo análisis de aceite. | Por evento o servicio. | — |
 
-Además, el formato de servicio muestra **"Prueba tecnológica"** como modalidad. Se trata como un tipo de contrato más (pregunta abierta P2).
+El formato de servicio muestra también "Comodato" y "Prueba tecnológica". **Comodato** es la forma jurídica de la renta (el equipo queda al cuidado del cliente, no en propiedad). La **prueba tecnológica** ya no se hace y no es un tipo de contrato (D14).
 
 **Reglas comerciales confirmadas**
 - El precio por litro es el **70 % del precio del aceite nuevo**, con un piso de **2.5 USD/L**. El precio del aceite nuevo sale de un comprobante del cliente o de una búsqueda en internet (se toma el valor más bajo razonable).
@@ -29,7 +29,7 @@ Además, el formato de servicio muestra **"Prueba tecnológica"** como modalidad
 - El **mantenimiento siempre lo paga MOT**, salvo daño por mal uso del cliente.
 - La planta de Querétaro está clausurada: **todo el servicio es en sitio**.
 
-**Escala actual:** 4 clientes con renta fija y 2 vendedores (el director comercial en CDMX y un vendedor externo en Querétaro). Hay laboratorio propio, área técnica con especialistas de campo y facturación manual en el portal del SAT. No hay sistema previo: **no se migra un histórico**, se ordena la operación desde cero.
+**Escala actual:** 3 clientes con 13 rentas (GOPLAS, NACOBRE y TT Green Metals, por 4,871 USD al mes más IVA, según el archivo del 12 nov 2026; antes se hablaba de 4 clientes) y 2 vendedores (el director comercial en CDMX y un vendedor externo en Querétaro). Hay laboratorio propio, área técnica con especialistas de campo y facturación manual en el portal del SAT. No hay sistema previo: **no se migra un histórico**, se ordena la operación desde cero.
 
 ---
 
@@ -104,8 +104,8 @@ cotizaciones            Versionadas, ligadas a la oportunidad. Moneda USD.
 ```
 robox                   Equipo MOT: número de serie (ej. 545592), modelo, versión de programa, SIM,
                         estado (disponible | en_cliente | en_taller | baja), fecha de alta.
-contratos               Planta, razón social a facturar, tipo (renta | por_evento | unico | servicio | laboratorio |
-                        prueba_tecnologica), nuevo o ampliación (contrato_origen_id), vigencia (inicio, término,
+contratos               Planta, razón social a facturar, tipo (renta | por_evento | unico | servicio | laboratorio),
+                        nuevo o ampliación (contrato_origen_id), vigencia (inicio, término,
                         renovación), anticipo, incluye_filtros, incluye_laboratorio, frecuencia de visitas, estado.
   └─ contrato_tarifas   Concepto, unidad (mes | litro | evento | servicio), precio, equipo del cliente (opcional).
   └─ ordenes_compra     Número de OC del cliente, general o por equipo, monto, vigencia y saldo.
@@ -300,8 +300,8 @@ Ninguna bloquea el arranque. Cada una se resuelve antes de la etapa indicada.
 | # | Pregunta | Para | Antes de |
 |---|---|---|---|
 | P1 | Regla del **ID de caso** (`RAS1-08`): ¿qué significa cada parte? ¿Es por equipo, por Robox o por carrusel? ¿Y el folio del informe (`25-AT-380-RAS1-01`)? | Área técnica / Laboratorio | Etapa 2 |
-| P2 | **Prueba tecnológica** y **Comodato** en el formato: ¿comodato es lo mismo que renta? ¿La prueba tecnológica es gratuita y tiene duración? | Dirección comercial | Etapa 2 |
-| P3 | **Contratos y anticipos** (estructura real) y **esquema de comisiones**. | Fernando | Etapas 2 y 6 |
+| P2 | ~~Prueba tecnológica y Comodato~~ **Resuelta el 12 nov 2026** (ver D14). | Dirección comercial | — |
+| P3 | **Esquema de comisiones** del vendedor externo: comisiona sobre ventas, pero Dirección General aún define los montos. (La estructura de la renta quedó en D15.) | Dirección General | Etapa 6 |
 | P4 | **Usuarios y alcances**: nombre, puesto, rol. (Lo del vendedor externo quedó resuelto en D9.) | Director General | Etapa 0 (al cierre) |
 | P5 | ¿Qué incluye cada **nivel de análisis** (Básico, Básico + MPC, Extendido, Premium) y cuál se usa en cada caso? El frasco de ejemplo dice "Entrada": ¿qué tipos de muestra existen (entrada, salida, antes de filtrar…)? | Laboratorio | Etapa 4 |
 | P6 | ¿Exactamente **4 pruebas "no pasa"** da Precaución o Crítico? ¿Qué parámetros cuentan para la condición? ¿El límite de pH es > 5.0 (guía) o > 5.5 (informe)? | Laboratorio | Etapa 4 |
@@ -328,3 +328,9 @@ Ninguna bloquea el arranque. Cada una se resuelve antes de la etapa indicada.
 | D9 | Los **vendedores externos no son usuarios ni un rol**: son un canal de venta que solo comisiona. La oportunidad guarda el canal y un responsable interno que le da seguimiento. | Definido por Rivexo el 10 nov 2026. Evita dar acceso al sistema a terceros. |
 | D10 | Las **cotizaciones son de partidas libres**: el vendedor captura las partidas (pueden ser recurrentes). El cotizador por litro (70 % con piso) es una ayuda para la partida más común, no una regla obligatoria. La cotización guarda el valor total del contrato si es renta, o los litros estimados si es por litro. | Definido por Rivexo el 10 nov 2026. MOT decide cada cotización. |
 | D11 | En la Etapa 1, **ganar una oportunidad** solo la marca como pendiente de contrato; el contrato se crea en la Etapa 2. Las etapas "muestra" y "resultados de laboratorio" son solo etapas del tablero, con notas y un archivo adjunto opcional, hasta la Etapa 4. | Los módulos de contratos y laboratorio son de etapas posteriores. |
+| D12 | Los **precios se cotizan más IVA**: la cotización muestra subtotal y total sin IVA, con la nota "Precios más IVA". El 70 % y el piso de 2.50 USD/L son sin IVA. | Respuesta del director comercial y su cotización tipo (12 nov 2026). |
+| D13 | La cotización lleva **folio anual** `CMOT AAAA-NNN` (las versiones de una misma cotización lo comparten), vigencia de **15 días** por defecto (parámetro), y estados **borrador → enviada → aceptada o rechazada**. El PDF sigue la cotización tipo de MOT. | Respuesta del director comercial (12 nov 2026). |
+| D14 | **Comodato** es la forma jurídica de la renta, no otro tipo de contrato. La **prueba tecnológica** (y el "pay for success") ya no se hace: no existe como tipo de contrato. | Respuesta del director comercial (12 nov 2026). Cierra P2. |
+| D15 | **Renta:** contrato a 3 años, con o sin filtros según la negociación (MOT prefiere que el filtro lo pague el cliente), con 2 meses de anticipo más el costo de instalación. | Respuesta del director comercial (12 nov 2026). Base para los contratos de la Etapa 2. |
+| D16 | El **precio de referencia** del aceite nuevo se puede capturar como costo de un contenedor y sus litros (ej. 2,900 USD ÷ 200 L = 14.50 USD/L). | Así lo calcula MOT en su cotización tipo. |
+| D17 | Los **motivos de pérdida** son un catálogo (7 iniciales del director comercial), con detalle libre opcional. | Para poder contar por qué se pierden las ventas. |
