@@ -1301,6 +1301,120 @@ export type Database = {
           },
         ];
       };
+      ordenes_servicio: {
+        Row: {
+          acompanante_id: string | null;
+          contrato_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          cuenta_id: string | null;
+          deleted_at: string | null;
+          equipo_cliente_id: string | null;
+          estado: string;
+          fecha_programada: string;
+          fecha_real: string | null;
+          folio: string;
+          id: string;
+          notas: string | null;
+          planta_id: string | null;
+          robox_id: string | null;
+          tecnico_id: string;
+          tipo: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          acompanante_id?: string | null;
+          contrato_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id?: string | null;
+          deleted_at?: string | null;
+          equipo_cliente_id?: string | null;
+          estado?: string;
+          fecha_programada: string;
+          fecha_real?: string | null;
+          folio: string;
+          id?: string;
+          notas?: string | null;
+          planta_id?: string | null;
+          robox_id?: string | null;
+          tecnico_id: string;
+          tipo: string;
+          updated_at?: string;
+        };
+        Update: {
+          acompanante_id?: string | null;
+          contrato_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id?: string | null;
+          deleted_at?: string | null;
+          equipo_cliente_id?: string | null;
+          estado?: string;
+          fecha_programada?: string;
+          fecha_real?: string | null;
+          folio?: string;
+          id?: string;
+          notas?: string | null;
+          planta_id?: string | null;
+          robox_id?: string | null;
+          tecnico_id?: string;
+          tipo?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ordenes_servicio_acompanante_id_fkey";
+            columns: ["acompanante_id"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ordenes_servicio_contrato_id_planta_id_fkey";
+            columns: ["contrato_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "contratos";
+            referencedColumns: ["id", "planta_id"];
+          },
+          {
+            foreignKeyName: "ordenes_servicio_cuenta_id_fkey";
+            columns: ["cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ordenes_servicio_equipo_cliente_id_planta_id_fkey";
+            columns: ["equipo_cliente_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "equipos_cliente";
+            referencedColumns: ["id", "planta_id"];
+          },
+          {
+            foreignKeyName: "ordenes_servicio_planta_id_cuenta_id_fkey";
+            columns: ["planta_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "plantas";
+            referencedColumns: ["id", "cuenta_id"];
+          },
+          {
+            foreignKeyName: "ordenes_servicio_robox_id_fkey";
+            columns: ["robox_id"];
+            isOneToOne: false;
+            referencedRelation: "robox";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ordenes_servicio_tecnico_id_fkey";
+            columns: ["tecnico_id"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       parametros_laboratorio: {
         Row: {
           activo: boolean;
@@ -1858,6 +1972,14 @@ export type Database = {
     };
     Functions: {
       directorio_comercial: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          asignable: boolean;
+          id: string;
+          nombre: string;
+        }[];
+      };
+      directorio_tecnicos: {
         Args: Record<PropertyKey, never>;
         Returns: {
           asignable: boolean;
