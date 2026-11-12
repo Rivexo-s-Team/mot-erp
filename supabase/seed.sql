@@ -140,3 +140,16 @@ select a.id, a.planta_id, date '2025-06-01', e.id, 'mot', 'Instalación.'
 from asignacion a
 join public.equipos_cliente e on e.planta_id = a.planta_id and e.identificador = '11B116'
 where exists (select 1 from carrusel);
+
+-- Orden de servicio de ejemplo, como la del formato en papel del 2 nov 2026
+-- (allá el folio es "261102 DV"; aquí toma las iniciales del técnico de prueba).
+insert into public.ordenes_servicio
+  (tipo, cuenta_id, planta_id, contrato_id, equipo_cliente_id, robox_id, tecnico_id, fecha_programada, notas)
+select 'visita', p.cuenta_id, p.id, c.id, e.id, r.id, pf.id, date '2026-11-02',
+       'Toma de muestra y rotación del Robox.'
+from public.plantas p
+join public.contratos c on c.planta_id = p.id and c.notas = 'Contrato de ejemplo.'
+join public.equipos_cliente e on e.planta_id = p.id and e.identificador = '11B116'
+cross join (select id from public.robox where numero_serie = '545592') r
+cross join (select id from public.perfiles where correo = 'tecnico@mot.test') pf
+where p.nombre = 'BYPASA';
