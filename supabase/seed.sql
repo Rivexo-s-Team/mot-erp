@@ -106,3 +106,13 @@ insert into public.contrato_tarifas (contrato_id, planta_id, orden, concepto, un
 select c.id, c.planta_id, 1, 'Renta mensual de Robox', 'mes', 300, e.id
 from contrato c
 join public.equipos_cliente e on e.planta_id = c.planta_id and e.identificador = '11B116';
+
+-- Orden de compra de ejemplo para el contrato anterior (inventada).
+with oc as (
+  insert into public.ordenes_compra (contrato_id, numero, monto, fecha_inicio, fecha_termino)
+  select id, 'OC-EJEMPLO-001', 10800, date '2025-06-01', date '2028-05-31'
+  from public.contratos where notas = 'Contrato de ejemplo.'
+  returning id, contrato_id
+)
+update public.contrato_tarifas t set orden_compra_id = oc.id
+from oc where t.contrato_id = oc.contrato_id;
