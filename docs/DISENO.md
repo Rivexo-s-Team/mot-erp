@@ -139,7 +139,7 @@ partes                  Catálogo: filtro SKF500/HY (Core), filtro SKF500/DST, f
                         cables, fuente de poder, kits de conexión rápida, sensores…
 inventario_movimientos  Entradas (compra a SKF), salidas (orden de servicio), ajustes. Existencia = suma de movimientos.
 filtros_instalados      Qué filtro tiene cada Robox, desde cuándo y cuándo se cambió.
-documentos_acceso       Documentos de MOT y de su personal (REPSE, DC-3, IMSS, EPP) con fecha de vencimiento.
+documentos_acceso       Documentos de MOT y de su personal (REPSE, EPP, IMSS opcional; lista editable) con fecha de vencimiento.
 ```
 
 **Catálogo de actividades** (tomado del formato en papel): presentación, levantamiento, entrega, instalación, puesta en marcha, capacitación, toma de muestras, cambio de filtros, rotación o movilización, limpieza, mantenimiento, adecuación, reemplazo y retiro.
@@ -308,11 +308,11 @@ Ninguna bloquea el arranque. Cada una se resuelve antes de la etapa indicada.
 | P4 | **Usuarios y alcances**: nombre, puesto, rol. (Lo del vendedor externo quedó resuelto en D9.) | Director General | Etapa 0 (al cierre) |
 | P5 | ¿Qué incluye cada **nivel de análisis** (Básico, Básico + MPC, Extendido, Premium) y cuál se usa en cada caso? El frasco de ejemplo dice "Entrada": ¿qué tipos de muestra existen (entrada, salida, antes de filtrar…)? | Laboratorio | Etapa 4 |
 | P6 | ¿Exactamente **4 pruebas "no pasa"** da Precaución o Crítico? ¿Qué parámetros cuentan para la condición? ¿El límite de pH es > 5.0 (guía) o > 5.5 (informe)? | Laboratorio | Etapa 4 |
-| P7 | **Reverso del formato de servicio** ("Datos e información al reverso"): foto, por favor. | Área técnica | Etapa 3 |
+| P7 | **Reverso del formato de servicio:** el frente dice "Datos e información al reverso", pero no tenemos esa cara. Por ahora se construye con el frente; al revisar con el área técnica se pregunta si falta algún dato. | Área técnica | Etapa 3 (al cierre) |
 | P8 | **PAC** a usar, **tipo de cambio** para CFDI en USD y para pagos en pesos, y manejo fiscal de anticipos. | Administración / contador | Etapa 5 |
 | P9 | ¿MOT tiene acceso al portal de SKF donde reporta el Robox? ¿SKF ofrece API? | Área técnica | Etapa 6 |
 | P10 | Inventarios: lista de Robox (serie, ubicación, estado) y existencias de filtros y partes. | Área técnica | Etapa 2 |
-| P11 | ¿Hay señal en las plantas, o los técnicos necesitan capturar sin conexión? | Área técnica | Etapa 3 |
+| P11 | ~~Señal en las plantas~~ **Resuelta el 13 nov 2026** (ver D25). | Área técnica | — |
 
 ---
 
@@ -343,3 +343,6 @@ Ninguna bloquea el arranque. Cada una se resuelve antes de la etapa indicada.
 | D21 | Un contrato se puede **crear desde una oportunidad ganada**: queda ligado a ella y copia como tarifas las partidas de la cotización aceptada. Solo lo hace quien edita contratos y además ve el pipeline (hoy, Dirección); Administración los captura directo en Contratos. | Para no recapturar (§4.2) sin abrir el pipeline a más roles antes de cerrar P4. |
 | D22 | Una **orden de compra** pertenece a un contrato y cada tarifa indica qué orden la cubre; una orden sin tarifas ligadas es general. Lleva importes, así que la ven solo quienes ven precios. El **saldo** se calculará cuando existan las facturas (Etapa 5). | En las rentas actuales hay órdenes por Robox y órdenes que cubren dos Robox. |
 | D23 | La **asignación** de un Robox a un contrato, su carrusel y sus movimientos los captura quien edita la flota (Dirección y Técnico; tentativo hasta P4). Un Robox solo puede estar en un contrato a la vez; al asignarlo queda "en cliente" y al terminar la asignación vuelve a "disponible". El tanque actual es el destino del último movimiento (o el único tanque del carrusel). El **ID de caso** se guarda como texto libre en cada tanque del carrusel, mientras se confirma P1. | Así la ubicación no se captura dos veces (§4.3) y el estado del Robox no se contradice con su asignación. |
+| D24 | **Orden de servicio:** el folio se genera solo con la fecha programada y las iniciales del técnico responsable (`261102 DV`); si ese técnico ya tiene una orden ese día, lleva consecutivo (`261102 DV 2`). Todos los internos consultan; Técnico y Dirección crean y llenan; el técnico solo edita las órdenes donde va como responsable o acompañante; Dirección, todas. Una orden cerrada ya no cambia. Accesos tentativos hasta P4 (serán entre 5 y 7 usuarios internos). | Es el folio que MOT ya usa. Confirmado por Rivexo el 13 nov 2026. |
+| D25 | **Captura sin señal:** hay plantas con buena señal y plantas remotas sin ella. La orden se abre con señal; lo capturado se guarda en el teléfono y se envía al sistema en cuanto vuelve la señal. Cierra P11. | Respuesta de Rivexo (13 nov 2026). Es lo más sencillo que cubre las plantas remotas. |
+| D26 | **Documentos de acceso a planta:** REPSE y equipo de protección (EPP) son los que el director comercial confirmó; el IMSS del personal es opcional. El DC-3 no está confirmado por MOT: los tipos de documento serán una lista editable, para agregarlo si lo piden. El **inventario** inicial de filtros y partes lo captura MOT en el sistema. Los **cargos** de una orden quedan como pendientes de facturar hasta la Etapa 5. | Para no pedir documentos que nadie exige y no frenar la etapa por datos que MOT puede cargar después. |
