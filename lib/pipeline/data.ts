@@ -18,7 +18,7 @@ export async function directorioComercial() {
 }
 
 const COLUMNAS =
-  "id, nombre, etapa, tipo, origen, volumen_estimado_l, responsable_id, fecha_cierre, motivo_perdida, cuenta_id, planta_id, canal_venta_id, notas, updated_at, cuentas!inner (id, nombre, deleted_at), plantas (nombre), canales_venta (nombre)";
+  "id, nombre, etapa, tipo, origen, volumen_estimado_l, responsable_id, fecha_cierre, motivo_perdida, motivo_perdida_id, motivos_perdida (nombre), cuenta_id, planta_id, canal_venta_id, notas, updated_at, cuentas!inner (id, nombre, deleted_at), plantas (nombre), canales_venta (nombre)";
 
 export async function listarOportunidades(cerradas: boolean) {
   const supabase = await createClient();
@@ -125,4 +125,16 @@ export async function plantasDeCuenta(cuentaId: string) {
     .order("nombre");
   if (error) throw new Error("No se pudieron cargar las plantas.");
   return data.map((p) => ({ value: p.id, label: p.nombre }));
+}
+
+export async function listarMotivosPerdida() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("motivos_perdida")
+    .select("id, nombre")
+    .eq("activo", true)
+    .order("orden")
+    .order("nombre");
+  if (error) throw new Error("No se pudieron cargar los motivos de pérdida.");
+  return data.map((m) => ({ value: m.id, label: m.nombre }));
 }

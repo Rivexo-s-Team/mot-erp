@@ -32,6 +32,7 @@ describe("catálogos", () => {
       "actividades",
       "canales_venta",
       "fallas",
+      "motivos_perdida",
       "parametros_laboratorio",
       "partes",
     ]);

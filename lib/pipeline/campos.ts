@@ -117,18 +117,33 @@ export function camposActividad(
   ];
 }
 
-export const CAMPOS_ETAPA: Campo[] = [
-  { name: "etapa", label: "Etapa", tipo: "opciones", opciones: ETAPAS },
-  {
-    name: "motivo_perdida",
-    label: "Motivo de la pérdida",
-    tipo: "textoLargo",
-    opcional: true,
-    ayuda: "Obligatorio solo si la marcas como perdida.",
-  },
-];
+/** Cambio de etapa. `motivos` es la lista de motivos de pérdida vigentes. */
+export function camposEtapa(motivos: Opcion[]): Campo[] {
+  return [
+    { name: "etapa", label: "Etapa", tipo: "opciones", opciones: ETAPAS },
+    {
+      name: "motivo_perdida_id",
+      label: "Motivo de la pérdida",
+      tipo: "referencia",
+      opcional: true,
+      opciones: motivos,
+      ayuda: "Solo si la marcas como perdida. La lista se edita en Catálogos.",
+    },
+    {
+      name: "motivo_perdida",
+      label: "Detalle de la pérdida",
+      tipo: "textoLargo",
+      opcional: true,
+    },
+  ];
+}
 
 export const validarEtapa: Validador = (v) =>
-  v.etapa === "perdida" && String(v.motivo_perdida ?? "").trim() === ""
-    ? { campo: "motivo_perdida", mensaje: "Escribe por qué se perdió." }
+  v.etapa === "perdida" &&
+  String(v.motivo_perdida_id ?? "") === "" &&
+  String(v.motivo_perdida ?? "").trim() === ""
+    ? {
+        campo: "motivo_perdida_id",
+        mensaje: "Elige por qué se perdió, o escríbelo en el detalle.",
+      }
     : null;

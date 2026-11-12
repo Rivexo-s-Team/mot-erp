@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { esquemaCampos, valoresIniciales } from "@/lib/forms/campos";
 import {
-  CAMPOS_ETAPA,
+  camposEtapa,
   camposActividad,
   camposOportunidad,
   ETAPAS,
@@ -90,23 +90,25 @@ describe("actividad", () => {
 });
 
 describe("cambio de etapa", () => {
-  const esquema = esquemaCampos(CAMPOS_ETAPA, validarEtapa);
+  const esquema = esquemaCampos(camposEtapa([]), validarEtapa);
+  const sin = { motivo_perdida_id: "", motivo_perdida: "" };
 
-  it("perdida exige motivo; las demás no", () => {
+  it("perdida exige un motivo de la lista o escrito; las demás etapas no", () => {
+    expect(esquema.safeParse({ etapa: "perdida", ...sin }).success).toBe(false);
     expect(
-      esquema.safeParse({ etapa: "perdida", motivo_perdida: "" }).success,
-    ).toBe(false);
-    expect(
-      esquema.safeParse({ etapa: "perdida", motivo_perdida: "Precio" }).success,
+      esquema.safeParse({ etapa: "perdida", ...sin, motivo_perdida_id: ID })
+        .success,
     ).toBe(true);
     expect(
-      esquema.safeParse({ etapa: "ganada", motivo_perdida: "" }).success,
+      esquema.safeParse({ etapa: "perdida", ...sin, motivo_perdida: "Precio" })
+        .success,
     ).toBe(true);
+    expect(esquema.safeParse({ etapa: "ganada", ...sin }).success).toBe(true);
   });
 
   it("rechaza etapas que no existen", () => {
-    expect(
-      esquema.safeParse({ etapa: "negociacion", motivo_perdida: "" }).success,
-    ).toBe(false);
+    expect(esquema.safeParse({ etapa: "negociacion", ...sin }).success).toBe(
+      false,
+    );
   });
 });

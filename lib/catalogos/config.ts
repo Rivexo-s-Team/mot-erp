@@ -24,7 +24,8 @@ export type TablaCatalogo =
   | "actividades"
   | "fallas"
   | "parametros_laboratorio"
-  | "canales_venta";
+  | "canales_venta"
+  | "motivos_perdida";
 
 export type Catalogo = {
   slug: string;
@@ -365,6 +366,24 @@ export const CATALOGOS: Catalogo[] = [
       },
       { name: "correo", label: "Correo", tipo: "correo", opcional: true },
       { name: "notas", label: "Notas", tipo: "textoLargo", opcional: true },
+      campoActivo,
+    ],
+  },
+  {
+    slug: "motivos-perdida",
+    tabla: "motivos_perdida",
+    titulo: "Motivos de pérdida",
+    singular: "motivo",
+    descripcion:
+      "Por qué se pierde una venta. Se eligen al marcar una oportunidad como perdida.",
+    permisoVer: "oportunidades.ver",
+    permisoEditar: "oportunidades.editar",
+    ordenarPor: ["orden", "nombre"],
+    nombre: (f) => texto(f.nombre),
+    columnas: [{ titulo: "Motivo", valor: (f) => texto(f.nombre) }],
+    campos: [
+      { name: "nombre", label: "Motivo", tipo: "texto" },
+      campoOrden,
       campoActivo,
     ],
   },
