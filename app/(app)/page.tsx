@@ -12,6 +12,7 @@ import { menuPara } from "@/lib/navegacion";
 const DESCRIPCIONES: Record<string, string> = {
   "/clientes": "Cuentas, plantas, razones sociales y contactos.",
   "/oportunidades": "Ventas en curso por etapa, con sus actividades.",
+  "/flota": "Los Robox de MOT: número de serie, estado y datos del equipo.",
   "/catalogos":
     "Aceites, parámetros de laboratorio, partes, actividades y fallas.",
   "/parametros":

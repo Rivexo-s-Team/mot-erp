@@ -1244,6 +1244,7 @@ export type Database = {
           fecha_alta: string | null;
           id: string;
           modelo: string | null;
+          notas: string | null;
           numero_serie: string;
           sim: string | null;
           updated_at: string;
@@ -1258,6 +1259,7 @@ export type Database = {
           fecha_alta?: string | null;
           id?: string;
           modelo?: string | null;
+          notas?: string | null;
           numero_serie: string;
           sim?: string | null;
           updated_at?: string;
@@ -1271,6 +1273,7 @@ export type Database = {
           fecha_alta?: string | null;
           id?: string;
           modelo?: string | null;
+          notas?: string | null;
           numero_serie?: string;
           sim?: string | null;
           updated_at?: string;
