@@ -1,6 +1,6 @@
 -- Un usuario de cada rol ve solo lo que le corresponde.
 begin;
-select plan(43);
+select plan(45);
 
 -- Todo lo de la prueba vive en un esquema temporal y se deshace con el rollback.
 create schema pruebas;
@@ -70,6 +70,7 @@ select is(pruebas.cuenta('perfiles'), 1, 'comercial solo ve su perfil');
 select is(pruebas.cuenta('roles'), 1, 'comercial solo ve su rol');
 select is(pruebas.cuenta('rol_permisos'), 0, 'comercial no ve la matriz');
 select ok(public.tiene_permiso('precios.ver'), 'comercial ve precios');
+select ok(public.tiene_permiso('inventario.ver') and not public.tiene_permiso('inventario.editar'), 'comercial consulta el inventario pero no lo mueve');
 select ok(public.tiene_permiso('contratos.ver') and not public.tiene_permiso('contratos.editar'), 'comercial consulta contratos pero no los edita');
 select ok(not public.tiene_permiso('usuarios.administrar'), 'comercial no administra usuarios');
 
@@ -84,6 +85,7 @@ select is(pruebas.cuenta('parametros_negocio'), (select n from pruebas.total_par
 select is(pruebas.cuenta('bitacora'), 0, 'administración no ve la bitácora');
 select ok(public.tiene_permiso('precios.ver'), 'administración ve precios');
 select ok(public.tiene_permiso('contratos.editar'), 'administración edita contratos');
+select ok(public.tiene_permiso('inventario.editar'), 'administración registra movimientos de inventario');
 select ok(public.tiene_permiso('ordenes.ver') and not public.tiene_permiso('ordenes.editar'), 'administración consulta órdenes pero no las llena');
 
 -- Técnico, Laboratorio y Cliente: sin precios -------------------------------

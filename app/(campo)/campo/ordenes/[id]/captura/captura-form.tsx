@@ -33,6 +33,7 @@ type Props = {
   delSistema: Captura;
   actividades: { id: string; nombre: string; llevaCantidad: boolean }[];
   fallas: { id: string; nombre: string }[];
+  partes: { id: string; nombre: string; tipo: string }[];
   /** En una visita firma también el responsable del cliente. */
   esVisita: boolean;
   /** Hoy en México (aaaa-mm-dd): la fecha que se anota al firmar. */
@@ -104,6 +105,7 @@ function Formulario({
   delSistema,
   actividades,
   fallas,
+  partes,
   esVisita,
   hoy,
   volverHref,
@@ -113,6 +115,8 @@ function Formulario({
     capturaInicial(delSistema, leerLocal(ordenId)),
   );
   const [captura, setCaptura] = useState<Captura>(inicio.captura);
+  // Parte elegida en la lista para agregarla a la orden.
+  const [porAgregar, setPorAgregar] = useState("");
   const [estado, setEstado] = useState<Estado>(
     inicio.pendiente ? { tipo: "telefono" } : { tipo: "sistema" },
   );
@@ -484,6 +488,103 @@ function Formulario({
               <span className="flex-1">{f.nombre}</span>
             </label>
           ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Partes y accesorios</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Lo que se cambió o se instaló. Sale del inventario al cerrar la
+            orden.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {partes
+            .filter((p) => p.id in captura.partes)
+            .map((p) => {
+              const ruta = `partes.${p.id}`;
+              return (
+                <div key={p.id}>
+                  <div className="flex items-center gap-2">
+                    <span className="flex-1 text-base">{p.nombre}</span>
+                    <Input
+                      name={`parte-${p.id}`}
+                      aria-label={`Cantidad de ${p.nombre}`}
+                      className="h-11 w-20 text-base"
+                      autoComplete="off"
+                      inputMode="decimal"
+                      value={captura.partes[p.id] ?? ""}
+                      aria-invalid={Boolean(error(ruta))}
+                      onChange={(e) =>
+                        cambiar({
+                          ...captura,
+                          partes: { ...captura.partes, [p.id]: e.target.value },
+                        })
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      aria-label={`Quitar ${p.nombre}`}
+                      onClick={() => {
+                        const siguientes = { ...captura.partes };
+                        delete siguientes[p.id];
+                        cambiar({ ...captura, partes: siguientes });
+                      }}
+                    >
+                      Quitar
+                    </Button>
+                  </div>
+                  {error(ruta) ? (
+                    <p className="mt-1 text-sm text-destructive">
+                      {error(ruta)}
+                    </p>
+                  ) : null}
+                </div>
+              );
+            })}
+          <div className="flex gap-2">
+            <select
+              name="parte_por_agregar"
+              aria-label="Parte o accesorio por agregar"
+              className="h-11 min-w-0 flex-1 rounded-lg border border-input bg-background px-2 text-base"
+              value={porAgregar}
+              onChange={(e) => setPorAgregar(e.target.value)}
+            >
+              <option value="">Elige una parte o accesorio…</option>
+              {(["parte", "accesorio"] as const).map((tipo) => (
+                <optgroup
+                  key={tipo}
+                  label={tipo === "parte" ? "Partes" : "Accesorios"}
+                >
+                  {partes
+                    .filter((p) => p.tipo === tipo && !(p.id in captura.partes))
+                    .map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.nombre}
+                      </option>
+                    ))}
+                </optgroup>
+              ))}
+            </select>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11"
+              disabled={!porAgregar}
+              onClick={() => {
+                cambiar({
+                  ...captura,
+                  partes: { ...captura.partes, [porAgregar]: "1" },
+                });
+                setPorAgregar("");
+              }}
+            >
+              Agregar
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

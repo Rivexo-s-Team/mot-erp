@@ -56,6 +56,7 @@ export async function GET(
     captura,
     actividades: catalogos.actividades,
     fallas: catalogos.fallas,
+    partes: catalogos.partes,
   });
   const pdf = await generarPdfOrden(datos);
 
