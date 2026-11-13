@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
+import { CerrarOrden } from "@/components/cerrar-orden";
 import { PageHeader } from "@/components/layout/page-header";
 import { OrdenCaptura } from "@/components/orden-captura";
+import { OrdenEvidencias } from "@/components/orden-evidencias";
 import { EstadoOrdenBadge } from "@/components/orden-estado-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,9 +12,11 @@ import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { nombreEquipo } from "@/lib/flota/campos";
 import { formatDia, formatFecha } from "@/lib/format";
 import { accionesOrden, etiqueta, TIPOS_ORDEN } from "@/lib/ordenes/campos";
+import { faltantesParaCerrar } from "@/lib/ordenes/captura";
 import {
   catalogosCaptura,
   directorioTecnicos,
+  evidenciasDeOrden,
   obtenerCaptura,
   obtenerOrden,
 } from "@/lib/ordenes/data";
@@ -40,7 +44,10 @@ export default async function OrdenPage({
       o.tecnico_id === sesion.id ||
       o.acompanante_id === sesion.id);
   const acciones = accionesOrden(o.estado);
-  const { captura, hayCaptura } = await obtenerCaptura(o.id);
+  const [{ captura, hayCaptura }, evidencias] = await Promise.all([
+    obtenerCaptura(o.id),
+    evidenciasDeOrden(o.id),
+  ]);
   const catalogos = hayCaptura ? await catalogosCaptura(captura) : null;
 
   const datos: [string, React.ReactNode][] = [
@@ -134,6 +141,13 @@ export default async function OrdenPage({
             Capturar visita
           </Link>
         ) : null}
+        {puedeEditar && acciones.cerrar ? (
+          <CerrarOrden
+            ordenId={o.id}
+            faltantes={faltantesParaCerrar(captura, o.tipo)}
+            volver="ordenes"
+          />
+        ) : null}
         {puedeEditar && acciones.cancelar ? (
           <form
             action={cambiarEstadoOrden.bind(null, o.id, "cancelar", "ordenes")}
@@ -175,18 +189,26 @@ export default async function OrdenPage({
             ) : null}
           </CardContent>
         </Card>
-        {catalogos ? (
-          <OrdenCaptura
-            captura={captura}
-            actividades={catalogos.actividades}
-            fallas={catalogos.fallas}
+        <div className="space-y-6">
+          {catalogos ? (
+            <OrdenCaptura
+              captura={captura}
+              actividades={catalogos.actividades}
+              fallas={catalogos.fallas}
+              esVisita={o.tipo === "visita"}
+            />
+          ) : (
+            <Card className="px-4 py-6 text-center text-sm text-muted-foreground">
+              Aún no se captura nada de la visita. El técnico lo llena desde
+              Campo, en su celular, con la orden en curso.
+            </Card>
+          )}
+          <OrdenEvidencias
+            ordenId={o.id}
+            evidencias={evidencias}
+            editable={puedeEditar && o.estado === "en_curso"}
           />
-        ) : (
-          <Card className="h-fit px-4 py-6 text-center text-sm text-muted-foreground">
-            Aún no se captura nada de la visita. El técnico lo llena desde
-            Campo, en su celular, con la orden en curso.
-          </Card>
-        )}
+        </div>
       </div>
     </>
   );

@@ -10,6 +10,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import { FirmaPad } from "@/components/firma-pad";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ import {
   type Borrador,
   type Captura,
   type Momento,
+  type RolFirma,
 } from "@/lib/ordenes/captura";
 import { guardarCaptura } from "@/app/(app)/ordenes/actions";
 
@@ -31,6 +33,10 @@ type Props = {
   delSistema: Captura;
   actividades: { id: string; nombre: string; llevaCantidad: boolean }[];
   fallas: { id: string; nombre: string }[];
+  /** En una visita firma también el responsable del cliente. */
+  esVisita: boolean;
+  /** Hoy en México (aaaa-mm-dd): la fecha que se anota al firmar. */
+  hoy: string;
   volverHref: string;
 };
 
@@ -98,6 +104,8 @@ function Formulario({
   delSistema,
   actividades,
   fallas,
+  esVisita,
+  hoy,
   volverHref,
 }: Props) {
   const uid = useId();
@@ -194,6 +202,80 @@ function Formulario({
         ? [...captura.fallas, id]
         : captura.fallas.filter((f) => f !== id),
     });
+
+  const ponerFirma = (
+    rol: RolFirma,
+    cambios: Partial<Captura["firmas"][RolFirma]>,
+  ) =>
+    cambiar({
+      ...captura,
+      firmas: {
+        ...captura.firmas,
+        [rol]: { ...captura.firmas[rol], ...cambios },
+      },
+    });
+
+  const firma = (rol: RolFirma, titulo: string, ayuda: string) => {
+    const f = captura.firmas[rol];
+    const errorNombre = error(`firmas.${rol}.nombre`);
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{titulo}</CardTitle>
+          <p className="text-sm text-muted-foreground">{ayuda}</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label
+              htmlFor={id(`firma-${rol}-nombre`)}
+              className="mb-1 block text-sm font-medium"
+            >
+              Nombre
+            </label>
+            <Input
+              id={id(`firma-${rol}-nombre`)}
+              name={`firmas.${rol}.nombre`}
+              className="h-12 text-base"
+              autoComplete="off"
+              value={f.nombre}
+              aria-invalid={Boolean(errorNombre)}
+              onChange={(e) => ponerFirma(rol, { nombre: e.target.value })}
+            />
+            {errorNombre ? (
+              <p className="mt-1 text-sm text-destructive">{errorNombre}</p>
+            ) : null}
+          </div>
+          <div>
+            <label
+              htmlFor={id(`firma-${rol}-cargo`)}
+              className="mb-1 block text-sm font-medium"
+            >
+              Cargo
+            </label>
+            <Input
+              id={id(`firma-${rol}-cargo`)}
+              name={`firmas.${rol}.cargo`}
+              className="h-12 text-base"
+              autoComplete="off"
+              value={f.cargo}
+              onChange={(e) => ponerFirma(rol, { cargo: e.target.value })}
+            />
+          </div>
+          <FirmaPad
+            etiqueta={titulo}
+            trazos={f.trazos}
+            onChange={(trazos) =>
+              // La fecha de la firma es el día en que se dibuja.
+              ponerFirma(rol, {
+                trazos,
+                fecha: trazos.length === 0 ? "" : f.fecha || hoy,
+              })
+            }
+          />
+        </CardContent>
+      </Card>
+    );
+  };
 
   const problema = problemaCaptura(captura);
   const error = (ruta: string) =>
@@ -434,6 +516,19 @@ function Formulario({
           ) : null}
         </CardContent>
       </Card>
+
+      {firma(
+        "tecnico",
+        "Firma del técnico",
+        "Quien hizo el servicio por parte de MOT.",
+      )}
+      {esVisita
+        ? firma(
+            "cliente",
+            "Firma del responsable del cliente",
+            "Quien recibe o acepta el servicio.",
+          )
+        : null}
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-background/95 px-4 py-3 backdrop-blur">
         <div className="mx-auto flex max-w-xl flex-col gap-2">
