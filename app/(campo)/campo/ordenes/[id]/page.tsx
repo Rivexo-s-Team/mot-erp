@@ -120,6 +120,21 @@ export default async function OrdenCampoPage({
             grande
           />
         ) : null}
+        {o.estado !== "programada" ? (
+          <a
+            href={`/ordenes/${o.id}/pdf`}
+            target="_blank"
+            rel="noreferrer"
+            className={buttonVariants({
+              variant: o.estado === "cerrada" ? "default" : "outline",
+              className: "h-11 w-full",
+            })}
+          >
+            {o.estado === "cerrada"
+              ? "Ver PDF de la orden"
+              : "Ver PDF (sin cerrar)"}
+          </a>
+        ) : null}
         {puedeEditar && acciones.editar ? (
           <Link
             href={`/ordenes/${o.id}/editar`}
