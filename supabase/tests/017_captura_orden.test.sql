@@ -159,6 +159,8 @@ select is(
 
 -- Cerrada: ya no cambia ---------------------------------------------------------------
 select pruebas.entrar('tecnico');
+insert into public.os_firmas (orden_id, rol, nombre, trazos)
+values (pruebas.id('orden'), 'tecnico', 'Firma de prueba', '[[1,1,2,2]]'::jsonb);
 update public.ordenes_servicio set estado = 'cerrada' where id = pruebas.id('orden');
 select throws_ok(
   $$select public.guardar_captura_orden(pruebas.id('orden'), pruebas.captura())$$,

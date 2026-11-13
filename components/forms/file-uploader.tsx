@@ -15,6 +15,10 @@ type Subida = { bucket: string; ruta: string; token: string };
 
 type FileUploaderProps = {
   texto: string;
+  /** Tipos de archivo que ofrece el selector. Por defecto, PDF e imágenes. */
+  acepta?: string;
+  /** Texto de ayuda bajo el botón. */
+  ayuda?: string;
   /** Paso 1: el servidor revisa permisos y da un permiso temporal para subir. */
   preparar: (meta: MetaArchivo) => Promise<Subida | { error: string }>;
   /** Paso 2: el servidor confirma que el archivo llegó y lo registra. */
@@ -27,6 +31,8 @@ type FileUploaderProps = {
 /** Botón para subir un PDF o una imagen directo a Storage. */
 export function FileUploader({
   texto,
+  acepta = ACEPTA,
+  ayuda = "PDF o imagen, hasta 10 MB.",
   preparar,
   registrar,
 }: FileUploaderProps) {
@@ -86,7 +92,7 @@ export function FileUploader({
         ref={input}
         id={id}
         type="file"
-        accept={ACEPTA}
+        accept={acepta}
         className="sr-only"
         disabled={subiendo}
         onChange={(e) => {
@@ -94,9 +100,7 @@ export function FileUploader({
           if (archivo) void subir(archivo);
         }}
       />
-      <p className="text-xs text-muted-foreground">
-        PDF o imagen, hasta 10 MB.
-      </p>
+      <p className="text-xs text-muted-foreground">{ayuda}</p>
       {error ? (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>

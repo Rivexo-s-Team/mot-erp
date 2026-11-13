@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
+import { CerrarOrden } from "@/components/cerrar-orden";
 import { OrdenCaptura } from "@/components/orden-captura";
+import { OrdenEvidencias } from "@/components/orden-evidencias";
 import { EstadoOrdenBadge } from "@/components/orden-estado-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,9 +11,11 @@ import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { nombreEquipo } from "@/lib/flota/campos";
 import { formatDia } from "@/lib/format";
 import { accionesOrden } from "@/lib/ordenes/campos";
+import { faltantesParaCerrar } from "@/lib/ordenes/captura";
 import {
   catalogosCaptura,
   directorioTecnicos,
+  evidenciasDeOrden,
   lugarOrden,
   obtenerCaptura,
   obtenerOrden,
@@ -35,7 +39,10 @@ export default async function OrdenCampoPage({
     o.tecnico_id === sesion.id ||
     o.acompanante_id === sesion.id;
   const acciones = accionesOrden(o.estado);
-  const { captura, hayCaptura } = await obtenerCaptura(o.id);
+  const [{ captura, hayCaptura }, evidencias] = await Promise.all([
+    obtenerCaptura(o.id),
+    evidenciasDeOrden(o.id),
+  ]);
   const catalogos = hayCaptura ? await catalogosCaptura(captura) : null;
   const datos: [string, string][] = [
     [
@@ -105,6 +112,14 @@ export default async function OrdenCampoPage({
             {hayCaptura ? "Continuar captura" : "Capturar visita"}
           </Link>
         ) : null}
+        {puedeEditar && acciones.cerrar ? (
+          <CerrarOrden
+            ordenId={o.id}
+            faltantes={faltantesParaCerrar(captura, o.tipo)}
+            volver="campo"
+            grande
+          />
+        ) : null}
         {puedeEditar && acciones.editar ? (
           <Link
             href={`/ordenes/${o.id}/editar`}
@@ -124,6 +139,17 @@ export default async function OrdenCampoPage({
             captura={captura}
             actividades={catalogos.actividades}
             fallas={catalogos.fallas}
+            esVisita={o.tipo === "visita"}
+          />
+        </div>
+      ) : null}
+
+      {o.estado === "en_curso" || evidencias.length > 0 ? (
+        <div className="mt-6">
+          <OrdenEvidencias
+            ordenId={o.id}
+            evidencias={evidencias}
+            editable={puedeEditar && o.estado === "en_curso"}
           />
         </div>
       ) : null}

@@ -44,6 +44,33 @@ export type Momento = (typeof MOMENTOS)[number];
 /** Una lectura: cada renglón como texto, tal como se escribe ("" = sin dato). */
 export type Lectura = Record<string, string>;
 
+export const ROLES_FIRMA = ["tecnico", "cliente"] as const;
+export type RolFirma = (typeof ROLES_FIRMA)[number];
+
+/** Tamaño del lienzo donde se dibuja la firma; los trazos usan estas coordenadas. */
+export const LIENZO_FIRMA = { ancho: 600, alto: 240 };
+
+/**
+ * Una firma dibujada. Cada trazo es una lista [x1, y1, x2, y2, …] de puntos
+ * enteros dentro del lienzo. Sin trazos = sin firmar.
+ */
+export type Firma = {
+  nombre: string;
+  cargo: string;
+  /** Día en que se firmó (aaaa-mm-dd). */
+  fecha: string;
+  trazos: number[][];
+};
+
+export const firmaVacia = (): Firma => ({
+  nombre: "",
+  cargo: "",
+  fecha: "",
+  trazos: [],
+});
+
+export const estaFirmada = (f: Firma) => f.trazos.length > 0;
+
 /** La captura completa, en la forma que maneja el formulario. */
 export type Captura = {
   id_caso: string;
@@ -54,6 +81,7 @@ export type Captura = {
   /** Actividad marcada → cantidad escrita ("" si no lleva). */
   actividades: Record<string, string>;
   fallas: string[];
+  firmas: Record<RolFirma, Firma>;
 };
 
 export const lecturaVacia = (): Lectura =>
@@ -67,6 +95,7 @@ export const capturaVacia = (): Captura => ({
   lecturas: { inicial: lecturaVacia(), posterior: lecturaVacia() },
   actividades: {},
   fallas: [],
+  firmas: { tecnico: firmaVacia(), cliente: firmaVacia() },
 });
 
 const numero = z
@@ -90,6 +119,28 @@ const esquemaLectura = z.object(
   ),
 );
 
+const esquemaFirma = z
+  .object({
+    nombre: z.string().trim().max(120, "Máximo 120 caracteres."),
+    cargo: z.string().trim().max(80, "Máximo 80 caracteres."),
+    fecha: z
+      .string()
+      .regex(/^(\d{4}-\d{2}-\d{2})?$/, "La fecha de la firma no es válida."),
+    trazos: z
+      .array(
+        z
+          .array(z.number().int().min(0).max(LIENZO_FIRMA.ancho))
+          .min(2)
+          .max(4000)
+          .refine((t) => t.length % 2 === 0),
+      )
+      .max(300, "La firma tiene demasiados trazos. Bórrala y firma de nuevo."),
+  })
+  .refine((f) => f.trazos.length === 0 || f.nombre !== "", {
+    path: ["nombre"],
+    message: "Escribe el nombre de quien firma.",
+  });
+
 export const esquemaCaptura = z.object({
   id_caso: z.string().trim().max(40, "Máximo 40 caracteres."),
   temperatura_aceite_c: numero,
@@ -104,6 +155,7 @@ export const esquemaCaptura = z.object({
     entero.refine((v) => v === "" || Number(v) > 0, "Debe ser mayor que cero."),
   ),
   fallas: z.array(z.uuid()).max(100),
+  firmas: z.object({ tecnico: esquemaFirma, cliente: esquemaFirma }),
 });
 
 /** Primer problema de la captura, con el lugar donde está, o null si está bien. */
@@ -133,6 +185,7 @@ export function aCargaUtil(captura: Captura) {
       cantidad,
     })),
     fallas: [...new Set(c.fallas)],
+    firmas: c.firmas,
   };
 }
 
@@ -146,7 +199,24 @@ export function resumenCaptura(c: Captura) {
     posterior: lecturaTieneDatos(c.lecturas.posterior),
     actividades: Object.keys(c.actividades).length,
     fallas: c.fallas.length,
+    firmaTecnico: estaFirmada(c.firmas.tecnico),
+    firmaCliente: estaFirmada(c.firmas.cliente),
   };
+}
+
+/**
+ * Lo que falta para poder cerrar la orden: siempre firma el técnico y, en una
+ * visita, también el responsable del cliente. Lista vacía = se puede cerrar.
+ */
+export function faltantesParaCerrar(
+  c: Captura,
+  tipo: "visita" | "taller" | string,
+): string[] {
+  const faltan: string[] = [];
+  if (!estaFirmada(c.firmas.tecnico)) faltan.push("la firma del técnico");
+  if (tipo === "visita" && !estaFirmada(c.firmas.cliente))
+    faltan.push("la firma del responsable del cliente");
+  return faltan;
 }
 
 // Borrador en el teléfono -------------------------------------------------------
@@ -181,6 +251,10 @@ export function leerBorrador(texto: string | null): Borrador | null {
       },
       actividades: { ...c.actividades },
       fallas: [...(c.fallas ?? [])],
+      firmas: {
+        tecnico: { ...base.firmas.tecnico, ...c.firmas?.tecnico },
+        cliente: { ...base.firmas.cliente, ...c.firmas?.cliente },
+      },
     };
     return { captura, pendiente: b.pendiente, guardado: b.guardado };
   } catch {

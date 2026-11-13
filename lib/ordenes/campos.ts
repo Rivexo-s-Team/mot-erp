@@ -126,6 +126,7 @@ export function accionesOrden(estado: string) {
     editar: estado === "programada" || estado === "en_curso",
     iniciar: estado === "programada",
     cancelar: estado === "programada" || estado === "en_curso",
+    cerrar: estado === "en_curso",
     reactivar: estado === "cancelada",
   };
 }

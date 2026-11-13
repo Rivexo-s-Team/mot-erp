@@ -74,12 +74,14 @@ describe("accionesOrden", () => {
       editar: true,
       iniciar: true,
       cancelar: true,
+      cerrar: false,
       reactivar: false,
     });
   });
   it("en curso: ya no se inicia", () => {
     expect(accionesOrden("en_curso").iniciar).toBe(false);
     expect(accionesOrden("en_curso").editar).toBe(true);
+    expect(accionesOrden("en_curso").cerrar).toBe(true);
   });
   it("cerrada: nada", () => {
     expect(Object.values(accionesOrden("cerrada")).some(Boolean)).toBe(false);
@@ -89,6 +91,7 @@ describe("accionesOrden", () => {
       editar: false,
       iniciar: false,
       cancelar: false,
+      cerrar: false,
       reactivar: true,
     });
   });

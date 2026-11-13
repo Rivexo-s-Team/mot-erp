@@ -1314,6 +1314,7 @@ export type Database = {
           deleted_at: string | null;
           equipo_cliente_id: string | null;
           estado: string;
+          fecha_cierre: string | null;
           fecha_programada: string;
           fecha_real: string | null;
           folio: string;
@@ -1339,6 +1340,7 @@ export type Database = {
           deleted_at?: string | null;
           equipo_cliente_id?: string | null;
           estado?: string;
+          fecha_cierre?: string | null;
           fecha_programada: string;
           fecha_real?: string | null;
           folio: string;
@@ -1363,6 +1365,7 @@ export type Database = {
           deleted_at?: string | null;
           equipo_cliente_id?: string | null;
           estado?: string;
+          fecha_cierre?: string | null;
           fecha_programada?: string;
           fecha_real?: string | null;
           folio?: string;
@@ -1476,6 +1479,57 @@ export type Database = {
           },
         ];
       };
+      os_evidencias: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          id: string;
+          nombre: string;
+          orden_id: string;
+          ruta: string;
+          tamano_bytes: number;
+          tipo: string;
+          tipo_mime: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          id?: string;
+          nombre: string;
+          orden_id: string;
+          ruta: string;
+          tamano_bytes: number;
+          tipo: string;
+          tipo_mime: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          id?: string;
+          nombre?: string;
+          orden_id?: string;
+          ruta?: string;
+          tamano_bytes?: number;
+          tipo?: string;
+          tipo_mime?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "os_evidencias_orden_id_fkey";
+            columns: ["orden_id"];
+            isOneToOne: false;
+            referencedRelation: "ordenes_servicio";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       os_fallas: {
         Row: {
           created_at: string;
@@ -1512,6 +1566,54 @@ export type Database = {
           },
           {
             foreignKeyName: "os_fallas_orden_id_fkey";
+            columns: ["orden_id"];
+            isOneToOne: false;
+            referencedRelation: "ordenes_servicio";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      os_firmas: {
+        Row: {
+          cargo: string | null;
+          created_at: string;
+          created_by: string | null;
+          fecha: string | null;
+          id: string;
+          nombre: string;
+          orden_id: string;
+          rol: string;
+          trazos: NonNullable<Json>;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          cargo?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          fecha?: string | null;
+          id?: string;
+          nombre: string;
+          orden_id: string;
+          rol: string;
+          trazos: NonNullable<Json>;
+          updated_at?: string;
+        };
+        Update: {
+          cargo?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          fecha?: string | null;
+          id?: string;
+          nombre?: string;
+          orden_id?: string;
+          rol?: string;
+          trazos?: NonNullable<Json>;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "os_firmas_orden_id_fkey";
             columns: ["orden_id"];
             isOneToOne: false;
             referencedRelation: "ordenes_servicio";

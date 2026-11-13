@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
+import { hoyEnMexico } from "@/lib/format";
 import {
   catalogosCaptura,
+  directorioTecnicos,
   lugarOrden,
   obtenerCaptura,
   obtenerOrden,
@@ -28,8 +30,14 @@ export default async function CapturaPage({
     o.acompanante_id === sesion.id;
   if (!participa || o.estado !== "en_curso") redirect(`/campo/ordenes/${o.id}`);
 
-  const { captura } = await obtenerCaptura(o.id);
+  const [{ captura }, { nombres }] = await Promise.all([
+    obtenerCaptura(o.id),
+    directorioTecnicos(),
+  ]);
   const catalogos = await catalogosCaptura(captura);
+  // Se propone el nombre del técnico responsable para su firma.
+  if (!captura.firmas.tecnico.nombre)
+    captura.firmas.tecnico.nombre = nombres.get(o.tecnico_id) ?? "";
 
   return (
     <>
@@ -46,6 +54,8 @@ export default async function CapturaPage({
         delSistema={captura}
         actividades={catalogos.actividades}
         fallas={catalogos.fallas}
+        esVisita={o.tipo === "visita"}
+        hoy={hoyEnMexico()}
         volverHref={`/campo/ordenes/${o.id}`}
       />
     </>

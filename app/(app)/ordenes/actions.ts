@@ -178,3 +178,31 @@ export async function guardarCaptura(
   revalidatePath(`/campo/ordenes/${ordenId}`);
   return { ok: true };
 }
+
+/**
+ * Cierra una orden en curso. La base exige las firmas (del técnico y, en una
+ * visita, del responsable del cliente); después de cerrarla ya no cambia.
+ */
+export async function cerrarOrden(
+  id: string,
+  volver: "ordenes" | "campo",
+): Promise<ActionResult> {
+  await requirePermiso(PERMISO);
+  if (!esId(id)) return { error: "Registro no válido." };
+  const { data, error } = await (
+    await tabla()
+  )
+    .update({ estado: "cerrada" })
+    .eq("id", id)
+    .eq("estado", "en_curso")
+    .select("id");
+  // P0001 trae el motivo escrito en la base (qué firma falta).
+  if (error?.code === "P0001") return { error: error.message };
+  if (error || !data?.[0])
+    return {
+      error: "No se pudo cerrar. Revisa que la orden siga en curso y sea tuya.",
+    };
+
+  refrescar(id);
+  redirect(volver === "campo" ? `/campo/ordenes/${id}` : `/ordenes/${id}`);
+}

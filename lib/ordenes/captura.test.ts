@@ -4,6 +4,7 @@ import {
   CAMPOS_LECTURA,
   capturaInicial,
   capturaVacia,
+  faltantesParaCerrar,
   leerBorrador,
   problemaCaptura,
   resumenCaptura,
@@ -96,7 +97,79 @@ describe("captura de la visita", () => {
       posterior: false,
       actividades: 2,
       fallas: 0,
+      firmaTecnico: false,
+      firmaCliente: false,
     });
+  });
+});
+
+describe("firmas y cierre", () => {
+  const firmar = (c: Captura, rol: "tecnico" | "cliente", nombre: string) => {
+    c.firmas[rol] = {
+      nombre,
+      cargo: "Mantenimiento",
+      fecha: "2026-11-02",
+      trazos: [
+        [10, 20, 30, 40, 50, 60],
+        [70, 80, 90, 100],
+      ],
+    };
+    return c;
+  };
+
+  it("una visita necesita las dos firmas; el taller, solo la del técnico", () => {
+    const c = rassini();
+    expect(faltantesParaCerrar(c, "visita")).toHaveLength(2);
+    firmar(c, "tecnico", "Daniel Vargas");
+    expect(faltantesParaCerrar(c, "visita")).toEqual([
+      "la firma del responsable del cliente",
+    ]);
+    expect(faltantesParaCerrar(c, "taller")).toEqual([]);
+    firmar(c, "cliente", "Jair Ocampo");
+    expect(faltantesParaCerrar(c, "visita")).toEqual([]);
+  });
+
+  it("una firma dibujada exige el nombre de quien firma", () => {
+    const c = firmar(rassini(), "cliente", "");
+    expect(problemaCaptura(c)?.ruta).toBe("firmas.cliente.nombre");
+    c.firmas.cliente.nombre = "Jair Ocampo";
+    expect(problemaCaptura(c)).toBeNull();
+  });
+
+  it("se puede escribir el nombre antes de firmar", () => {
+    const c = rassini();
+    c.firmas.cliente.nombre = "Jair Ocampo";
+    expect(problemaCaptura(c)).toBeNull();
+  });
+
+  it("los trazos son puntos enteros dentro del lienzo, en pares", () => {
+    const c = firmar(rassini(), "tecnico", "Daniel Vargas");
+    c.firmas.tecnico.trazos = [[10, 20, 30]];
+    expect(problemaCaptura(c)).not.toBeNull();
+    c.firmas.tecnico.trazos = [[10.5, 20]];
+    expect(problemaCaptura(c)).not.toBeNull();
+    c.firmas.tecnico.trazos = [[10, 20, 9999, 40]];
+    expect(problemaCaptura(c)).not.toBeNull();
+  });
+
+  it("las firmas viajan en lo que se envía a la base", () => {
+    const c = firmar(rassini(), "tecnico", " Daniel Vargas ");
+    const carga = aCargaUtil(c);
+    expect(carga.firmas.tecnico.nombre).toBe("Daniel Vargas");
+    expect(carga.firmas.tecnico.trazos).toHaveLength(2);
+    expect(carga.firmas.cliente.trazos).toEqual([]);
+  });
+
+  it("un borrador de antes de las firmas se lee sin ellas", () => {
+    const b = leerBorrador(
+      JSON.stringify({
+        captura: { id_caso: "X" },
+        pendiente: true,
+        guardado: "2026-11-12T18:00:00.000Z",
+      }),
+    );
+    expect(b?.captura.firmas.tecnico.trazos).toEqual([]);
+    expect(problemaCaptura(b!.captura)).toBeNull();
   });
 });
 
