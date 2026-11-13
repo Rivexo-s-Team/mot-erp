@@ -81,6 +81,7 @@ Para un cambio de esquema:
 - Las órdenes de servicio (`/ordenes`) las ven todos los roles internos; las crean y llenan Técnico y Dirección. El técnico solo cambia las suyas. `/campo` es la vista para celular con las órdenes del técnico.
 - Con la orden en curso, el técnico captura la visita desde `/campo` en su celular. Cada cambio se guarda en el teléfono y se envía solo; si no hay señal, se envía al recuperarla.
 - La orden se cierra desde `/campo` cuando ya tiene las firmas (técnico y, en una visita, responsable del cliente). También se le agregan fotos. Una orden cerrada ya no se puede cambiar.
+- Cada orden tiene su PDF con el formato "Servicio RecondOil Box" (botón PDF en la ficha), con las firmas. Lo puede abrir quien ve la orden.
 - La flota de Robox (`/flota`) la ven todos los roles internos; la editan Dirección y Técnico. El número de serie no se repite entre equipos vigentes.
 - En la ficha de cada Robox se le asigna un contrato, se indican los tanques que atiende (carrusel) y se registran sus movimientos. Con eso el sistema calcula dónde está cada Robox.
 - Los contratos (`/contratos`) los ven todos los roles internos y los editan Dirección y Administración. Sus tarifas son precios: solo las ven Dirección, Comercial y Administración.
