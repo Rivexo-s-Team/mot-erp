@@ -38,6 +38,7 @@ export type EntradaPdfOrden = {
   captura: Captura;
   actividades: { id: string; nombre: string }[];
   fallas: { id: string; nombre: string }[];
+  partes: { id: string; nombre: string }[];
 };
 
 type Renglon = { etiqueta: string; valor: string };
@@ -55,6 +56,8 @@ export type DatosPdfOrden = {
   actividades: { nombre: string; marcada: boolean }[];
   fallas: { nombre: string; marcada: boolean }[];
   lecturas: { parametro: string; inicial: string; posterior: string }[];
+  /** Partes cambiadas y accesorios instalados, con su cantidad. Vacío si no hubo. */
+  partes: string[];
   notas: string | null;
   firmas: {
     titulo: string;
@@ -163,6 +166,9 @@ export function datosOrdenPdf(e: EntradaPdfOrden): DatosPdfOrden {
       inicial: captura.lecturas.inicial[c.name] || RAYA,
       posterior: captura.lecturas.posterior[c.name] || RAYA,
     })),
+    partes: e.partes
+      .filter((p) => p.id in captura.partes)
+      .map((p) => `${p.nombre} (${captura.partes[p.id]})`),
     notas: captura.observaciones || null,
     firmas,
   };
