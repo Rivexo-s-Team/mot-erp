@@ -138,6 +138,9 @@ select is((select count(*)::int from c), 1, 'el acompañante sí puede editar la
 
 -- Cerrada: ya no cambia -----------------------------------------------------------
 select pruebas.entrar('tecnico');
+insert into public.os_firmas (orden_id, rol, nombre, trazos)
+select id, r, 'Firma de prueba', '[[1,1,2,2]]'::jsonb
+from public.ordenes_servicio, unnest(array['tecnico', 'cliente']) r where folio = '311102 DV';
 update public.ordenes_servicio set estado = 'cerrada' where folio = '311102 DV';
 select throws_ok(
   $$update public.ordenes_servicio set notas = 'cambio' where folio = '311102 DV'$$,
