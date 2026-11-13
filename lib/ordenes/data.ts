@@ -1,9 +1,15 @@
 import "server-only";
+import { BUCKETS } from "@/lib/archivos/config";
 import { listarContratos, nombreContrato } from "@/lib/contratos/data";
 import { ubicaciones } from "@/lib/flota/data";
 import { createClient } from "@/lib/supabase/server";
 import { ESTADOS_ABIERTOS, type OpcionesOrden } from "./campos";
-import { CAMPOS_LECTURA, capturaVacia, type Captura } from "./captura";
+import {
+  CAMPOS_LECTURA,
+  capturaVacia,
+  type Captura,
+  type RolFirma,
+} from "./captura";
 
 /** Lecturas de órdenes de servicio. RLS decide qué ve cada rol. */
 
@@ -202,7 +208,7 @@ export async function obtenerCaptura(ordenId: string): Promise<{
   hayCaptura: boolean;
 }> {
   const supabase = await createClient();
-  const [orden, lecturas, actividades, fallas] = await Promise.all([
+  const [orden, lecturas, actividades, fallas, firmas] = await Promise.all([
     supabase
       .from("ordenes_servicio")
       .select(
@@ -216,8 +222,18 @@ export async function obtenerCaptura(ordenId: string): Promise<{
       .select("actividad_id, cantidad")
       .eq("orden_id", ordenId),
     supabase.from("os_fallas").select("falla_id").eq("orden_id", ordenId),
+    supabase
+      .from("os_firmas")
+      .select("rol, nombre, cargo, fecha, trazos")
+      .eq("orden_id", ordenId),
   ]);
-  if (orden.error || lecturas.error || actividades.error || fallas.error)
+  if (
+    orden.error ||
+    lecturas.error ||
+    actividades.error ||
+    fallas.error ||
+    firmas.error
+  )
     throw new Error("No se pudo cargar la captura de la orden.");
 
   const captura = capturaVacia();
@@ -237,11 +253,21 @@ export async function obtenerCaptura(ordenId: string): Promise<{
   for (const a of actividades.data)
     captura.actividades[a.actividad_id] = texto(a.cantidad);
   captura.fallas = fallas.data.map((f) => f.falla_id);
+  for (const f of firmas.data) {
+    if (f.rol !== "tecnico" && f.rol !== "cliente") continue;
+    captura.firmas[f.rol as RolFirma] = {
+      nombre: f.nombre,
+      cargo: texto(f.cargo),
+      fecha: texto(f.fecha),
+      trazos: Array.isArray(f.trazos) ? (f.trazos as number[][]) : [],
+    };
+  }
 
   const hayCaptura =
     lecturas.data.length > 0 ||
     actividades.data.length > 0 ||
     fallas.data.length > 0 ||
+    firmas.data.length > 0 ||
     [
       o.id_caso,
       o.temperatura_aceite_c,
@@ -272,3 +298,33 @@ export async function obtenerCaptura(ordenId: string): Promise<{
   }
   return { captura, hayCaptura };
 }
+
+// Fotos de la visita ------------------------------------------------------------
+
+/** Fotos de una orden, con un enlace temporal (5 minutos) para verlas. */
+export async function evidenciasDeOrden(ordenId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("os_evidencias")
+    .select("id, tipo, nombre, ruta, created_at")
+    .eq("orden_id", ordenId)
+    .is("deleted_at", null)
+    .order("created_at");
+  if (error) throw new Error("No se pudieron cargar las fotos.");
+  if (data.length === 0) return [];
+  const { data: enlaces } = await supabase.storage
+    .from(BUCKETS.evidencia)
+    .createSignedUrls(
+      data.map((e) => e.ruta),
+      300,
+    );
+  const urlPorRuta = new Map(
+    (enlaces ?? []).map((e) => [e.path, e.signedUrl] as const),
+  );
+  return data.map(({ ruta, ...e }) => ({
+    ...e,
+    url: urlPorRuta.get(ruta) ?? null,
+  }));
+}
+
+export type Evidencia = Awaited<ReturnType<typeof evidenciasDeOrden>>[number];

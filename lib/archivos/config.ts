@@ -44,4 +44,18 @@ export function formatTamano(bytes: number): string {
 export const BUCKETS = {
   adjunto: "adjuntos-oportunidades",
   comprobante: "comprobantes-precio",
+  evidencia: "evidencias",
 } as const;
+
+/** Las fotos de una orden de servicio solo pueden ser imágenes. */
+export const ACEPTA_IMAGENES = Object.keys(TIPOS_PERMITIDOS)
+  .filter((t) => t.startsWith("image/"))
+  .join(",");
+
+export const TIPOS_EVIDENCIA = [
+  { value: "pantalla_robox", label: "Pantalla del Robox" },
+  { value: "termometro", label: "Termómetro" },
+  { value: "frasco", label: "Frasco de muestra" },
+  { value: "instalacion", label: "Instalación" },
+  { value: "otro", label: "Otra" },
+] as const;

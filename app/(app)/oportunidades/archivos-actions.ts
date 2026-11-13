@@ -6,10 +6,14 @@ import { z } from "zod";
 import {
   BUCKETS,
   limpiarNombre,
-  TIPOS_PERMITIDOS,
   validarArchivo,
   type MetaArchivo,
 } from "@/lib/archivos/config";
+import {
+  existeEnStorage,
+  permisoTemporal,
+  type Subida,
+} from "@/lib/archivos/subida";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { obtenerCotizacion } from "@/lib/cotizaciones/data";
 import { obtenerOportunidad } from "@/lib/pipeline/data";
@@ -22,7 +26,6 @@ import { createClient } from "@/lib/supabase/server";
  *   2. registrar…: confirma que el archivo llegó y lo anota en la base.
  */
 
-export type Subida = { bucket: string; ruta: string; token: string };
 type Resultado<T> = T | { error: string };
 
 const esId = (v: unknown): v is string => z.uuid().safeParse(v).success;
@@ -31,40 +34,6 @@ const metaSchema = z.object({
   tipo: z.string(),
   tamano: z.number(),
 });
-
-async function permisoTemporal(
-  bucket: string,
-  carpeta: string,
-  meta: MetaArchivo,
-): Promise<Resultado<Subida>> {
-  const problema = validarArchivo(meta);
-  if (problema) return { error: problema };
-  const ruta = `${carpeta}/${crypto.randomUUID()}.${TIPOS_PERMITIDOS[meta.tipo]}`;
-
-  // Con la sesión del usuario: Storage aplica sus políticas por rol.
-  const supabase = await createClient();
-  const { data, error } = await supabase.storage
-    .from(bucket)
-    .createSignedUploadUrl(ruta);
-  if (error || !data) return { error: "Tu rol no puede subir archivos aquí." };
-  return { bucket, ruta, token: data.token };
-}
-
-/** Confirma que el archivo existe en la carpeta que le corresponde. */
-async function existeEnStorage(
-  bucket: string,
-  carpeta: string,
-  ruta: string,
-): Promise<boolean> {
-  if (!ruta.startsWith(`${carpeta}/`) || ruta.includes("..")) return false;
-  const archivo = ruta.slice(carpeta.length + 1);
-  if (archivo.includes("/")) return false;
-  const supabase = await createClient();
-  const { data } = await supabase.storage
-    .from(bucket)
-    .list(carpeta, { search: archivo });
-  return Boolean(data?.some((o) => o.name === archivo));
-}
 
 // ---------------------------------------------------------------------------
 // Adjuntos de oportunidad
