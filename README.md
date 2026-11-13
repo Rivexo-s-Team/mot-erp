@@ -79,6 +79,7 @@ Para un cambio de esquema:
 - Cada planta tiene su página con equipos y requisitos de acceso. El costo del aceite virgen de cada equipo solo lo ven Dirección, Comercial y Administración.
 - El pipeline (oportunidades, actividades y canales de venta) lo ven y editan solo Dirección y Comercial. Los vendedores externos son canales de venta, no usuarios.
 - Las órdenes de servicio (`/ordenes`) las ven todos los roles internos; las crean y llenan Técnico y Dirección. El técnico solo cambia las suyas. `/campo` es la vista para celular con las órdenes del técnico.
+- Con la orden en curso, el técnico captura la visita desde `/campo` en su celular. Cada cambio se guarda en el teléfono y se envía solo; si no hay señal, se envía al recuperarla.
 - La flota de Robox (`/flota`) la ven todos los roles internos; la editan Dirección y Técnico. El número de serie no se repite entre equipos vigentes.
 - En la ficha de cada Robox se le asigna un contrato, se indican los tanques que atiende (carrusel) y se registran sus movimientos. Con eso el sistema calcula dónde está cada Robox.
 - Los contratos (`/contratos`) los ven todos los roles internos y los editan Dirección y Administración. Sus tarifas son precios: solo las ven Dirección, Comercial y Administración.

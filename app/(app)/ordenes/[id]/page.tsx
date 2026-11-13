@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { PageHeader } from "@/components/layout/page-header";
+import { OrdenCaptura } from "@/components/orden-captura";
 import { EstadoOrdenBadge } from "@/components/orden-estado-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +10,12 @@ import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { nombreEquipo } from "@/lib/flota/campos";
 import { formatDia, formatFecha } from "@/lib/format";
 import { accionesOrden, etiqueta, TIPOS_ORDEN } from "@/lib/ordenes/campos";
-import { directorioTecnicos, obtenerOrden } from "@/lib/ordenes/data";
+import {
+  catalogosCaptura,
+  directorioTecnicos,
+  obtenerCaptura,
+  obtenerOrden,
+} from "@/lib/ordenes/data";
 import { cambiarEstadoOrden } from "../actions";
 
 const enlace = "text-primary underline-offset-4 hover:underline";
@@ -34,6 +40,8 @@ export default async function OrdenPage({
       o.tecnico_id === sesion.id ||
       o.acompanante_id === sesion.id);
   const acciones = accionesOrden(o.estado);
+  const { captura, hayCaptura } = await obtenerCaptura(o.id);
+  const catalogos = hayCaptura ? await catalogosCaptura(captura) : null;
 
   const datos: [string, React.ReactNode][] = [
     ["Tipo", etiqueta(TIPOS_ORDEN, o.tipo)],
@@ -118,6 +126,14 @@ export default async function OrdenPage({
             </Button>
           </form>
         ) : null}
+        {puedeEditar && o.estado === "en_curso" ? (
+          <Link
+            href={`/campo/ordenes/${o.id}/captura`}
+            className={buttonVariants({ size: "sm", className: "h-8" })}
+          >
+            Capturar visita
+          </Link>
+        ) : null}
         {puedeEditar && acciones.cancelar ? (
           <form
             action={cambiarEstadoOrden.bind(null, o.id, "cancelar", "ordenes")}
@@ -138,26 +154,40 @@ export default async function OrdenPage({
         ) : null}
       </div>
 
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle>Datos de la orden</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[auto_1fr]">
-            {datos.map(([nombre, valor]) => (
-              <div key={nombre} className="contents">
-                <dt className="text-muted-foreground">{nombre}</dt>
-                <dd className="break-words">{valor}</dd>
-              </div>
-            ))}
-          </dl>
-          {o.notas ? (
-            <p className="mt-4 text-sm whitespace-pre-line text-muted-foreground">
-              {o.notas}
-            </p>
-          ) : null}
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="h-fit">
+          <CardHeader>
+            <CardTitle>Datos de la orden</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[auto_1fr]">
+              {datos.map(([nombre, valor]) => (
+                <div key={nombre} className="contents">
+                  <dt className="text-muted-foreground">{nombre}</dt>
+                  <dd className="break-words">{valor}</dd>
+                </div>
+              ))}
+            </dl>
+            {o.notas ? (
+              <p className="mt-4 text-sm whitespace-pre-line text-muted-foreground">
+                {o.notas}
+              </p>
+            ) : null}
+          </CardContent>
+        </Card>
+        {catalogos ? (
+          <OrdenCaptura
+            captura={captura}
+            actividades={catalogos.actividades}
+            fallas={catalogos.fallas}
+          />
+        ) : (
+          <Card className="h-fit px-4 py-6 text-center text-sm text-muted-foreground">
+            Aún no se captura nada de la visita. El técnico lo llena desde
+            Campo, en su celular, con la orden en curso.
+          </Card>
+        )}
+      </div>
     </>
   );
 }

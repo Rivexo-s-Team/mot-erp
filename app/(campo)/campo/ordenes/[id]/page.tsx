@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
+import { OrdenCaptura } from "@/components/orden-captura";
 import { EstadoOrdenBadge } from "@/components/orden-estado-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,8 +10,10 @@ import { nombreEquipo } from "@/lib/flota/campos";
 import { formatDia } from "@/lib/format";
 import { accionesOrden } from "@/lib/ordenes/campos";
 import {
+  catalogosCaptura,
   directorioTecnicos,
   lugarOrden,
+  obtenerCaptura,
   obtenerOrden,
 } from "@/lib/ordenes/data";
 import { cambiarEstadoOrden } from "@/app/(app)/ordenes/actions";
@@ -32,6 +35,8 @@ export default async function OrdenCampoPage({
     o.tecnico_id === sesion.id ||
     o.acompanante_id === sesion.id;
   const acciones = accionesOrden(o.estado);
+  const { captura, hayCaptura } = await obtenerCaptura(o.id);
+  const catalogos = hayCaptura ? await catalogosCaptura(captura) : null;
   const datos: [string, string][] = [
     [
       "Equipo",
@@ -92,11 +97,13 @@ export default async function OrdenCampoPage({
             </Button>
           </form>
         ) : null}
-        {o.estado === "en_curso" ? (
-          <Card className="px-4 py-4 text-sm text-muted-foreground">
-            Orden en curso. La captura de lecturas, actividades, fotos y firmas
-            se agrega en los siguientes pasos de esta etapa.
-          </Card>
+        {puedeEditar && o.estado === "en_curso" ? (
+          <Link
+            href={`/campo/ordenes/${o.id}/captura`}
+            className={buttonVariants({ className: "h-12 w-full text-base" })}
+          >
+            {hayCaptura ? "Continuar captura" : "Capturar visita"}
+          </Link>
         ) : null}
         {puedeEditar && acciones.editar ? (
           <Link
@@ -110,6 +117,16 @@ export default async function OrdenCampoPage({
           </Link>
         ) : null}
       </div>
+
+      {catalogos ? (
+        <div className="mt-6">
+          <OrdenCaptura
+            captura={captura}
+            actividades={catalogos.actividades}
+            fallas={catalogos.fallas}
+          />
+        </div>
+      ) : null}
     </>
   );
 }

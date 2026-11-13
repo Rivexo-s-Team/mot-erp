@@ -3,6 +3,7 @@ import { listarContratos, nombreContrato } from "@/lib/contratos/data";
 import { ubicaciones } from "@/lib/flota/data";
 import { createClient } from "@/lib/supabase/server";
 import { ESTADOS_ABIERTOS, type OpcionesOrden } from "./campos";
+import { CAMPOS_LECTURA, capturaVacia, type Captura } from "./captura";
 
 /** Lecturas de órdenes de servicio. RLS decide qué ve cada rol. */
 
@@ -152,4 +153,122 @@ export async function opcionesOrden(
     robox,
     tecnicos: asignables,
   };
+}
+
+// Captura de la visita ----------------------------------------------------------
+
+/** Actividades y fallas que se pueden marcar (las activas, más las que la orden ya tenga). */
+export async function catalogosCaptura(captura: Captura) {
+  const supabase = await createClient();
+  const [actividades, fallas] = await Promise.all([
+    supabase
+      .from("actividades")
+      .select("id, nombre, lleva_cantidad, activo")
+      .order("orden")
+      .order("nombre"),
+    supabase
+      .from("fallas")
+      .select("id, nombre, activo")
+      .order("orden")
+      .order("nombre"),
+  ]);
+  if (actividades.error || fallas.error)
+    throw new Error("No se pudieron cargar los catálogos.");
+  return {
+    actividades: actividades.data
+      .filter((a) => a.activo || a.id in captura.actividades)
+      .map(({ id, nombre, lleva_cantidad }) => ({
+        id,
+        nombre,
+        llevaCantidad: lleva_cantidad,
+      })),
+    fallas: fallas.data
+      .filter((f) => f.activo || captura.fallas.includes(f.id))
+      .map(({ id, nombre }) => ({ id, nombre })),
+  };
+}
+
+const texto = (v: string | number | null | undefined) =>
+  v === null || v === undefined ? "" : String(v);
+
+/**
+ * Lo capturado en una orden. Si todavía no hay nada, propone lo que el sistema
+ * ya sabe: modelo, serie y programa del Robox, el volumen del reservorio del
+ * equipo y el ID de caso de su carrusel.
+ */
+export async function obtenerCaptura(ordenId: string): Promise<{
+  captura: Captura;
+  /** Falso si lo que se devuelve es solo la propuesta inicial. */
+  hayCaptura: boolean;
+}> {
+  const supabase = await createClient();
+  const [orden, lecturas, actividades, fallas] = await Promise.all([
+    supabase
+      .from("ordenes_servicio")
+      .select(
+        "id_caso, temperatura_aceite_c, volumen_reservorio_l, observaciones, robox_id, equipo_cliente_id, robox (numero_serie, modelo, version_programa), equipos_cliente (volumen_reservorio_l)",
+      )
+      .eq("id", ordenId)
+      .maybeSingle(),
+    supabase.from("os_lecturas").select("*").eq("orden_id", ordenId),
+    supabase
+      .from("os_actividades")
+      .select("actividad_id, cantidad")
+      .eq("orden_id", ordenId),
+    supabase.from("os_fallas").select("falla_id").eq("orden_id", ordenId),
+  ]);
+  if (orden.error || lecturas.error || actividades.error || fallas.error)
+    throw new Error("No se pudo cargar la captura de la orden.");
+
+  const captura = capturaVacia();
+  const o = orden.data;
+  if (!o) return { captura, hayCaptura: false };
+
+  captura.id_caso = texto(o.id_caso);
+  captura.temperatura_aceite_c = texto(o.temperatura_aceite_c);
+  captura.volumen_reservorio_l = texto(o.volumen_reservorio_l);
+  captura.observaciones = texto(o.observaciones);
+  for (const l of lecturas.data) {
+    if (l.momento !== "inicial" && l.momento !== "posterior") continue;
+    const fila = l as unknown as Record<string, string | number | null>;
+    for (const c of CAMPOS_LECTURA)
+      captura.lecturas[l.momento][c.name] = texto(fila[c.name]);
+  }
+  for (const a of actividades.data)
+    captura.actividades[a.actividad_id] = texto(a.cantidad);
+  captura.fallas = fallas.data.map((f) => f.falla_id);
+
+  const hayCaptura =
+    lecturas.data.length > 0 ||
+    actividades.data.length > 0 ||
+    fallas.data.length > 0 ||
+    [
+      o.id_caso,
+      o.temperatura_aceite_c,
+      o.volumen_reservorio_l,
+      o.observaciones,
+    ].some((v) => v !== null);
+  if (hayCaptura) return { captura, hayCaptura };
+
+  // Propuesta inicial con lo que el sistema ya sabe.
+  captura.volumen_reservorio_l = texto(o.equipos_cliente?.volumen_reservorio_l);
+  if (o.robox) {
+    captura.lecturas.inicial.modelo = texto(o.robox.modelo);
+    captura.lecturas.inicial.numero_serie = texto(o.robox.numero_serie);
+    captura.lecturas.inicial.programa = texto(o.robox.version_programa);
+  }
+  if (o.robox_id && o.equipo_cliente_id) {
+    const u = (await ubicaciones({ roboxIds: [o.robox_id] })).get(o.robox_id);
+    if (u) {
+      const { data } = await supabase
+        .from("carrusel_equipos")
+        .select("id_caso")
+        .eq("asignacion_id", u.asignacionId)
+        .eq("equipo_cliente_id", o.equipo_cliente_id)
+        .is("deleted_at", null)
+        .maybeSingle();
+      captura.id_caso = texto(data?.id_caso);
+    }
+  }
+  return { captura, hayCaptura };
 }

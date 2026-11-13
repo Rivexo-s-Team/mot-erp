@@ -308,6 +308,11 @@ export const CATALOGOS: Catalogo[] = [
     columnas: [{ titulo: "Nombre", valor: (f) => texto(f.nombre) }],
     campos: [
       { name: "nombre", label: "Nombre", tipo: "texto" },
+      {
+        name: "lleva_cantidad",
+        label: "Lleva cantidad (ej. muestras tomadas, filtros cambiados)",
+        tipo: "casilla",
+      },
       campoOrden,
       campoActivo,
     ],

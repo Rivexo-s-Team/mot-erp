@@ -14,6 +14,11 @@ import {
   SIN_OPCIONES,
   validarOrden,
 } from "@/lib/ordenes/campos";
+import {
+  aCargaUtil,
+  problemaCaptura,
+  type Captura,
+} from "@/lib/ordenes/captura";
 import { directorioTecnicos, obtenerOrden } from "@/lib/ordenes/data";
 import { createClient } from "@/lib/supabase/server";
 
@@ -137,4 +142,39 @@ export async function cambiarEstadoOrden(
 
   refrescar(id);
   redirect(volver === "campo" ? `/campo/ordenes/${id}` : `/ordenes/${id}`);
+}
+
+export type ResultadoCaptura = { ok: true } | { ok: false; error: string };
+
+/**
+ * Guarda de una vez lo capturado en la visita. El celular la llama al
+ * escribir y, si no había señal, otra vez al recuperarla: enviar dos veces lo
+ * mismo deja el mismo resultado.
+ */
+export async function guardarCaptura(
+  ordenId: string,
+  captura: Captura,
+): Promise<ResultadoCaptura> {
+  await requirePermiso(PERMISO);
+  if (!esId(ordenId)) return { ok: false, error: "Registro no válido." };
+  const problema = problemaCaptura(captura);
+  if (problema) return { ok: false, error: problema.mensaje };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("guardar_captura_orden", {
+    p_orden: ordenId,
+    p_captura: aCargaUtil(captura),
+  });
+  if (error) {
+    return {
+      ok: false,
+      error:
+        error.code === "42501" || error.code === "P0001"
+          ? "Ya no puedes capturar en esta orden (está cerrada o no es tuya)."
+          : "No se pudo guardar. Revisa los datos.",
+    };
+  }
+  revalidatePath(`/ordenes/${ordenId}`);
+  revalidatePath(`/campo/ordenes/${ordenId}`);
+  return { ok: true };
 }

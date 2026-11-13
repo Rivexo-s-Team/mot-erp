@@ -52,6 +52,7 @@ export type Database = {
           created_at: string;
           created_by: string | null;
           id: string;
+          lleva_cantidad: boolean;
           nombre: string;
           orden: number;
           updated_at: string;
@@ -62,6 +63,7 @@ export type Database = {
           created_at?: string;
           created_by?: string | null;
           id?: string;
+          lleva_cantidad?: boolean;
           nombre: string;
           orden?: number;
           updated_at?: string;
@@ -71,6 +73,7 @@ export type Database = {
           created_at?: string;
           created_by?: string | null;
           id?: string;
+          lleva_cantidad?: boolean;
           nombre?: string;
           orden?: number;
           updated_at?: string;
@@ -1315,12 +1318,16 @@ export type Database = {
           fecha_real: string | null;
           folio: string;
           id: string;
+          id_caso: string | null;
           notas: string | null;
+          observaciones: string | null;
           planta_id: string | null;
           robox_id: string | null;
           tecnico_id: string;
+          temperatura_aceite_c: number | null;
           tipo: string;
           updated_at: string;
+          volumen_reservorio_l: number | null;
         };
         ComputedFields: never;
         Insert: {
@@ -1336,12 +1343,16 @@ export type Database = {
           fecha_real?: string | null;
           folio: string;
           id?: string;
+          id_caso?: string | null;
           notas?: string | null;
+          observaciones?: string | null;
           planta_id?: string | null;
           robox_id?: string | null;
           tecnico_id: string;
+          temperatura_aceite_c?: number | null;
           tipo: string;
           updated_at?: string;
+          volumen_reservorio_l?: number | null;
         };
         Update: {
           acompanante_id?: string | null;
@@ -1356,12 +1367,16 @@ export type Database = {
           fecha_real?: string | null;
           folio?: string;
           id?: string;
+          id_caso?: string | null;
           notas?: string | null;
+          observaciones?: string | null;
           planta_id?: string | null;
           robox_id?: string | null;
           tecnico_id?: string;
+          temperatura_aceite_c?: number | null;
           tipo?: string;
           updated_at?: string;
+          volumen_reservorio_l?: number | null;
         };
         Relationships: [
           {
@@ -1411,6 +1426,164 @@ export type Database = {
             columns: ["tecnico_id"];
             isOneToOne: false;
             referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      os_actividades: {
+        Row: {
+          actividad_id: string;
+          cantidad: number | null;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          orden_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          actividad_id: string;
+          cantidad?: number | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          orden_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          actividad_id?: string;
+          cantidad?: number | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          orden_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "os_actividades_actividad_id_fkey";
+            columns: ["actividad_id"];
+            isOneToOne: false;
+            referencedRelation: "actividades";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "os_actividades_orden_id_fkey";
+            columns: ["orden_id"];
+            isOneToOne: false;
+            referencedRelation: "ordenes_servicio";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      os_fallas: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          falla_id: string;
+          id: string;
+          orden_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          falla_id: string;
+          id?: string;
+          orden_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          falla_id?: string;
+          id?: string;
+          orden_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "os_fallas_falla_id_fkey";
+            columns: ["falla_id"];
+            isOneToOne: false;
+            referencedRelation: "fallas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "os_fallas_orden_id_fkey";
+            columns: ["orden_id"];
+            isOneToOne: false;
+            referencedRelation: "ordenes_servicio";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      os_lecturas: {
+        Row: {
+          ack_flow_l: number | null;
+          created_at: string;
+          created_by: string | null;
+          filter_lifetime_dias: number | null;
+          filter_used_dias: number | null;
+          flujo_l_min: number | null;
+          id: string;
+          modelo: string | null;
+          momento: string;
+          numero_serie: string | null;
+          orden_id: string;
+          presion_bar: number | null;
+          presion_filtro: string | null;
+          programa: string | null;
+          runtime_dias: number | null;
+          temperatura_c: number | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          ack_flow_l?: number | null;
+          created_at?: string;
+          created_by?: string | null;
+          filter_lifetime_dias?: number | null;
+          filter_used_dias?: number | null;
+          flujo_l_min?: number | null;
+          id?: string;
+          modelo?: string | null;
+          momento: string;
+          numero_serie?: string | null;
+          orden_id: string;
+          presion_bar?: number | null;
+          presion_filtro?: string | null;
+          programa?: string | null;
+          runtime_dias?: number | null;
+          temperatura_c?: number | null;
+          updated_at?: string;
+        };
+        Update: {
+          ack_flow_l?: number | null;
+          created_at?: string;
+          created_by?: string | null;
+          filter_lifetime_dias?: number | null;
+          filter_used_dias?: number | null;
+          flujo_l_min?: number | null;
+          id?: string;
+          modelo?: string | null;
+          momento?: string;
+          numero_serie?: string | null;
+          orden_id?: string;
+          presion_bar?: number | null;
+          presion_filtro?: string | null;
+          programa?: string | null;
+          runtime_dias?: number | null;
+          temperatura_c?: number | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "os_lecturas_orden_id_fkey";
+            columns: ["orden_id"];
+            isOneToOne: false;
+            referencedRelation: "ordenes_servicio";
             referencedColumns: ["id"];
           },
         ];
@@ -1987,8 +2160,13 @@ export type Database = {
           nombre: string;
         }[];
       };
+      guardar_captura_orden: {
+        Args: { p_captura: Json; p_orden: string };
+        Returns: undefined;
+      };
       mi_rol_id: { Args: Record<PropertyKey, never>; Returns: string };
       mis_permisos: { Args: Record<PropertyKey, never>; Returns: string[] };
+      puede_llenar_orden: { Args: { p_orden: string }; Returns: boolean };
       siguiente_folio_cotizacion: {
         Args: Record<PropertyKey, never>;
         Returns: string;
