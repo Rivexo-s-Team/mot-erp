@@ -1,14 +1,4 @@
-import { LIENZO_FIRMA } from "@/lib/ordenes/captura";
-
-/** Puntos de un trazo ([x1, y1, x2, y2, …]) en el formato de un polyline de SVG. */
-export function puntosDeTrazo(trazo: number[]): string {
-  const pares: string[] = [];
-  for (let i = 0; i + 1 < trazo.length; i += 2)
-    pares.push(`${trazo[i]},${trazo[i + 1]}`);
-  // Un toque sin arrastre se dibuja como un punto.
-  if (pares.length === 1 && pares[0]) pares.push(pares[0]);
-  return pares.join(" ");
-}
+import { LIENZO_FIRMA, puntosDeTrazo } from "@/lib/ordenes/captura";
 
 /** Dibuja una firma guardada. Sirve en el servidor y en el navegador. */
 export function FirmaVista({

@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { FirmaVista, puntosDeTrazo } from "@/components/firma-vista";
+import { FirmaVista } from "@/components/firma-vista";
 import { Button } from "@/components/ui/button";
-import { LIENZO_FIRMA } from "@/lib/ordenes/captura";
+import { LIENZO_FIRMA, puntosDeTrazo } from "@/lib/ordenes/captura";
 
 type Props = {
   /** Texto para lectores de pantalla y pruebas, ej. "Firma del técnico". */

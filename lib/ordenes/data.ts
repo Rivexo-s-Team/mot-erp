@@ -328,3 +328,25 @@ export async function evidenciasDeOrden(ordenId: string) {
 }
 
 export type Evidencia = Awaited<ReturnType<typeof evidenciasDeOrden>>[number];
+
+/** Datos del equipo del cliente que salen en el PDF de la orden. */
+export async function equipoParaPdf(equipoId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("equipos_cliente")
+    .select(
+      "identificador, alias, aplicacion, aceites (marca, nombre_comercial)",
+    )
+    .eq("id", equipoId)
+    .maybeSingle();
+  if (error) throw new Error("No se pudo cargar el equipo.");
+  if (!data) return null;
+  return {
+    identificador: data.identificador,
+    alias: data.alias,
+    aplicacion: data.aplicacion,
+    aceite: data.aceites
+      ? `${data.aceites.marca} ${data.aceites.nombre_comercial}`
+      : null,
+  };
+}

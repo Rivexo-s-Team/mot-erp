@@ -115,6 +115,16 @@ export default async function OrdenPage({
         <Link href="/ordenes" className={botonChico}>
           Órdenes
         </Link>
+        {o.estado !== "programada" ? (
+          <a
+            href={`/ordenes/${o.id}/pdf`}
+            target="_blank"
+            rel="noreferrer"
+            className={botonChico}
+          >
+            PDF
+          </a>
+        ) : null}
         {puedeEditar && acciones.editar ? (
           <Link href={`/ordenes/${o.id}/editar`} className={botonChico}>
             Editar

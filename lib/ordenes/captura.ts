@@ -71,6 +71,16 @@ export const firmaVacia = (): Firma => ({
 
 export const estaFirmada = (f: Firma) => f.trazos.length > 0;
 
+/** Puntos de un trazo ([x1, y1, x2, y2, …]) como los pide un polyline: "x1,y1 x2,y2". */
+export function puntosDeTrazo(trazo: number[]): string {
+  const pares: string[] = [];
+  for (let i = 0; i + 1 < trazo.length; i += 2)
+    pares.push(`${trazo[i]},${trazo[i + 1]}`);
+  // Un toque sin arrastre se dibuja como un punto.
+  if (pares.length === 1 && pares[0]) pares.push(pares[0]);
+  return pares.join(" ");
+}
+
 /** La captura completa, en la forma que maneja el formulario. */
 export type Captura = {
   id_caso: string;
