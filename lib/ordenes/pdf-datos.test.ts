@@ -6,6 +6,8 @@ const MUESTRAS = "11111111-1111-4111-8111-111111111111";
 const ROTACION = "22222222-2222-4222-8222-222222222222";
 const LIMPIEZA = "33333333-3333-4333-8333-333333333333";
 const FUGA = "44444444-4444-4444-8444-444444444444";
+const FILTRO = "55555555-5555-4555-8555-555555555555";
+const ORING = "66666666-6666-4666-8666-666666666666";
 
 /** La orden del formato en papel del 2 nov 2026 (Rassini, 11B116). */
 function rassini(): EntradaPdfOrden {
@@ -70,6 +72,10 @@ function rassini(): EntradaPdfOrden {
       { id: LIMPIEZA, nombre: "Limpieza" },
     ],
     fallas: [{ id: FUGA, nombre: "Fuga de aceite" }],
+    partes: [
+      { id: FILTRO, nombre: "Filtro SKF500/HY (Core)" },
+      { id: ORING, nombre: "O-rings" },
+    ],
   };
 }
 
@@ -101,6 +107,16 @@ describe("PDF de la orden de servicio", () => {
       { nombre: "Limpieza", marcada: false },
     ]);
     expect(d.fallas).toEqual([{ nombre: "Fuga de aceite", marcada: false }]);
+  });
+
+  it("lista solo las partes y accesorios usados, con su cantidad", () => {
+    expect(datosOrdenPdf(rassini()).partes).toEqual([]);
+    const e = rassini();
+    e.captura.partes = { [ORING]: "4", [FILTRO]: "1" };
+    expect(datosOrdenPdf(e).partes).toEqual([
+      "Filtro SKF500/HY (Core) (1)",
+      "O-rings (4)",
+    ]);
   });
 
   it("pone las lecturas tal como se capturaron y raya lo vacío", () => {

@@ -166,7 +166,7 @@ export async function opcionesOrden(
 /** Actividades y fallas que se pueden marcar (las activas, más las que la orden ya tenga). */
 export async function catalogosCaptura(captura: Captura) {
   const supabase = await createClient();
-  const [actividades, fallas] = await Promise.all([
+  const [actividades, fallas, partes] = await Promise.all([
     supabase
       .from("actividades")
       .select("id, nombre, lleva_cantidad, activo")
@@ -177,8 +177,13 @@ export async function catalogosCaptura(captura: Captura) {
       .select("id, nombre, activo")
       .order("orden")
       .order("nombre"),
+    supabase
+      .from("partes")
+      .select("id, nombre, tipo, activo")
+      .order("orden")
+      .order("nombre"),
   ]);
-  if (actividades.error || fallas.error)
+  if (actividades.error || fallas.error || partes.error)
     throw new Error("No se pudieron cargar los catálogos.");
   return {
     actividades: actividades.data
@@ -191,6 +196,9 @@ export async function catalogosCaptura(captura: Captura) {
     fallas: fallas.data
       .filter((f) => f.activo || captura.fallas.includes(f.id))
       .map(({ id, nombre }) => ({ id, nombre })),
+    partes: partes.data
+      .filter((p) => p.activo || p.id in captura.partes)
+      .map(({ id, nombre, tipo }) => ({ id, nombre, tipo })),
   };
 }
 
@@ -208,31 +216,37 @@ export async function obtenerCaptura(ordenId: string): Promise<{
   hayCaptura: boolean;
 }> {
   const supabase = await createClient();
-  const [orden, lecturas, actividades, fallas, firmas] = await Promise.all([
-    supabase
-      .from("ordenes_servicio")
-      .select(
-        "id_caso, temperatura_aceite_c, volumen_reservorio_l, observaciones, robox_id, equipo_cliente_id, robox (numero_serie, modelo, version_programa), equipos_cliente (volumen_reservorio_l)",
-      )
-      .eq("id", ordenId)
-      .maybeSingle(),
-    supabase.from("os_lecturas").select("*").eq("orden_id", ordenId),
-    supabase
-      .from("os_actividades")
-      .select("actividad_id, cantidad")
-      .eq("orden_id", ordenId),
-    supabase.from("os_fallas").select("falla_id").eq("orden_id", ordenId),
-    supabase
-      .from("os_firmas")
-      .select("rol, nombre, cargo, fecha, trazos")
-      .eq("orden_id", ordenId),
-  ]);
+  const [orden, lecturas, actividades, fallas, firmas, partes] =
+    await Promise.all([
+      supabase
+        .from("ordenes_servicio")
+        .select(
+          "id_caso, temperatura_aceite_c, volumen_reservorio_l, observaciones, robox_id, equipo_cliente_id, robox (numero_serie, modelo, version_programa), equipos_cliente (volumen_reservorio_l)",
+        )
+        .eq("id", ordenId)
+        .maybeSingle(),
+      supabase.from("os_lecturas").select("*").eq("orden_id", ordenId),
+      supabase
+        .from("os_actividades")
+        .select("actividad_id, cantidad")
+        .eq("orden_id", ordenId),
+      supabase.from("os_fallas").select("falla_id").eq("orden_id", ordenId),
+      supabase
+        .from("os_firmas")
+        .select("rol, nombre, cargo, fecha, trazos")
+        .eq("orden_id", ordenId),
+      supabase
+        .from("os_partes")
+        .select("parte_id, cantidad")
+        .eq("orden_id", ordenId),
+    ]);
   if (
     orden.error ||
     lecturas.error ||
     actividades.error ||
     fallas.error ||
-    firmas.error
+    firmas.error ||
+    partes.error
   )
     throw new Error("No se pudo cargar la captura de la orden.");
 
@@ -253,6 +267,7 @@ export async function obtenerCaptura(ordenId: string): Promise<{
   for (const a of actividades.data)
     captura.actividades[a.actividad_id] = texto(a.cantidad);
   captura.fallas = fallas.data.map((f) => f.falla_id);
+  for (const p of partes.data) captura.partes[p.parte_id] = texto(p.cantidad);
   for (const f of firmas.data) {
     if (f.rol !== "tecnico" && f.rol !== "cliente") continue;
     captura.firmas[f.rol as RolFirma] = {
@@ -268,6 +283,7 @@ export async function obtenerCaptura(ordenId: string): Promise<{
     actividades.data.length > 0 ||
     fallas.data.length > 0 ||
     firmas.data.length > 0 ||
+    partes.data.length > 0 ||
     [
       o.id_caso,
       o.temperatura_aceite_c,

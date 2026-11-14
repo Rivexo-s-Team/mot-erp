@@ -97,9 +97,45 @@ describe("captura de la visita", () => {
       posterior: false,
       actividades: 2,
       fallas: 0,
+      partes: 0,
       firmaTecnico: false,
       firmaCliente: false,
     });
+  });
+});
+
+describe("partes y accesorios", () => {
+  const FILTRO = "55555555-5555-4555-8555-555555555555";
+
+  it("una parte usada lleva cantidad mayor que cero", () => {
+    const c = rassini();
+    c.partes = { [FILTRO]: "1" };
+    expect(problemaCaptura(c)).toBeNull();
+    c.partes = { [FILTRO]: "" };
+    expect(problemaCaptura(c)?.ruta).toBe(`partes.${FILTRO}`);
+    c.partes = { [FILTRO]: "0" };
+    expect(problemaCaptura(c)?.ruta).toBe(`partes.${FILTRO}`);
+    c.partes = { [FILTRO]: "2.5" };
+    expect(problemaCaptura(c)).toBeNull();
+  });
+
+  it("las partes viajan en lo que se envía a la base", () => {
+    const c = rassini();
+    c.partes = { [FILTRO]: "2" };
+    expect(aCargaUtil(c).partes).toEqual([{ id: FILTRO, cantidad: "2" }]);
+    expect(aCargaUtil(rassini()).partes).toEqual([]);
+    expect(resumenCaptura(c).partes).toBe(1);
+  });
+
+  it("un borrador de antes de las partes se lee sin ellas", () => {
+    const b = leerBorrador(
+      JSON.stringify({
+        captura: { id_caso: "X" },
+        pendiente: true,
+        guardado: "2026-11-12T18:00:00.000Z",
+      }),
+    );
+    expect(b?.captura.partes).toEqual({});
   });
 });
 

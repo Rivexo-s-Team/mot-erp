@@ -54,6 +54,7 @@ export default async function CapturaPage({
         delSistema={captura}
         actividades={catalogos.actividades}
         fallas={catalogos.fallas}
+        partes={catalogos.partes}
         esVisita={o.tipo === "visita"}
         hoy={hoyEnMexico()}
         volverHref={`/campo/ordenes/${o.id}`}

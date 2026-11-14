@@ -989,6 +989,68 @@ export type Database = {
         };
         Relationships: [];
       };
+      inventario_movimientos: {
+        Row: {
+          cantidad: number;
+          created_at: string;
+          created_by: string | null;
+          fecha: string;
+          id: string;
+          notas: string | null;
+          orden_id: string | null;
+          parte_id: string;
+          referencia: string | null;
+          tipo: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          cantidad: number;
+          created_at?: string;
+          created_by?: string | null;
+          fecha?: string;
+          id?: string;
+          notas?: string | null;
+          orden_id?: string | null;
+          parte_id: string;
+          referencia?: string | null;
+          tipo: string;
+        };
+        Update: {
+          cantidad?: number;
+          created_at?: string;
+          created_by?: string | null;
+          fecha?: string;
+          id?: string;
+          notas?: string | null;
+          orden_id?: string | null;
+          parte_id?: string;
+          referencia?: string | null;
+          tipo?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "inventario_movimientos_orden_id_fkey";
+            columns: ["orden_id"];
+            isOneToOne: false;
+            referencedRelation: "ordenes_servicio";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "inventario_movimientos_parte_id_fkey";
+            columns: ["parte_id"];
+            isOneToOne: false;
+            referencedRelation: "inventario_existencias";
+            referencedColumns: ["parte_id"];
+          },
+          {
+            foreignKeyName: "inventario_movimientos_parte_id_fkey";
+            columns: ["parte_id"];
+            isOneToOne: false;
+            referencedRelation: "partes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       motivos_perdida: {
         Row: {
           activo: boolean;
@@ -1690,6 +1752,59 @@ export type Database = {
           },
         ];
       };
+      os_partes: {
+        Row: {
+          cantidad: number;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          orden_id: string;
+          parte_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          cantidad: number;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          orden_id: string;
+          parte_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          cantidad?: number;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          orden_id?: string;
+          parte_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "os_partes_orden_id_fkey";
+            columns: ["orden_id"];
+            isOneToOne: false;
+            referencedRelation: "ordenes_servicio";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "os_partes_parte_id_fkey";
+            columns: ["parte_id"];
+            isOneToOne: false;
+            referencedRelation: "inventario_existencias";
+            referencedColumns: ["parte_id"];
+          },
+          {
+            foreignKeyName: "os_partes_parte_id_fkey";
+            columns: ["parte_id"];
+            isOneToOne: false;
+            referencedRelation: "partes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       parametros_laboratorio: {
         Row: {
           activo: boolean;
@@ -2209,6 +2324,15 @@ export type Database = {
         ComputedFields: never;
         Relationships: [];
       };
+      inventario_existencias: {
+        Row: {
+          existencia: number | null;
+          parte_id: string;
+          ultimo_movimiento: string | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
       robox_ubicacion: {
         Row: {
           asignacion_id: string;
@@ -2246,6 +2370,10 @@ export type Database = {
       };
     };
     Functions: {
+      ajustar_existencia: {
+        Args: { p_contada: number; p_notas?: string; p_parte: string };
+        Returns: number;
+      };
       directorio_comercial: {
         Args: Record<PropertyKey, never>;
         Returns: {

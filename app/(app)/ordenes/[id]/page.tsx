@@ -205,6 +205,7 @@ export default async function OrdenPage({
               captura={captura}
               actividades={catalogos.actividades}
               fallas={catalogos.fallas}
+              partes={catalogos.partes}
               esVisita={o.tipo === "visita"}
             />
           ) : (

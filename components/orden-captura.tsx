@@ -12,6 +12,7 @@ type Props = {
   captura: Captura;
   actividades: { id: string; nombre: string }[];
   fallas: { id: string; nombre: string }[];
+  partes: { id: string; nombre: string }[];
   /** En una visita firma también el responsable del cliente. */
   esVisita: boolean;
 };
@@ -21,6 +22,7 @@ export function OrdenCaptura({
   captura,
   actividades,
   fallas,
+  partes,
   esVisita,
 }: Props) {
   const { inicial, posterior } = captura.lecturas;
@@ -28,6 +30,7 @@ export function OrdenCaptura({
     lecturaTieneDatos(inicial) || lecturaTieneDatos(posterior);
   const hechas = actividades.filter((a) => a.id in captura.actividades);
   const encontradas = fallas.filter((f) => captura.fallas.includes(f.id));
+  const usadas = partes.filter((p) => p.id in captura.partes);
   const firmas = [
     { titulo: "Técnico de MOT", firma: captura.firmas.tecnico },
     ...(esVisita
@@ -86,6 +89,20 @@ export function OrdenCaptura({
               <ul className="list-disc space-y-0.5 pl-5">
                 {encontradas.map((f) => (
                   <li key={f.id}>{f.nombre}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div>
+            <p className="mb-1 text-muted-foreground">Partes y accesorios</p>
+            {usadas.length === 0 ? (
+              <p>Ninguno.</p>
+            ) : (
+              <ul className="list-disc space-y-0.5 pl-5">
+                {usadas.map((p) => (
+                  <li key={p.id}>
+                    {p.nombre} ({captura.partes[p.id]})
+                  </li>
                 ))}
               </ul>
             )}

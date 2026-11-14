@@ -91,6 +91,8 @@ export type Captura = {
   /** Actividad marcada → cantidad escrita ("" si no lleva). */
   actividades: Record<string, string>;
   fallas: string[];
+  /** Parte o accesorio usado → cantidad escrita. */
+  partes: Record<string, string>;
   firmas: Record<RolFirma, Firma>;
 };
 
@@ -105,6 +107,7 @@ export const capturaVacia = (): Captura => ({
   lecturas: { inicial: lecturaVacia(), posterior: lecturaVacia() },
   actividades: {},
   fallas: [],
+  partes: {},
   firmas: { tecnico: firmaVacia(), cliente: firmaVacia() },
 });
 
@@ -165,6 +168,12 @@ export const esquemaCaptura = z.object({
     entero.refine((v) => v === "" || Number(v) > 0, "Debe ser mayor que cero."),
   ),
   fallas: z.array(z.uuid()).max(100),
+  partes: z.record(
+    z.uuid(),
+    numero
+      .min(1, "Escribe cuántas se usaron.")
+      .refine((v) => v === "" || Number(v) > 0, "Debe ser mayor que cero."),
+  ),
   firmas: z.object({ tecnico: esquemaFirma, cliente: esquemaFirma }),
 });
 
@@ -195,6 +204,10 @@ export function aCargaUtil(captura: Captura) {
       cantidad,
     })),
     fallas: [...new Set(c.fallas)],
+    partes: Object.entries(c.partes).map(([id, cantidad]) => ({
+      id,
+      cantidad,
+    })),
     firmas: c.firmas,
   };
 }
@@ -209,6 +222,7 @@ export function resumenCaptura(c: Captura) {
     posterior: lecturaTieneDatos(c.lecturas.posterior),
     actividades: Object.keys(c.actividades).length,
     fallas: c.fallas.length,
+    partes: Object.keys(c.partes).length,
     firmaTecnico: estaFirmada(c.firmas.tecnico),
     firmaCliente: estaFirmada(c.firmas.cliente),
   };
@@ -261,6 +275,7 @@ export function leerBorrador(texto: string | null): Borrador | null {
       },
       actividades: { ...c.actividades },
       fallas: [...(c.fallas ?? [])],
+      partes: { ...c.partes },
       firmas: {
         tecnico: { ...base.firmas.tecnico, ...c.firmas?.tecnico },
         cliente: { ...base.firmas.cliente, ...c.firmas?.cliente },

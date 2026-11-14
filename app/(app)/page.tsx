@@ -16,6 +16,8 @@ const DESCRIPCIONES: Record<string, string> = {
   "/ordenes": "Visitas a planta y trabajos de taller.",
   "/campo": "Tus órdenes del día, para capturar desde el celular.",
   "/flota": "Los Robox de MOT: número de serie, estado y datos del equipo.",
+  "/inventario":
+    "Existencia de partes y accesorios, con sus entradas y salidas.",
   "/catalogos":
     "Aceites, parámetros de laboratorio, partes, actividades y fallas.",
   "/parametros":

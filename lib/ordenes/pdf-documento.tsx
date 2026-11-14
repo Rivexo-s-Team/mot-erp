@@ -259,6 +259,13 @@ function OrdenPdf({ d }: { d: DatosPdfOrden }) {
           ))}
         </View>
 
+        {d.partes.length > 0 ? (
+          <View style={s.seccion} wrap={false}>
+            <Text style={s.tituloSeccion}>Partes y accesorios</Text>
+            <Text style={s.notas}>{d.partes.join("  ·  ")}</Text>
+          </View>
+        ) : null}
+
         {d.notas ? (
           <View style={s.seccion} wrap={false}>
             <Text style={s.tituloSeccion}>Otros / Notas</Text>
