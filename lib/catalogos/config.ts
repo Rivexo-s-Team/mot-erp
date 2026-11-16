@@ -228,6 +228,31 @@ export const CATALOGOS: Catalogo[] = [
         opciones: BASES,
         opcional: true,
       },
+      // PENDIENTE(P5): mientras el laboratorio no lo defina, todos lo incluyen.
+      {
+        name: "en_basico",
+        label: "Lo incluye el análisis Básico",
+        tipo: "casilla",
+        inicial: true,
+      },
+      {
+        name: "en_basico_mpc",
+        label: "Lo incluye el análisis Básico + MPC",
+        tipo: "casilla",
+        inicial: true,
+      },
+      {
+        name: "en_extendido",
+        label: "Lo incluye el análisis Extendido",
+        tipo: "casilla",
+        inicial: true,
+      },
+      {
+        name: "en_premium",
+        label: "Lo incluye el análisis Premium",
+        tipo: "casilla",
+        inicial: true,
+      },
       campoOrden,
       campoActivo,
     ],

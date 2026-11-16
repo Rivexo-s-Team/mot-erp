@@ -115,4 +115,10 @@ describe("estado de la muestra", () => {
     expect(accionesMuestra("recibida").recibir).toBe(false);
     expect(accionesMuestra("cancelada").recibir).toBe(false);
   });
+
+  it("se capturan resultados en cualquier estado menos cancelada", () => {
+    expect(accionesMuestra("pendiente").capturar).toBe(true);
+    expect(accionesMuestra("concluida").capturar).toBe(true);
+    expect(accionesMuestra("cancelada").capturar).toBe(false);
+  });
 });

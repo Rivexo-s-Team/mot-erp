@@ -189,5 +189,9 @@ export const estadoInicial = (fechaRecepcion: string | null) =>
 
 /** Qué se puede hacer con una muestra según su estado. */
 export function accionesMuestra(estado: string) {
-  return { recibir: estado === "pendiente" };
+  return {
+    recibir: estado === "pendiente",
+    // Una muestra cancelada no lleva resultados.
+    capturar: estado !== "cancelada",
+  };
 }

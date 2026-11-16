@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { ESTADOS_EN_PROCESO, type OpcionesMuestra } from "./muestras";
+import type { ParametroLab } from "./resultados";
 
 /** Lecturas de muestras. RLS: quien tiene laboratorio.ver. */
 
@@ -91,4 +92,34 @@ export async function opcionesMuestra(
       label: o.nombre,
     })),
   };
+}
+
+// Resultados ---------------------------------------------------------------------
+
+const COLUMNAS_PARAMETRO =
+  "id, clave, nombre, unidad, grupo, metodo, tipo_regla, limite_valor, limite_texto, activo, en_basico, en_basico_mpc, en_extendido, en_premium";
+
+/** Catálogo de parámetros de laboratorio, en el orden del informe. */
+export async function listarParametrosLab(): Promise<ParametroLab[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("parametros_laboratorio")
+    .select(COLUMNAS_PARAMETRO)
+    .order("orden")
+    .order("nombre");
+  if (error) throw new Error("No se pudieron cargar los parámetros.");
+  return data;
+}
+
+/** Resultados capturados de una muestra: {parametro: texto}. */
+export async function resultadosDeMuestra(
+  muestraId: string,
+): Promise<Record<string, string>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("muestra_resultados")
+    .select("parametro_id, valor_texto")
+    .eq("muestra_id", muestraId);
+  if (error) throw new Error("No se pudieron cargar los resultados.");
+  return Object.fromEntries(data.map((r) => [r.parametro_id, r.valor_texto]));
 }
