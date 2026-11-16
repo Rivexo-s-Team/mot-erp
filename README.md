@@ -83,6 +83,7 @@ Para un cambio de esquema:
 - La orden se cierra desde `/campo` cuando ya tiene las firmas (técnico y, en una visita, responsable del cliente). También se le agregan fotos. Una orden cerrada ya no se puede cambiar.
 - Cada orden tiene su PDF con el formato "Servicio RecondOil Box" (botón PDF en la ficha), con las firmas. Lo puede abrir quien ve la orden.
 - El inventario (`/inventario`) muestra la existencia de cada parte y accesorio y su historial de movimientos. Lo consultan todos los internos; registran entradas, salidas y ajustes Dirección, Administración y Técnico. Las partes usadas en una orden salen solas al cerrarla.
+- La ficha de cada Robox lleva sus filtros instalados y avisa cuando toca cambiarlos (a los 6 meses, o antes si la pantalla del Robox marca el filtro agotado). La lista de Flota marca los Robox con cambio pendiente.
 - La flota de Robox (`/flota`) la ven todos los roles internos; la editan Dirección y Técnico. El número de serie no se repite entre equipos vigentes.
 - En la ficha de cada Robox se le asigna un contrato, se indican los tanques que atiende (carrusel) y se registran sus movimientos. Con eso el sistema calcula dónde está cada Robox.
 - Los contratos (`/contratos`) los ven todos los roles internos y los editan Dirección y Administración. Sus tarifas son precios: solo las ven Dirección, Comercial y Administración.
