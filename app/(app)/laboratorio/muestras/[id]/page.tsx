@@ -4,12 +4,17 @@ import type { ReactNode } from "react";
 import { z } from "zod";
 import { PageHeader } from "@/components/layout/page-header";
 import { EstadoMuestraBadge } from "@/components/muestra-estado-badge";
+import { MuestraResultados } from "@/components/muestra-resultados";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { nombreEquipo } from "@/lib/flota/campos";
 import { formatDia } from "@/lib/format";
-import { obtenerMuestra } from "@/lib/laboratorio/data";
+import {
+  listarParametrosLab,
+  obtenerMuestra,
+  resultadosDeMuestra,
+} from "@/lib/laboratorio/data";
 import {
   accionesMuestra,
   etiqueta,
@@ -30,6 +35,12 @@ export default async function MuestraPage({
   if (!m) notFound();
   const edita = tienePermiso(sesion, "laboratorio.editar");
   const aceite = m.equipos_cliente?.aceites;
+  const [parametros, resultados] = await Promise.all([
+    listarParametrosLab(),
+    resultadosDeMuestra(m.id),
+  ]);
+  const hayResultados = Object.keys(resultados).length > 0;
+  const acciones = accionesMuestra(m.estado);
 
   const datos: [string, ReactNode][] = [
     [
@@ -106,12 +117,24 @@ export default async function MuestraPage({
 
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <EstadoMuestraBadge estado={m.estado} />
-        {edita && accionesMuestra(m.estado).recibir ? (
+        {edita && acciones.recibir ? (
           <form action={recibirMuestra.bind(null, m.id)}>
             <Button type="submit" size="sm" className="h-8">
               Recibida hoy en laboratorio
             </Button>
           </form>
+        ) : null}
+        {edita && acciones.capturar ? (
+          <Link
+            href={`/laboratorio/muestras/${m.id}/resultados`}
+            className={buttonVariants({
+              variant: acciones.recibir ? "outline" : "default",
+              size: "sm",
+              className: "h-8",
+            })}
+          >
+            {hayResultados ? "Corregir resultados" : "Capturar resultados"}
+          </Link>
         ) : null}
       </div>
 
@@ -136,9 +159,13 @@ export default async function MuestraPage({
             ) : null}
           </CardContent>
         </Card>
-        <Card className="px-4 py-6 text-center text-sm text-muted-foreground">
-          Los resultados del análisis se capturarán aquí en el siguiente paso.
-        </Card>
+        {hayResultados ? (
+          <MuestraResultados parametros={parametros} resultados={resultados} />
+        ) : (
+          <Card className="px-4 py-6 text-center text-sm text-muted-foreground">
+            Aún no se capturan resultados de esta muestra.
+          </Card>
+        )}
       </div>
     </div>
   );
