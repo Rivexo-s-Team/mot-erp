@@ -2,12 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { EstadoRoboxBadge } from "@/components/flota-estado-badge";
 import { PageHeader } from "@/components/layout/page-header";
+import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { ESTADOS_ROBOX } from "@/lib/flota/campos";
-import { contarPorEstado, listarRobox, ubicaciones } from "@/lib/flota/data";
+import {
+  alertasDeFiltro,
+  contarPorEstado,
+  listarRobox,
+  ubicaciones,
+} from "@/lib/flota/data";
 
 export const metadata: Metadata = { title: "Flota" };
 
@@ -23,7 +29,11 @@ export default async function FlotaPage({ searchParams }: PageProps<"/flota">) {
     listarRobox({ estado, busqueda }),
     contarPorEstado(),
   ]);
-  const ubicacion = await ubicaciones({ roboxIds: robox.map((r) => r.id) });
+  const ids = robox.map((r) => r.id);
+  const [ubicacion, alertas] = await Promise.all([
+    ubicaciones({ roboxIds: ids }),
+    alertasDeFiltro(ids),
+  ]);
   const href = (e: string) => {
     const params = new URLSearchParams();
     if (e) params.set("estado", e);
@@ -102,7 +112,12 @@ export default async function FlotaPage({ searchParams }: PageProps<"/flota">) {
                 <Card className="h-full gap-1 px-4 py-3 transition-colors hover:border-primary/40 hover:bg-accent/40">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <p className="font-medium tabular-nums">{r.numero_serie}</p>
-                    <EstadoRoboxBadge estado={r.estado} />
+                    <div className="flex flex-wrap justify-end gap-1">
+                      {alertas.has(r.id) ? (
+                        <Badge variant="destructive">Cambiar filtro</Badge>
+                      ) : null}
+                      <EstadoRoboxBadge estado={r.estado} />
+                    </div>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {[

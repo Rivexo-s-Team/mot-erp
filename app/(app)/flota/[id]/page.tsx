@@ -15,12 +15,20 @@ import {
 import { MOVIDO_POR, nombreEquipo } from "@/lib/flota/campos";
 import {
   asignacionesDeRobox,
+  filtrosDeRobox,
+  mesesCambioFiltro,
   carruselDeAsignacion,
   movimientosDeAsignacion,
   obtenerRobox,
   ubicaciones,
+  ultimasLecturasDeFiltro,
 } from "@/lib/flota/data";
-import { formatDia, formatFecha } from "@/lib/format";
+import {
+  estadoFiltro,
+  lecturaAgotada,
+  lecturaVigente,
+} from "@/lib/flota/filtros";
+import { formatDia, formatFecha, hoyEnMexico } from "@/lib/format";
 import { deshacerUltimoMovimiento } from "../asignaciones-actions";
 
 const enlace = "text-primary underline-offset-4 hover:underline";
@@ -35,10 +43,25 @@ export default async function RoboxPage({ params }: PageProps<"/flota/[id]">) {
 
   const edita = tienePermiso(sesion, "flota.editar");
   const veContratos = tienePermiso(sesion, "contratos.ver");
-  const [ubicacion, asignaciones] = await Promise.all([
-    ubicaciones({ roboxIds: [robox.id] }),
-    asignacionesDeRobox(robox.id),
-  ]);
+  const [ubicacion, asignaciones, filtros, lecturas, meses] = await Promise.all(
+    [
+      ubicaciones({ roboxIds: [robox.id] }),
+      asignacionesDeRobox(robox.id),
+      filtrosDeRobox(robox.id),
+      ultimasLecturasDeFiltro([robox.id]),
+      mesesCambioFiltro(),
+    ],
+  );
+  const hoy = hoyEnMexico();
+  const instalados = filtros.filter((f) => f.fecha_retiro === null);
+  const retirados = filtros.filter((f) => f.fecha_retiro !== null);
+  const lectura = lecturas.get(robox.id);
+  // Una lectura anterior al filtro que está puesto ya no dice nada de él.
+  const agotado =
+    lecturaVigente(
+      lectura,
+      instalados.map((f) => ({ fechaInstalacion: f.fecha_instalacion })),
+    ) && lecturaAgotada(lectura);
   // La ubicación se calcula de la asignación activa y el último movimiento.
   const actual = ubicacion.get(robox.id);
   const [carrusel, movimientos] = actual
@@ -147,6 +170,108 @@ export default async function RoboxPage({ params }: PageProps<"/flota/[id]">) {
                   ) : null}
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Filtros</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              {instalados.length === 0 ? (
+                <p className="text-muted-foreground">
+                  No se ha registrado qué filtro tiene este Robox.
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {instalados.map((f) => {
+                    const e =
+                      meses === null
+                        ? null
+                        : estadoFiltro({
+                            fechaInstalacion: f.fecha_instalacion,
+                            meses,
+                            hoy,
+                          });
+                    const fila = (
+                      <div className="flex flex-wrap items-start justify-between gap-2 rounded-lg border px-3 py-2">
+                        <div>
+                          <p className="font-medium">
+                            {f.partes?.nombre ?? "Filtro"}
+                          </p>
+                          <p className="text-muted-foreground">
+                            Instalado el {formatDia(f.fecha_instalacion)}
+                            {e
+                              ? ` · toca cambiarlo el ${formatDia(e.vence)}`
+                              : ""}
+                          </p>
+                        </div>
+                        {e?.vencido ? (
+                          <Badge variant="destructive">Cambio vencido</Badge>
+                        ) : null}
+                      </div>
+                    );
+                    return (
+                      <li key={f.id}>
+                        {edita ? (
+                          <Link
+                            href={`${base}/filtros/${f.id}`}
+                            className="block transition-colors hover:bg-accent/40"
+                          >
+                            {fila}
+                          </Link>
+                        ) : (
+                          fila
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              {lectura ? (
+                <p
+                  className={
+                    agotado
+                      ? "font-medium text-destructive"
+                      : "text-muted-foreground"
+                  }
+                >
+                  Última lectura ({formatDia(lectura.fecha)}): filtro usado{" "}
+                  {lectura.usados}
+                  {lectura.vida !== null ? ` de ${lectura.vida}` : ""} días.
+                  {agotado ? " La pantalla ya lo marca agotado." : ""}
+                </p>
+              ) : null}
+              {retirados.length > 0 ? (
+                <details>
+                  <summary className="cursor-pointer text-muted-foreground">
+                    Filtros anteriores ({retirados.length})
+                  </summary>
+                  <ul className="mt-2 space-y-1">
+                    {retirados.map((f) => (
+                      <li key={f.id}>
+                        {edita ? (
+                          <Link
+                            href={`${base}/filtros/${f.id}`}
+                            className={enlace}
+                          >
+                            {f.partes?.nombre ?? "Filtro"}
+                          </Link>
+                        ) : (
+                          (f.partes?.nombre ?? "Filtro")
+                        )}
+                        : {formatDia(f.fecha_instalacion)} al{" "}
+                        {f.fecha_retiro ? formatDia(f.fecha_retiro) : "—"}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              ) : null}
+              {edita ? (
+                <Link href={`${base}/filtros/nuevo`} className={botonChico}>
+                  Registrar filtro instalado
+                </Link>
+              ) : null}
             </CardContent>
           </Card>
 

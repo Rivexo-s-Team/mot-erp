@@ -292,6 +292,11 @@ export const CATALOGOS: Catalogo[] = [
       { name: "nombre", label: "Nombre", tipo: "texto" },
       { name: "tipo", label: "Tipo", tipo: "opciones", opciones: TIPOS_PARTE },
       { name: "notas", label: "Notas", tipo: "texto", opcional: true },
+      {
+        name: "es_filtro",
+        label: "Es un filtro (se le da seguimiento en cada Robox)",
+        tipo: "casilla",
+      },
       campoOrden,
       campoActivo,
     ],

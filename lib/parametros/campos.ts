@@ -20,6 +20,8 @@ export function describirValor(p: {
       return `${p.valor} pruebas "no pasa"`;
     case "dias":
       return `${p.valor} días`;
+    case "meses":
+      return `${p.valor} meses`;
     default:
       return String(p.valor);
   }
@@ -36,6 +38,8 @@ export function ayudaValor(unidad: string, moneda: string | null): string {
       return "Número entero de pruebas.";
     case "dias":
       return "Número entero de días.";
+    case "meses":
+      return "Número entero de meses.";
     default:
       return "";
   }
