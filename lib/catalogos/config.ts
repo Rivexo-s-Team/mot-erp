@@ -228,6 +228,19 @@ export const CATALOGOS: Catalogo[] = [
         opciones: BASES,
         opcional: true,
       },
+      {
+        name: "cuenta_para",
+        label: "Cuenta para la condición",
+        tipo: "opciones",
+        opcional: true,
+        // PENDIENTE(P6): falta que el laboratorio confirme cuáles cuentan.
+        opciones: [
+          { value: "aceite", label: "Del aceite" },
+          { value: "aditivos", label: "De aditivos" },
+        ],
+        ayuda:
+          "Si este parámetro no pasa, suma para esa condición. Ninguno: se evalúa pero no cuenta.",
+      },
       // PENDIENTE(P5): mientras el laboratorio no lo defina, todos lo incluyen.
       {
         name: "en_basico",
