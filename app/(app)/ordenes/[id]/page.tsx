@@ -15,6 +15,9 @@ import { formatDia, formatFecha } from "@/lib/format";
 import { accionesOrden, etiqueta, TIPOS_ORDEN } from "@/lib/ordenes/campos";
 import { faltantesParaCerrar } from "@/lib/ordenes/captura";
 import { requisitosDeAcceso, revisionDeAcceso } from "@/lib/acceso/data";
+import { porCompletar } from "@/lib/cargos/campos";
+import { listarCargos, ordenPermiteCargoAlCliente } from "@/lib/cargos/data";
+import { formatImporte } from "@/lib/format";
 import {
   catalogosCaptura,
   directorioTecnicos,
@@ -51,6 +54,19 @@ export default async function OrdenPage({
     evidenciasDeOrden(o.id),
   ]);
   const catalogos = hayCaptura ? await catalogosCaptura(captura) : null;
+  // Cargos de la orden: son importes, solo para quien puede verlos.
+  const veCargos =
+    tienePermiso(sesion, "cargos.ver") && tienePermiso(sesion, "precios.ver");
+  const editaCargos = veCargos && tienePermiso(sesion, "cargos.editar");
+  const [cargos, permiteCargo] = veCargos
+    ? await Promise.all([
+        listarCargos({ ordenId: o.id }),
+        o.cuenta_id ? ordenPermiteCargoAlCliente(o.id) : false,
+      ])
+    : [[], false];
+  const yaCobroMalUso = cargos.some(
+    (c) => c.tipo === "partes_mal_uso" && c.estado !== "cancelado",
+  );
   // Antes de la visita: requisitos de la planta y documentos de quienes van.
   const verAcceso =
     o.tipo === "visita" &&
@@ -236,6 +252,70 @@ export default async function OrdenPage({
               Campo, en su celular, con la orden en curso.
             </Card>
           )}
+          {veCargos && (cargos.length > 0 || permiteCargo) ? (
+            <section>
+              <h2 className="mb-3 text-lg font-semibold tracking-tight">
+                Cargos al cliente
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  {cargos.length}
+                </span>
+              </h2>
+              {permiteCargo && !yaCobroMalUso ? (
+                <Card className="mb-2 gap-2 px-4 py-3 text-sm">
+                  <p>
+                    Esta orden tiene marcada la falla de componente dañado por
+                    el cliente: se le puede cobrar.
+                  </p>
+                  {editaCargos ? (
+                    <Link
+                      href={`/cargos/nuevo?orden=${o.id}`}
+                      className={buttonVariants({
+                        size: "sm",
+                        className: "h-8 w-fit",
+                      })}
+                    >
+                      Generar cargo al cliente
+                    </Link>
+                  ) : null}
+                </Card>
+              ) : null}
+              <ul className="space-y-2">
+                {cargos.map((c) => (
+                  <li key={c.id}>
+                    <Card className="gap-1 px-4 py-3">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <p className="text-sm font-medium break-words">
+                          {c.concepto}
+                        </p>
+                        <p className="font-medium tabular-nums">
+                          {c.importe !== null
+                            ? formatImporte(c.importe, c.moneda)
+                            : "Por completar"}
+                        </p>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {c.estado === "pendiente"
+                          ? porCompletar(c)
+                            ? "Le falta un dato para poder facturarse"
+                            : "Pendiente de facturar"
+                          : c.estado === "cancelado"
+                            ? "Cancelado"
+                            : "Facturado"}
+                        {editaCargos && c.estado !== "facturado" ? (
+                          <>
+                            {" · "}
+                            <Link href={`/cargos/${c.id}`} className={enlace}>
+                              Editar
+                            </Link>
+                          </>
+                        ) : null}
+                      </p>
+                    </Card>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
           <OrdenEvidencias
             ordenId={o.id}
             evidencias={evidencias}
