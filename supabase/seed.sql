@@ -153,3 +153,10 @@ join public.equipos_cliente e on e.planta_id = p.id and e.identificador = '11B11
 cross join (select id from public.robox where numero_serie = '545592') r
 cross join (select id from public.perfiles where correo = 'tecnico@mot.test') pf
 where p.nombre = 'BYPASA';
+
+-- Filtro del Robox 545592: el formato del 2 nov 2026 marca "Filter used 74 días",
+-- así que se instaló 74 días antes.
+insert into public.filtros_instalados (robox_id, parte_id, fecha_instalacion, notas)
+select r.id, p.id, date '2026-11-02' - 74, 'Fecha calculada con la lectura "Filter used" del 02/11/2026.'
+from public.robox r, public.partes p
+where r.numero_serie = '545592' and p.nombre = 'Filtro SKF500/HY (Core)';

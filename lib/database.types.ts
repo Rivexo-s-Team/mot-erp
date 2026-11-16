@@ -967,6 +967,78 @@ export type Database = {
         };
         Relationships: [];
       };
+      filtros_instalados: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          fecha_instalacion: string;
+          fecha_retiro: string | null;
+          id: string;
+          notas: string | null;
+          orden_id: string | null;
+          parte_id: string;
+          robox_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          fecha_instalacion: string;
+          fecha_retiro?: string | null;
+          id?: string;
+          notas?: string | null;
+          orden_id?: string | null;
+          parte_id: string;
+          robox_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          fecha_instalacion?: string;
+          fecha_retiro?: string | null;
+          id?: string;
+          notas?: string | null;
+          orden_id?: string | null;
+          parte_id?: string;
+          robox_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "filtros_instalados_orden_id_fkey";
+            columns: ["orden_id"];
+            isOneToOne: false;
+            referencedRelation: "ordenes_servicio";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "filtros_instalados_parte_id_fkey";
+            columns: ["parte_id"];
+            isOneToOne: false;
+            referencedRelation: "inventario_existencias";
+            referencedColumns: ["parte_id"];
+          },
+          {
+            foreignKeyName: "filtros_instalados_parte_id_fkey";
+            columns: ["parte_id"];
+            isOneToOne: false;
+            referencedRelation: "partes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "filtros_instalados_robox_id_fkey";
+            columns: ["robox_id"];
+            isOneToOne: false;
+            referencedRelation: "robox";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       folios_cotizacion: {
         Row: {
           anio: number;
@@ -1902,6 +1974,7 @@ export type Database = {
           activo: boolean;
           created_at: string;
           created_by: string | null;
+          es_filtro: boolean;
           id: string;
           nombre: string;
           notas: string | null;
@@ -1914,6 +1987,7 @@ export type Database = {
           activo?: boolean;
           created_at?: string;
           created_by?: string | null;
+          es_filtro?: boolean;
           id?: string;
           nombre: string;
           notas?: string | null;
@@ -1925,6 +1999,7 @@ export type Database = {
           activo?: boolean;
           created_at?: string;
           created_by?: string | null;
+          es_filtro?: boolean;
           id?: string;
           nombre?: string;
           notas?: string | null;
@@ -2389,6 +2464,10 @@ export type Database = {
           id: string;
           nombre: string;
         }[];
+      };
+      filtro_cambio_meses: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
       };
       guardar_captura_orden: {
         Args: { p_captura: Json; p_orden: string };
