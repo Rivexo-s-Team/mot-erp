@@ -23,6 +23,7 @@ export type TablaCatalogo =
   | "partes"
   | "actividades"
   | "fallas"
+  | "tipos_documento_acceso"
   | "parametros_laboratorio"
   | "canales_venta"
   | "motivos_perdida";
@@ -72,6 +73,11 @@ const BASES: Opcion[] = [
   { value: "usado_vs_tratado", label: "Usado contra tratado" },
   { value: "virgen_vs_tratado", label: "Virgen contra tratado" },
   { value: "valor_teorico", label: "Valor teórico" },
+];
+
+const APLICA_A: Opcion[] = [
+  { value: "empresa", label: "De MOT" },
+  { value: "persona", label: "Por persona" },
 ];
 
 const TIPOS_PARTE: Opcion[] = [
@@ -344,6 +350,37 @@ export const CATALOGOS: Catalogo[] = [
         name: "permite_cargo_cliente",
         label: "Permite cargo al cliente (daño por mal uso)",
         tipo: "casilla",
+      },
+      campoOrden,
+      campoActivo,
+    ],
+  },
+  {
+    slug: "tipos-documento-acceso",
+    tabla: "tipos_documento_acceso",
+    titulo: "Documentos de acceso a planta",
+    singular: "tipo de documento",
+    descripcion:
+      "Qué documentos piden las plantas para dejar entrar: de MOT o de cada persona.",
+    permisoEditar: "catalogos_operacion.editar",
+    ordenarPor: ["orden", "nombre"],
+    nombre: (f) => texto(f.nombre),
+    columnas: [
+      { titulo: "Nombre", valor: (f) => texto(f.nombre) },
+      {
+        titulo: "De quién",
+        valor: (f) => etiqueta(APLICA_A, f.aplica_a),
+      },
+    ],
+    campos: [
+      { name: "nombre", label: "Nombre", tipo: "texto" },
+      {
+        name: "aplica_a",
+        label: "De quién es",
+        tipo: "opciones",
+        opciones: APLICA_A,
+        ayuda:
+          "De MOT: uno solo. Por persona: uno por cada quien entra a planta.",
       },
       campoOrden,
       campoActivo,

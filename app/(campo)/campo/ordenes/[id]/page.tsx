@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
+import { AccesoPlanta } from "@/components/acceso-planta";
 import { CerrarOrden } from "@/components/cerrar-orden";
 import { OrdenCaptura } from "@/components/orden-captura";
 import { OrdenEvidencias } from "@/components/orden-evidencias";
@@ -12,6 +13,7 @@ import { nombreEquipo } from "@/lib/flota/campos";
 import { formatDia } from "@/lib/format";
 import { accionesOrden } from "@/lib/ordenes/campos";
 import { faltantesParaCerrar } from "@/lib/ordenes/captura";
+import { requisitosDeAcceso, revisionDeAcceso } from "@/lib/acceso/data";
 import {
   catalogosCaptura,
   directorioTecnicos,
@@ -44,6 +46,23 @@ export default async function OrdenCampoPage({
     evidenciasDeOrden(o.id),
   ]);
   const catalogos = hayCaptura ? await catalogosCaptura(captura) : null;
+  // Antes de la visita: requisitos de la planta y documentos de quienes van.
+  const verAcceso =
+    o.tipo === "visita" &&
+    o.planta_id !== null &&
+    (o.estado === "programada" || o.estado === "en_curso") &&
+    tienePermiso(sesion, "documentos_acceso.ver");
+  const acceso =
+    verAcceso && o.planta_id
+      ? await Promise.all([
+          requisitosDeAcceso(o.planta_id),
+          revisionDeAcceso(
+            o.acompanante_id
+              ? [o.tecnico_id, o.acompanante_id]
+              : [o.tecnico_id],
+          ),
+        ])
+      : null;
   const datos: [string, string][] = [
     [
       "Equipo",
@@ -147,6 +166,12 @@ export default async function OrdenCampoPage({
           </Link>
         ) : null}
       </div>
+
+      {acceso ? (
+        <div className="mt-6">
+          <AccesoPlanta requisitos={acceso[0]} documentos={acceso[1]} />
+        </div>
+      ) : null}
 
       {catalogos ? (
         <div className="mt-6">

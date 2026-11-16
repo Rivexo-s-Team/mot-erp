@@ -313,6 +313,11 @@ Ninguna bloquea el arranque. Cada una se resuelve antes de la etapa indicada.
 | P9 | ¿MOT tiene acceso al portal de SKF donde reporta el Robox? ¿SKF ofrece API? | Área técnica | Etapa 6 |
 | P10 | Inventarios: lista de Robox (serie, ubicación, estado) y existencias de filtros y partes. | Área técnica | Etapa 2 |
 | P11 | ~~Señal en las plantas~~ **Resuelta el 13 nov 2026** (ver D25). | Área técnica | — |
+| P12 | El manual de procesos nombra a un **Gerente de Operaciones** que autoriza (movimientos de máquinas, liberación tras mantenimiento, retiros) y a **Instaladores** que ejecutan. ¿Se crea ese rol y se piden esas autorizaciones en el sistema, o basta con Dirección y Técnico? | Director General | Cierre de Etapa 3 |
+| P13 | ¿Cada Robox llevará un **identificador propio de MOT** (el manual propone `MOL-001`) además del número de serie? | Operaciones | Cierre de Etapa 3 |
+| P14 | **Estados de la máquina** del manual (Operando, Mantenimiento, Reparación, Disponible, Retirado) frente a los del sistema (Disponible, En cliente, En taller, Baja), y registro de **horas acumuladas** (horómetro). ¿Se adoptan? | Operaciones | Cierre de Etapa 3 |
+| P15 | **Instalación y retiro:** el manual propone formatos propios (evaluación del sitio, checklist de traslado, protocolo de pruebas, acta de aceptación, inspección de salida, acta de retiro). Hoy son una orden de servicio con la actividad "Instalación" o "Retiro". ¿Se necesitan esos checklists y actas? | Operaciones | Cierre de Etapa 3 |
+| P16 | **Mantenimiento:** el manual pide en la orden de trabajo prioridad, tiempos de paro y una liberación autorizada del equipo. ¿Se agregan a la orden de servicio? | Operaciones | Cierre de Etapa 3 |
 
 ---
 
@@ -352,3 +357,27 @@ Ninguna bloquea el arranque. Cada una se resuelve antes de la etapa indicada.
 | D30 | **Inventario:** la existencia de cada parte es la suma de sus movimientos (entradas, salidas y ajustes por conteo), que no se editan ni se borran. Las partes y accesorios usados en una orden se capturan en la visita y salen del inventario al cerrar la orden. Si no había existencia registrada, queda en negativo y se resalta; no se bloquea el cierre. Todos los internos consultan; registran movimientos Dirección, Administración y Técnico (tentativo: falta definir quién llevará el almacén). Los costos de las partes quedan pendientes. | Así el inventario inicial lo puede cargar MOT cuando quiera sin frenar las órdenes, y cada pieza tiene su historial. |
 | D31 | **Filtros de cada Robox:** se registra qué filtro tiene, desde cuándo y cuándo se retiró; solo para las partes marcadas como filtro en el catálogo (hoy: SKF500/HY, SKF500/DST y sinterizado). Al cerrar una orden con Robox que usó un filtro, el sistema retira el anterior del mismo tipo e instala el nuevo. **Alerta de cambio** cuando el filtro cumple los meses del parámetro `filtro_cambio_meses` (6, editable en Parámetros) o cuando la última lectura de la pantalla marca "filter used" igual o mayor que "filter lifetime"; una lectura anterior al filtro que está puesto no cuenta. Lo registran quienes editan la flota (Dirección y Técnico; tentativo). La parte de la alerta que depende del laboratorio llega en la Etapa 4. | Es la regla de §4.4 ("a los 6 meses o antes"), sin inventar umbrales de aviso anticipado. |
 | D32 | **Agenda:** una visita programada es una orden de servicio en estado "programada" (incluidas las que pide el cliente). Las **visitas recurrentes** se definen por contrato: cada cuántos días, semanas o meses y cuándo toca la siguiente. El sistema no crea órdenes solo: alguien las "programa" desde la Agenda, con lo que nace la orden y la fecha avanza un periodo. Las que ya pasaron sin programarse se marcan. Las ven todos los internos; las definen y programan Técnico y Dirección (tentativo). | Es lo más sencillo y deja a una persona decidir la fecha real y el técnico; evita órdenes automáticas que nadie pidió. |
+| D33 | **Acceso a planta:** los documentos que piden las plantas son un catálogo editable, cada uno de MOT (REPSE) o por persona (equipo de protección, IMSS). Cada documento lleva vencimiento opcional y su archivo. En cada orden de visita programada o en curso se muestra lo que pide la planta y el estado de los documentos de MOT, del técnico y del acompañante: vigente, por vencer (30 días antes, editable en Parámetros), vencido o faltante. Es un aviso: no impide iniciar la orden. Los consultan todos los internos; los registran Dirección y Administración (tentativo). | Es la regla de §4.4 y coincide con el "punto de control antes de ejecutar" del manual de procesos. No se bloquea la orden porque no todas las plantas piden todos los documentos. |
+
+---
+
+## 8. Manual corporativo de procesos (noviembre de 2026)
+
+MOT compartió el documento "Sistema de procesos operativos" (propuesta de un consultor). Describe cinco procesos: inventario de maquinaria, instalación, mantenimiento, retiro y laboratorio, cada uno con actividades, responsables, formatos (F-01 a F-25) e indicadores. El propio documento aclara que el proceso 1 parte de instrucciones de MOT y que los procesos 2 a 5 son propuestas por validar con la operación real. Por eso **no se toma como regla de negocio**: lo que cambia el sistema quedó como preguntas P12 a P16.
+
+**Lo que el sistema ya cubre**
+
+| Manual | En el sistema |
+|---|---|
+| F-01 Inventario maestro y expediente por máquina | Flota: ficha de cada Robox con ubicación calculada, asignaciones, carrusel, filtros e historial. |
+| F-03 Movimiento de maquinaria | Movimientos del Robox entre tanques y asignaciones a contratos (sin autorización previa: ver P12). |
+| F-04 Calendario / F-10 Programa de mantenimiento | Agenda y visitas recurrentes por contrato. |
+| F-11 Orden de trabajo, F-12 Reporte de falla, F-14 Reporte correctivo | Orden de servicio con actividades, fallas, partes usadas, lecturas, fotos y firmas. |
+| Registro de piezas y consumibles | Inventario y partes usadas en la orden. |
+| Evidencia documental (fotos, firmas, reportes) | Fotos, firmas y PDF de la orden. |
+| Punto de control "antes de ejecutar: validación documental" | Tarjeta "Acceso a planta" en cada orden de visita (D33). |
+| Control jurídico: contrato, modalidad y vigencia por equipo | Contratos (comodato = renta, D14) con sus Robox asignados. |
+
+**Lo que no está y se decidirá con MOT:** el rol de Gerente de Operaciones y sus autorizaciones (P12), el identificador `MOL-001` (P13), los estados y horas de máquina (P14), los checklists y actas de instalación y retiro (P15), y prioridad, tiempos de paro y liberación en mantenimiento (P16).
+
+**Para etapas siguientes:** el proceso 5 (folio único de muestra, punto de muestreo, custodia, reporte de no conformidad, parámetros de aceptación según el aceite) se revisa al planear la Etapa 4. El tablero ejecutivo y los indicadores (disponibilidad, cumplimiento de mantenimiento, MTTR, MTBF, instalaciones a tiempo) son de la Etapa 6.

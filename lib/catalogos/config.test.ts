@@ -35,6 +35,7 @@ describe("catálogos", () => {
       "motivos_perdida",
       "parametros_laboratorio",
       "partes",
+      "tipos_documento_acceso",
     ]);
     expect(new Set(CATALOGOS.map((c) => c.slug)).size).toBe(CATALOGOS.length);
   });

@@ -806,6 +806,64 @@ export type Database = {
         };
         Relationships: [];
       };
+      documentos_acceso: {
+        Row: {
+          archivo_nombre: string | null;
+          archivo_ruta: string | null;
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          fecha_vencimiento: string | null;
+          id: string;
+          notas: string | null;
+          perfil_id: string | null;
+          tipo_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          archivo_nombre?: string | null;
+          archivo_ruta?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          fecha_vencimiento?: string | null;
+          id?: string;
+          notas?: string | null;
+          perfil_id?: string | null;
+          tipo_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          archivo_nombre?: string | null;
+          archivo_ruta?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          fecha_vencimiento?: string | null;
+          id?: string;
+          notas?: string | null;
+          perfil_id?: string | null;
+          tipo_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "documentos_acceso_perfil_id_fkey";
+            columns: ["perfil_id"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "documentos_acceso_tipo_id_fkey";
+            columns: ["tipo_id"];
+            isOneToOne: false;
+            referencedRelation: "tipos_documento_acceso";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       equipos_cliente: {
         Row: {
           aceite_id: string | null;
@@ -2387,6 +2445,40 @@ export type Database = {
         };
         Relationships: [];
       };
+      tipos_documento_acceso: {
+        Row: {
+          activo: boolean;
+          aplica_a: string;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          nombre: string;
+          orden: number;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          activo?: boolean;
+          aplica_a: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          nombre: string;
+          orden?: number;
+          updated_at?: string;
+        };
+        Update: {
+          activo?: boolean;
+          aplica_a?: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          nombre?: string;
+          orden?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       visitas_programadas: {
         Row: {
           activa: boolean;
@@ -2558,6 +2650,10 @@ export type Database = {
           id: string;
           nombre: string;
         }[];
+      };
+      documento_aviso_dias: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
       };
       filtro_cambio_meses: {
         Args: Record<PropertyKey, never>;
