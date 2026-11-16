@@ -24,6 +24,7 @@ describe("menuPara", () => {
       "/clientes",
       "/oportunidades",
       "/contratos",
+      "/agenda",
       "/ordenes",
       "/campo",
       "/flota",

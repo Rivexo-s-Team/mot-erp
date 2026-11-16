@@ -160,3 +160,13 @@ insert into public.filtros_instalados (robox_id, parte_id, fecha_instalacion, no
 select r.id, p.id, date '2026-11-02' - 74, 'Fecha calculada con la lectura "Filter used" del 02/11/2026.'
 from public.robox r, public.partes p
 where r.numero_serie = '545592' and p.nombre = 'Filtro SKF500/HY (Core)';
+
+-- Visita recurrente de ejemplo: cada mes a Rassini BYPASA.
+insert into public.visitas_programadas
+  (contrato_id, planta_id, equipo_cliente_id, robox_id, tecnico_id, cada_cantidad, cada_unidad, proxima_fecha, notas)
+select c.id, c.planta_id, e.id, r.id, pf.id, 1, 'meses', date '2026-12-02', 'Toma de muestra y rotación del Robox.'
+from public.contratos c
+join public.equipos_cliente e on e.planta_id = c.planta_id and e.identificador = '11B116'
+cross join (select id from public.robox where numero_serie = '545592') r
+cross join (select id from public.perfiles where correo = 'tecnico@mot.test') pf
+where c.notas = 'Contrato de ejemplo.';

@@ -13,6 +13,7 @@ const DESCRIPCIONES: Record<string, string> = {
   "/clientes": "Cuentas, plantas, razones sociales y contactos.",
   "/oportunidades": "Ventas en curso por etapa, con sus actividades.",
   "/contratos": "Lo negociado con cada planta: tipo, vigencia y tarifas.",
+  "/agenda": "Visitas programadas y visitas recurrentes de los contratos.",
   "/ordenes": "Visitas a planta y trabajos de taller.",
   "/campo": "Tus órdenes del día, para capturar desde el celular.",
   "/flota": "Los Robox de MOT: número de serie, estado y datos del equipo.",

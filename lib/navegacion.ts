@@ -11,6 +11,7 @@ export type IconoMenu =
   | "flota"
   | "inventario"
   | "ordenes"
+  | "agenda"
   | "campo"
   | "catalogos"
   | "parametros"
@@ -57,6 +58,12 @@ const MENU: GrupoMenu[] = [
   {
     titulo: "Operación",
     entradas: [
+      {
+        href: "/agenda",
+        label: "Agenda",
+        icono: "agenda",
+        permiso: "ordenes.ver",
+      },
       {
         href: "/ordenes",
         label: "Órdenes de servicio",
