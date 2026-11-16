@@ -1,5 +1,7 @@
 import "server-only";
+import { hoyEnMexico } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
+import { motivosDeCambio, type LecturaFiltro } from "./filtros";
 
 /** Lecturas de la flota. RLS decide qué ve cada rol. */
 
@@ -222,4 +224,118 @@ export async function roboxDeContrato(contratoId: string) {
     .order("numero_serie");
   if (error) throw new Error("No se pudieron cargar los Robox del contrato.");
   return data.map((r) => ({ ...r, ubicacion: ubicacion.get(r.id) }));
+}
+
+// Filtros instalados y alerta de cambio -------------------------------------------
+
+/** Cada cuántos meses se cambia un filtro (parámetro de negocio). Null si no se puede leer. */
+export async function mesesCambioFiltro(): Promise<number | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("filtro_cambio_meses");
+  if (error) throw new Error("No se pudo cargar el parámetro de filtros.");
+  return data;
+}
+
+/** Historial de filtros de un Robox, el más reciente primero. */
+export async function filtrosDeRobox(roboxId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("filtros_instalados")
+    .select(
+      "id, parte_id, fecha_instalacion, fecha_retiro, orden_id, notas, partes (nombre), ordenes_servicio (folio)",
+    )
+    .eq("robox_id", roboxId)
+    .is("deleted_at", null)
+    .order("fecha_instalacion", { ascending: false })
+    .order("created_at", { ascending: false });
+  if (error) throw new Error("No se pudieron cargar los filtros.");
+  return data;
+}
+
+/** Partes del catálogo marcadas como filtro, para elegir cuál se instaló. */
+export async function filtrosParaElegir() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("partes")
+    .select("id, nombre")
+    .eq("es_filtro", true)
+    .eq("activo", true)
+    .order("orden")
+    .order("nombre");
+  if (error) throw new Error("No se pudieron cargar los filtros.");
+  return data.map((p) => ({ value: p.id, label: p.nombre }));
+}
+
+/**
+ * La lectura de "filter used" más reciente de cada Robox, tomada de sus
+ * órdenes de servicio (si la orden tiene lectura posterior, manda esa).
+ */
+export async function ultimasLecturasDeFiltro(roboxIds: string[]) {
+  const mapa = new Map<string, LecturaFiltro>();
+  if (roboxIds.length === 0) return mapa;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("os_lecturas")
+    .select(
+      "momento, filter_used_dias, filter_lifetime_dias, ordenes_servicio!inner (robox_id, fecha_real, fecha_programada, deleted_at)",
+    )
+    .in("ordenes_servicio.robox_id", roboxIds)
+    .is("ordenes_servicio.deleted_at", null)
+    .not("filter_used_dias", "is", null);
+  if (error) throw new Error("No se pudieron cargar las lecturas.");
+
+  const ordenadas = data
+    .map((l) => ({
+      roboxId: l.ordenes_servicio.robox_id,
+      fecha:
+        l.ordenes_servicio.fecha_real ?? l.ordenes_servicio.fecha_programada,
+      posterior: l.momento === "posterior",
+      usados: l.filter_used_dias,
+      vida: l.filter_lifetime_dias,
+    }))
+    .sort(
+      (a, b) =>
+        b.fecha.localeCompare(a.fecha) ||
+        Number(b.posterior) - Number(a.posterior),
+    );
+  for (const l of ordenadas) {
+    if (l.roboxId && l.usados !== null && !mapa.has(l.roboxId))
+      mapa.set(l.roboxId, { fecha: l.fecha, usados: l.usados, vida: l.vida });
+  }
+  return mapa;
+}
+
+/** Por qué hay que cambiar el filtro de cada Robox. Solo trae los que tienen algún motivo. */
+export async function alertasDeFiltro(roboxIds: string[]) {
+  const alertas = new Map<string, string[]>();
+  if (roboxIds.length === 0) return alertas;
+  const supabase = await createClient();
+  const [instalados, lecturas, meses] = await Promise.all([
+    supabase
+      .from("filtros_instalados")
+      .select("robox_id, fecha_instalacion, partes (nombre)")
+      .in("robox_id", roboxIds)
+      .is("fecha_retiro", null)
+      .is("deleted_at", null),
+    ultimasLecturasDeFiltro(roboxIds),
+    mesesCambioFiltro(),
+  ]);
+  if (instalados.error) throw new Error("No se pudieron cargar los filtros.");
+
+  const hoy = hoyEnMexico();
+  for (const id of roboxIds) {
+    const motivos = motivosDeCambio({
+      filtros: instalados.data
+        .filter((f) => f.robox_id === id)
+        .map((f) => ({
+          nombre: f.partes?.nombre ?? "Filtro",
+          fechaInstalacion: f.fecha_instalacion,
+        })),
+      lectura: lecturas.get(id),
+      meses,
+      hoy,
+    });
+    if (motivos.length > 0) alertas.set(id, motivos);
+  }
+  return alertas;
 }
