@@ -2196,6 +2196,7 @@ export type Database = {
           clave: string;
           created_at: string;
           created_by: string | null;
+          cuenta_para: string | null;
           en_basico: boolean;
           en_basico_mpc: boolean;
           en_extendido: boolean;
@@ -2218,6 +2219,7 @@ export type Database = {
           clave: string;
           created_at?: string;
           created_by?: string | null;
+          cuenta_para?: string | null;
           en_basico?: boolean;
           en_basico_mpc?: boolean;
           en_extendido?: boolean;
@@ -2239,6 +2241,7 @@ export type Database = {
           clave?: string;
           created_at?: string;
           created_by?: string | null;
+          cuenta_para?: string | null;
           en_basico?: boolean;
           en_basico_mpc?: boolean;
           en_extendido?: boolean;
@@ -2935,6 +2938,13 @@ export type Database = {
         Returns: string;
       };
       tiene_permiso: { Args: { p_clave: string }; Returns: boolean };
+      umbrales_condicion_aceite: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          critico_desde: number;
+          precaucion_desde: number;
+        }[];
+      };
     };
     Enums: {
       [_ in never]: never;
