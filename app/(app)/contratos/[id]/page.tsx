@@ -6,6 +6,8 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { textoFrecuencia } from "@/lib/agenda/campos";
+import { listarVisitas } from "@/lib/agenda/data";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import {
   etiqueta,
@@ -46,7 +48,7 @@ export default async function ContratoPage({
   const edita = tienePermiso(sesion, "contratos.editar");
   // Las tarifas son precios: solo para quien puede verlos.
   const vePrecios = tienePermiso(sesion, "precios.ver");
-  const [origen, ampliaciones, tarifas, totales, ordenes, robox] =
+  const [origen, ampliaciones, tarifas, totales, ordenes, robox, visitas] =
     await Promise.all([
       c.contrato_origen_id ? obtenerContrato(c.contrato_origen_id) : null,
       ampliacionesDe(c.id),
@@ -54,6 +56,9 @@ export default async function ContratoPage({
       vePrecios ? totalesDeContratos([c.id]) : new Map(),
       vePrecios ? ordenesDeContrato(c.id) : [],
       tienePermiso(sesion, "flota.ver") ? roboxDeContrato(c.id) : [],
+      tienePermiso(sesion, "ordenes.ver")
+        ? listarVisitas({ contratoId: c.id })
+        : [],
     ]);
   const hoy = hoyEnMexico();
   const tarifasPorOrden = new Map<string, number>();
@@ -201,6 +206,56 @@ export default async function ContratoPage({
                           </p>
                         </Card>
                       </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          ) : null}
+
+          {tienePermiso(sesion, "ordenes.ver") ? (
+            <section>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Visitas recurrentes
+                  <span className="ml-2 text-sm font-normal text-muted-foreground">
+                    {visitas.length}
+                  </span>
+                </h2>
+                {tienePermiso(sesion, "ordenes.editar") ? (
+                  <Link
+                    href={`/agenda/recurrentes/nueva?contrato=${c.id}`}
+                    className={buttonVariants({
+                      variant: "outline",
+                      className: "h-9",
+                    })}
+                  >
+                    Agregar visita recurrente
+                  </Link>
+                ) : null}
+              </div>
+              {visitas.length === 0 ? (
+                <Card className="px-4 py-6 text-center text-sm text-muted-foreground">
+                  Sin visitas recurrentes. Aquí se define cada cuánto se visita
+                  la planta por este contrato.
+                </Card>
+              ) : (
+                <ul className="space-y-2">
+                  {visitas.map((v) => (
+                    <li key={v.id}>
+                      <Card className="flex-row flex-wrap items-center justify-between gap-2 px-4 py-3">
+                        <div>
+                          <p className="font-medium">
+                            {textoFrecuencia(v.cada_cantidad, v.cada_unidad)}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Próxima: {formatDia(v.proxima_fecha)}
+                          </p>
+                        </div>
+                        {v.activa ? null : (
+                          <Badge variant="outline">Pausada</Badge>
+                        )}
+                      </Card>
                     </li>
                   ))}
                 </ul>
