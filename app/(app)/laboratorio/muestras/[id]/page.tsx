@@ -11,10 +11,13 @@ import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { nombreEquipo } from "@/lib/flota/campos";
 import { formatDia } from "@/lib/format";
 import {
+  contextoDeMuestra,
   listarParametrosLab,
   obtenerMuestra,
   resultadosDeMuestra,
+  umbralesCondicion,
 } from "@/lib/laboratorio/data";
+import { evaluarMuestra } from "@/lib/laboratorio/evaluacion";
 import {
   accionesMuestra,
   etiqueta,
@@ -35,10 +38,13 @@ export default async function MuestraPage({
   if (!m) notFound();
   const edita = tienePermiso(sesion, "laboratorio.editar");
   const aceite = m.equipos_cliente?.aceites;
-  const [parametros, resultados] = await Promise.all([
+  const [parametros, resultados, contexto, umbrales] = await Promise.all([
     listarParametrosLab(),
     resultadosDeMuestra(m.id),
+    contextoDeMuestra(m),
+    umbralesCondicion(),
   ]);
+  const evaluacion = evaluarMuestra(parametros, resultados, contexto, umbrales);
   const hayResultados = Object.keys(resultados).length > 0;
   const acciones = accionesMuestra(m.estado);
 
@@ -160,7 +166,12 @@ export default async function MuestraPage({
           </CardContent>
         </Card>
         {hayResultados ? (
-          <MuestraResultados parametros={parametros} resultados={resultados} />
+          <MuestraResultados
+            parametros={parametros}
+            resultados={resultados}
+            evaluacion={evaluacion}
+            esVirgen={m.tipo === "virgen"}
+          />
         ) : (
           <Card className="px-4 py-6 text-center text-sm text-muted-foreground">
             Aún no se capturan resultados de esta muestra.
