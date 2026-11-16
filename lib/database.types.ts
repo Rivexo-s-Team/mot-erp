@@ -1462,6 +1462,7 @@ export type Database = {
           temperatura_aceite_c: number | null;
           tipo: string;
           updated_at: string;
+          visita_programada_id: string | null;
           volumen_reservorio_l: number | null;
         };
         ComputedFields: never;
@@ -1488,6 +1489,7 @@ export type Database = {
           temperatura_aceite_c?: number | null;
           tipo: string;
           updated_at?: string;
+          visita_programada_id?: string | null;
           volumen_reservorio_l?: number | null;
         };
         Update: {
@@ -1513,6 +1515,7 @@ export type Database = {
           temperatura_aceite_c?: number | null;
           tipo?: string;
           updated_at?: string;
+          visita_programada_id?: string | null;
           volumen_reservorio_l?: number | null;
         };
         Relationships: [
@@ -1563,6 +1566,13 @@ export type Database = {
             columns: ["tecnico_id"];
             isOneToOne: false;
             referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ordenes_servicio_visita_programada_id_fkey";
+            columns: ["visita_programada_id"];
+            isOneToOne: false;
+            referencedRelation: "visitas_programadas";
             referencedColumns: ["id"];
           },
         ];
@@ -2377,6 +2387,90 @@ export type Database = {
         };
         Relationships: [];
       };
+      visitas_programadas: {
+        Row: {
+          activa: boolean;
+          cada_cantidad: number;
+          cada_unidad: string;
+          contrato_id: string;
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          equipo_cliente_id: string | null;
+          id: string;
+          notas: string | null;
+          planta_id: string;
+          proxima_fecha: string;
+          robox_id: string | null;
+          tecnico_id: string | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          activa?: boolean;
+          cada_cantidad: number;
+          cada_unidad: string;
+          contrato_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          equipo_cliente_id?: string | null;
+          id?: string;
+          notas?: string | null;
+          planta_id: string;
+          proxima_fecha: string;
+          robox_id?: string | null;
+          tecnico_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          activa?: boolean;
+          cada_cantidad?: number;
+          cada_unidad?: string;
+          contrato_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          equipo_cliente_id?: string | null;
+          id?: string;
+          notas?: string | null;
+          planta_id?: string;
+          proxima_fecha?: string;
+          robox_id?: string | null;
+          tecnico_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "visitas_programadas_contrato_id_planta_id_fkey";
+            columns: ["contrato_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "contratos";
+            referencedColumns: ["id", "planta_id"];
+          },
+          {
+            foreignKeyName: "visitas_programadas_equipo_cliente_id_planta_id_fkey";
+            columns: ["equipo_cliente_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "equipos_cliente";
+            referencedColumns: ["id", "planta_id"];
+          },
+          {
+            foreignKeyName: "visitas_programadas_robox_id_fkey";
+            columns: ["robox_id"];
+            isOneToOne: false;
+            referencedRelation: "robox";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "visitas_programadas_tecnico_id_fkey";
+            columns: ["tecnico_id"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       contrato_totales: {
@@ -2475,6 +2569,10 @@ export type Database = {
       };
       mi_rol_id: { Args: Record<PropertyKey, never>; Returns: string };
       mis_permisos: { Args: Record<PropertyKey, never>; Returns: string[] };
+      programar_visita: {
+        Args: { p_tecnico?: string; p_visita: string };
+        Returns: string;
+      };
       puede_llenar_orden: { Args: { p_orden: string }; Returns: boolean };
       siguiente_folio_cotizacion: {
         Args: Record<PropertyKey, never>;
