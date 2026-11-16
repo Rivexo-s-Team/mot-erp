@@ -1370,6 +1370,58 @@ export type Database = {
           },
         ];
       };
+      muestra_resultados: {
+        Row: {
+          calificador: string | null;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          muestra_id: string;
+          parametro_id: string;
+          updated_at: string;
+          valor_numerico: number | null;
+          valor_texto: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          calificador?: never;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          muestra_id: string;
+          parametro_id: string;
+          updated_at?: string;
+          valor_numerico?: never;
+          valor_texto: string;
+        };
+        Update: {
+          calificador?: never;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          muestra_id?: string;
+          parametro_id?: string;
+          updated_at?: string;
+          valor_numerico?: never;
+          valor_texto?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "muestra_resultados_muestra_id_fkey";
+            columns: ["muestra_id"];
+            isOneToOne: false;
+            referencedRelation: "muestras";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "muestra_resultados_parametro_id_fkey";
+            columns: ["parametro_id"];
+            isOneToOne: false;
+            referencedRelation: "parametros_laboratorio";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       muestras: {
         Row: {
           condicion_operacion: string | null;
@@ -2144,6 +2196,10 @@ export type Database = {
           clave: string;
           created_at: string;
           created_by: string | null;
+          en_basico: boolean;
+          en_basico_mpc: boolean;
+          en_extendido: boolean;
+          en_premium: boolean;
           grupo: string;
           id: string;
           limite_texto: string | null;
@@ -2162,6 +2218,10 @@ export type Database = {
           clave: string;
           created_at?: string;
           created_by?: string | null;
+          en_basico?: boolean;
+          en_basico_mpc?: boolean;
+          en_extendido?: boolean;
+          en_premium?: boolean;
           grupo: string;
           id?: string;
           limite_texto?: string | null;
@@ -2179,6 +2239,10 @@ export type Database = {
           clave?: string;
           created_at?: string;
           created_by?: string | null;
+          en_basico?: boolean;
+          en_basico_mpc?: boolean;
+          en_extendido?: boolean;
+          en_premium?: boolean;
           grupo?: string;
           id?: string;
           limite_texto?: string | null;
@@ -2853,6 +2917,10 @@ export type Database = {
       };
       guardar_captura_orden: {
         Args: { p_captura: Json; p_orden: string };
+        Returns: undefined;
+      };
+      guardar_resultados_muestra: {
+        Args: { p_muestra: string; p_resultados: Json };
         Returns: undefined;
       };
       mi_rol_id: { Args: Record<PropertyKey, never>; Returns: string };
