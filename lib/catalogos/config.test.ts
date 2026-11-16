@@ -22,6 +22,10 @@ const base = {
   limite_texto: "",
   base_comparacion: "usado_vs_tratado",
   orden: "240",
+  en_basico: true,
+  en_basico_mpc: true,
+  en_extendido: true,
+  en_premium: true,
   activo: true,
 };
 

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { FileUploader } from "@/components/forms/file-uploader";
 import { PageHeader } from "@/components/layout/page-header";
+import { MuestrasSeccion } from "@/components/muestras-seccion";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import { ESTADOS } from "@/lib/cotizaciones/campos";
 import { contratoDeOportunidad } from "@/lib/contratos/data";
 import { cotizacionesDeOportunidad } from "@/lib/cotizaciones/data";
 import { formatDia, formatFecha, formatImporte } from "@/lib/format";
+import { listarMuestras } from "@/lib/laboratorio/data";
 import {
   camposEtapa,
   ETAPAS,
@@ -62,6 +64,10 @@ export default async function OportunidadPage({
   const camposDeEtapa = camposEtapa(motivos);
   // Las cotizaciones son precios: solo para quien puede verlos.
   const vePrecios = tienePermiso(sesion, "precios.ver");
+  const muestras = tienePermiso(sesion, "laboratorio.ver")
+    ? await listarMuestras({ oportunidadId: o.id })
+    : null;
+  const registraMuestras = tienePermiso(sesion, "laboratorio.editar");
   const cotizaciones = vePrecios ? await cotizacionesDeOportunidad(o.id) : [];
   // Ganada = pendiente de contrato, hasta que el contrato exista (D11).
   const contrato =
@@ -290,6 +296,18 @@ export default async function OportunidadPage({
               </ul>
             )}
           </section>
+
+          {muestras ? (
+            <MuestrasSeccion
+              muestras={muestras}
+              nuevaHref={
+                registraMuestras
+                  ? `/laboratorio/muestras/nueva?oportunidad=${o.id}`
+                  : null
+              }
+              vacio="Aún no hay muestras de esta oportunidad. Las registra el laboratorio."
+            />
+          ) : null}
 
           {vePrecios ? (
             <section>

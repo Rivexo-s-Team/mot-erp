@@ -12,6 +12,7 @@ export type IconoMenu =
   | "inventario"
   | "documentos"
   | "cargos"
+  | "muestras"
   | "ordenes"
   | "agenda"
   | "campo"
@@ -90,6 +91,17 @@ const MENU: GrupoMenu[] = [
         label: "Documentos de acceso",
         icono: "documentos",
         permiso: "documentos_acceso.ver",
+      },
+    ],
+  },
+  {
+    titulo: "Laboratorio",
+    entradas: [
+      {
+        href: "/laboratorio/muestras",
+        label: "Muestras",
+        icono: "muestras",
+        permiso: "laboratorio.ver",
       },
     ],
   },
