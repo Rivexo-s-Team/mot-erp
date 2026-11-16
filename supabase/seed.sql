@@ -170,3 +170,17 @@ join public.equipos_cliente e on e.planta_id = c.planta_id and e.identificador =
 cross join (select id from public.robox where numero_serie = '545592') r
 cross join (select id from public.perfiles where correo = 'tecnico@mot.test') pf
 where c.notas = 'Contrato de ejemplo.';
+
+-- Documentos de acceso de ejemplo (fechas inventadas).
+insert into public.documentos_acceso (tipo_id, perfil_id, fecha_vencimiento, notas)
+select t.id, null, date '2027-06-30', 'Registro REPSE de ejemplo.'
+from public.tipos_documento_acceso t where t.nombre = 'REPSE';
+insert into public.documentos_acceso (tipo_id, perfil_id, fecha_vencimiento)
+select t.id, pf.id, null
+from public.tipos_documento_acceso t, public.perfiles pf
+where t.nombre like 'Equipo de protección%' and pf.correo = 'tecnico@mot.test';
+
+-- Requisito de acceso de la planta de ejemplo.
+insert into public.requisitos_planta (planta_id, categoria, nombre, detalle)
+select id, 'acceso_planta', 'Registro en caseta con identificación oficial', 'Llegar 15 minutos antes.'
+from public.plantas where nombre = 'BYPASA';
