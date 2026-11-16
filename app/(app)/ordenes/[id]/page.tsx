@@ -4,6 +4,7 @@ import { z } from "zod";
 import { AccesoPlanta } from "@/components/acceso-planta";
 import { CerrarOrden } from "@/components/cerrar-orden";
 import { PageHeader } from "@/components/layout/page-header";
+import { MuestrasSeccion } from "@/components/muestras-seccion";
 import { OrdenCaptura } from "@/components/orden-captura";
 import { OrdenEvidencias } from "@/components/orden-evidencias";
 import { EstadoOrdenBadge } from "@/components/orden-estado-badge";
@@ -18,6 +19,7 @@ import { requisitosDeAcceso, revisionDeAcceso } from "@/lib/acceso/data";
 import { porCompletar } from "@/lib/cargos/campos";
 import { listarCargos, ordenPermiteCargoAlCliente } from "@/lib/cargos/data";
 import { formatImporte } from "@/lib/format";
+import { listarMuestras } from "@/lib/laboratorio/data";
 import {
   catalogosCaptura,
   directorioTecnicos,
@@ -67,6 +69,13 @@ export default async function OrdenPage({
   const yaCobroMalUso = cargos.some(
     (c) => c.tipo === "partes_mal_uso" && c.estado !== "cancelado",
   );
+  // Muestras de aceite tomadas en esta visita.
+  const muestras =
+    o.cuenta_id && tienePermiso(sesion, "laboratorio.ver")
+      ? await listarMuestras({ ordenId: o.id })
+      : null;
+  const registraMuestras =
+    tienePermiso(sesion, "laboratorio.editar") && o.estado !== "cancelada";
   // Antes de la visita: requisitos de la planta y documentos de quienes van.
   const verAcceso =
     o.tipo === "visita" &&
@@ -315,6 +324,17 @@ export default async function OrdenPage({
                 ))}
               </ul>
             </section>
+          ) : null}
+          {muestras && (muestras.length > 0 || registraMuestras) ? (
+            <MuestrasSeccion
+              muestras={muestras}
+              nuevaHref={
+                registraMuestras
+                  ? `/laboratorio/muestras/nueva?orden=${o.id}`
+                  : null
+              }
+              vacio="Aún no se registran muestras de esta visita."
+            />
           ) : null}
           <OrdenEvidencias
             ordenId={o.id}
