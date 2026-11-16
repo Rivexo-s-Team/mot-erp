@@ -21,6 +21,7 @@ const DESCRIPCIONES: Record<string, string> = {
     "Existencia de partes y accesorios, con sus entradas y salidas.",
   "/documentos-acceso":
     "Documentos de MOT y de su personal para entrar a planta, con su vencimiento.",
+  "/cargos": "Lo que nace de las órdenes de servicio y falta facturar.",
   "/catalogos":
     "Aceites, parámetros de laboratorio, partes, actividades y fallas.",
   "/parametros":

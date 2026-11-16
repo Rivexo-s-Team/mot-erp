@@ -86,6 +86,7 @@ Para un cambio de esquema:
 - La ficha de cada Robox lleva sus filtros instalados y avisa cuando toca cambiarlos (a los 6 meses, o antes si la pantalla del Robox marca el filtro agotado). La lista de Flota marca los Robox con cambio pendiente.
 - La Agenda (`/agenda`) muestra las visitas programadas por día y las visitas recurrentes de cada contrato. Con "Programar" se crea la orden de servicio de la visita que toca.
 - Documentos de acceso (`/documentos-acceso`): los de MOT y de cada persona que entra a planta, con vencimiento y archivo. Los registran Dirección y Administración. Cada orden de visita muestra lo que pide la planta y si esos documentos están vigentes.
+- Cargos por facturar (`/cargos`): lo que nace de las órdenes (por ejemplo, los litros de una orden por evento) y falta cobrar. Los ven Dirección, Administración y Comercial; los capturan Dirección y Administración. El técnico no ve importes.
 - La flota de Robox (`/flota`) la ven todos los roles internos; la editan Dirección y Técnico. El número de serie no se repite entre equipos vigentes.
 - En la ficha de cada Robox se le asigna un contrato, se indican los tanques que atiende (carrusel) y se registran sus movimientos. Con eso el sistema calcula dónde está cada Robox.
 - Los contratos (`/contratos`) los ven todos los roles internos y los editan Dirección y Administración. Sus tarifas son precios: solo las ven Dirección, Comercial y Administración.

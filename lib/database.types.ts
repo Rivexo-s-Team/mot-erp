@@ -264,6 +264,89 @@ export type Database = {
         };
         Relationships: [];
       };
+      cargos: {
+        Row: {
+          cantidad: number | null;
+          concepto: string;
+          contrato_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          cuenta_id: string;
+          deleted_at: string | null;
+          estado: string;
+          id: string;
+          importe: number | null;
+          moneda: string;
+          notas: string | null;
+          orden_id: string | null;
+          precio_unitario: number | null;
+          tipo: string;
+          unidad: string | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          cantidad?: number | null;
+          concepto: string;
+          contrato_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id: string;
+          deleted_at?: string | null;
+          estado?: string;
+          id?: string;
+          importe?: never;
+          moneda?: string;
+          notas?: string | null;
+          orden_id?: string | null;
+          precio_unitario?: number | null;
+          tipo: string;
+          unidad?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          cantidad?: number | null;
+          concepto?: string;
+          contrato_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id?: string;
+          deleted_at?: string | null;
+          estado?: string;
+          id?: string;
+          importe?: never;
+          moneda?: string;
+          notas?: string | null;
+          orden_id?: string | null;
+          precio_unitario?: number | null;
+          tipo?: string;
+          unidad?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cargos_contrato_id_cuenta_id_fkey";
+            columns: ["contrato_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "contratos";
+            referencedColumns: ["id", "cuenta_id"];
+          },
+          {
+            foreignKeyName: "cargos_cuenta_id_fkey";
+            columns: ["cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cargos_orden_id_fkey";
+            columns: ["orden_id"];
+            isOneToOne: false;
+            referencedRelation: "ordenes_servicio";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       carrusel_equipos: {
         Row: {
           asignacion_id: string;

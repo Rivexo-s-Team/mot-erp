@@ -1,6 +1,6 @@
 -- Un usuario de cada rol ve solo lo que le corresponde.
 begin;
-select plan(47);
+select plan(49);
 
 -- Todo lo de la prueba vive en un esquema temporal y se deshace con el rollback.
 create schema pruebas;
@@ -85,6 +85,7 @@ select is(pruebas.cuenta('parametros_negocio'), (select n from pruebas.total_par
 select is(pruebas.cuenta('bitacora'), 0, 'administración no ve la bitácora');
 select ok(public.tiene_permiso('precios.ver'), 'administración ve precios');
 select ok(public.tiene_permiso('contratos.editar'), 'administración edita contratos');
+select ok(public.tiene_permiso('cargos.editar'), 'administración captura cargos');
 select ok(public.tiene_permiso('documentos_acceso.editar'), 'administración registra documentos de acceso');
 select ok(public.tiene_permiso('inventario.editar'), 'administración registra movimientos de inventario');
 select ok(public.tiene_permiso('ordenes.ver') and not public.tiene_permiso('ordenes.editar'), 'administración consulta órdenes pero no las llena');
@@ -95,6 +96,7 @@ select is(pruebas.cuenta('parametros_negocio'), 0, 'técnico no ve los parámetr
 select is(pruebas.cuenta('bitacora'), 0, 'técnico no ve la bitácora');
 select is(pruebas.cuenta('perfiles'), 1, 'técnico solo ve su perfil');
 select ok(not public.tiene_permiso('precios.ver'), 'técnico no ve precios');
+select ok(not public.tiene_permiso('cargos.ver'), 'técnico no ve cargos');
 select ok(public.tiene_permiso('documentos_acceso.ver') and not public.tiene_permiso('documentos_acceso.editar'), 'técnico consulta documentos de acceso pero no los registra');
 select ok(public.tiene_permiso('ordenes.editar') and not public.tiene_permiso('ordenes.administrar'), 'técnico llena órdenes pero no administra las de otros');
 select ok(public.tiene_permiso('contratos.ver') and not public.tiene_permiso('contratos.editar'), 'técnico consulta contratos pero no los edita');
