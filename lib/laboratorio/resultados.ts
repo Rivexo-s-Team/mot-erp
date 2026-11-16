@@ -22,6 +22,8 @@ export type ParametroLab = {
   limite_valor: number | null;
   limite_texto: string | null;
   activo: boolean;
+  /** Condición para la que cuenta un "no pasa": aceite, aditivos o ninguna. */
+  cuenta_para: string | null;
   en_basico: boolean;
   en_basico_mpc: boolean;
   en_extendido: boolean;

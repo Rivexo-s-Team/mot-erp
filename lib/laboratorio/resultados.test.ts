@@ -18,6 +18,7 @@ const p = (extra: Partial<ParametroLab>): ParametroLab => ({
   limite_valor: 500,
   limite_texto: null,
   activo: true,
+  cuenta_para: "aceite",
   en_basico: true,
   en_basico_mpc: true,
   en_extendido: true,
