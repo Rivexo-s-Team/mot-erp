@@ -1370,6 +1370,115 @@ export type Database = {
           },
         ];
       };
+      muestras: {
+        Row: {
+          condicion_operacion: string | null;
+          created_at: string;
+          created_by: string | null;
+          cuenta_id: string;
+          deleted_at: string | null;
+          equipo_cliente_id: string;
+          estado: string;
+          fecha_muestreo: string;
+          fecha_recepcion: string | null;
+          id: string;
+          id_caso: string | null;
+          id_muestra: string;
+          nivel_analisis: string | null;
+          notas: string | null;
+          oportunidad_id: string | null;
+          orden_id: string | null;
+          planta_id: string;
+          punto_muestreo: string | null;
+          tipo: string;
+          tomada_por: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          condicion_operacion?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id: string;
+          deleted_at?: string | null;
+          equipo_cliente_id: string;
+          estado?: string;
+          fecha_muestreo: string;
+          fecha_recepcion?: string | null;
+          id?: string;
+          id_caso?: string | null;
+          id_muestra: string;
+          nivel_analisis?: string | null;
+          notas?: string | null;
+          oportunidad_id?: string | null;
+          orden_id?: string | null;
+          planta_id: string;
+          punto_muestreo?: string | null;
+          tipo: string;
+          tomada_por?: string;
+          updated_at?: string;
+        };
+        Update: {
+          condicion_operacion?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id?: string;
+          deleted_at?: string | null;
+          equipo_cliente_id?: string;
+          estado?: string;
+          fecha_muestreo?: string;
+          fecha_recepcion?: string | null;
+          id?: string;
+          id_caso?: string | null;
+          id_muestra?: string;
+          nivel_analisis?: string | null;
+          notas?: string | null;
+          oportunidad_id?: string | null;
+          orden_id?: string | null;
+          planta_id?: string;
+          punto_muestreo?: string | null;
+          tipo?: string;
+          tomada_por?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "muestras_cuenta_id_fkey";
+            columns: ["cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "muestras_equipo_cliente_id_planta_id_fkey";
+            columns: ["equipo_cliente_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "equipos_cliente";
+            referencedColumns: ["id", "planta_id"];
+          },
+          {
+            foreignKeyName: "muestras_oportunidad_id_cuenta_id_fkey";
+            columns: ["oportunidad_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "oportunidades";
+            referencedColumns: ["id", "cuenta_id"];
+          },
+          {
+            foreignKeyName: "muestras_orden_id_cuenta_id_fkey";
+            columns: ["orden_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "ordenes_servicio";
+            referencedColumns: ["id", "cuenta_id"];
+          },
+          {
+            foreignKeyName: "muestras_planta_id_cuenta_id_fkey";
+            columns: ["planta_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "plantas";
+            referencedColumns: ["id", "cuenta_id"];
+          },
+        ];
+      };
       oportunidad_adjuntos: {
         Row: {
           created_at: string;

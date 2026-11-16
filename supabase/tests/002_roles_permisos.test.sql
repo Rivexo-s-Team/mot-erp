@@ -1,6 +1,6 @@
 -- Un usuario de cada rol ve solo lo que le corresponde.
 begin;
-select plan(49);
+select plan(51);
 
 -- Todo lo de la prueba vive en un esquema temporal y se deshace con el rollback.
 create schema pruebas;
@@ -100,6 +100,7 @@ select ok(not public.tiene_permiso('cargos.ver'), 'técnico no ve cargos');
 select ok(public.tiene_permiso('documentos_acceso.ver') and not public.tiene_permiso('documentos_acceso.editar'), 'técnico consulta documentos de acceso pero no los registra');
 select ok(public.tiene_permiso('ordenes.editar') and not public.tiene_permiso('ordenes.administrar'), 'técnico llena órdenes pero no administra las de otros');
 select ok(public.tiene_permiso('contratos.ver') and not public.tiene_permiso('contratos.editar'), 'técnico consulta contratos pero no los edita');
+select ok(public.tiene_permiso('laboratorio.ver') and not public.tiene_permiso('laboratorio.editar'), 'técnico consulta muestras pero no las registra');
 
 with cambio as (
   update public.perfiles set rol_id = (select public.mi_rol_id()), nombre = 'Otro'
@@ -117,6 +118,7 @@ select pruebas.entrar('laboratorio');
 select is(pruebas.cuenta('parametros_negocio'), 0, 'laboratorio no ve los parámetros');
 select ok(not public.tiene_permiso('precios.ver'), 'laboratorio no ve precios');
 select is(pruebas.cuenta('perfiles'), 1, 'laboratorio solo ve su perfil');
+select ok(public.tiene_permiso('laboratorio.editar'), 'laboratorio registra muestras');
 
 select pruebas.entrar('cliente');
 select is(pruebas.cuenta('parametros_negocio'), 0, 'cliente no ve los parámetros');

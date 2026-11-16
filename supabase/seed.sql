@@ -184,3 +184,23 @@ where t.nombre like 'Equipo de protección%' and pf.correo = 'tecnico@mot.test';
 insert into public.requisitos_planta (planta_id, categoria, nombre, detalle)
 select id, 'acceso_planta', 'Registro en caseta con identificación oficial', 'Llegar 15 minutos antes.'
 from public.plantas where nombre = 'BYPASA';
+
+-- Muestras del equipo 11B113 de Rassini, tal como aparecen en el informe
+-- FOLAB-26-092 (IDs, tipos, fechas de muestreo y niveles reales). La fecha de
+-- recepción no viene en el informe: se usa la de muestreo.
+insert into public.muestras
+  (id_muestra, cuenta_id, planta_id, equipo_cliente_id, id_caso, tipo, tomada_por,
+   fecha_muestreo, fecha_recepcion, nivel_analisis, estado, notas)
+select m.id_muestra, p.cuenta_id, p.id, e.id, 'RAS1-01', m.tipo, m.tomada_por,
+       m.fecha, m.fecha, m.nivel, 'concluida', m.notas
+from public.plantas p
+join public.equipos_cliente e on e.planta_id = p.id and e.identificador = '11B113'
+cross join (values
+  ('251106-329', 'virgen', 'mot', date '2025-11-06', 'premium', 'Aceite nuevo'),
+  ('251209-380', 'usado', 'mot', date '2025-12-16', 'premium', null),
+  ('260216-044', 'filtrado', 'mot', date '2026-02-16', 'basico_mpc', null),
+  ('260430-078', 'filtrado', 'mot', date '2026-04-30', 'basico_mpc', null),
+  ('260522-093', 'filtrado', 'mot', date '2026-05-22', 'basico_mpc', null),
+  ('260617-092', 'filtrado', 'cliente', date '2026-06-17', 'basico_mpc', 'Tomada por cliente')
+) as m (id_muestra, tipo, tomada_por, fecha, nivel, notas)
+where p.nombre = 'BYPASA';
