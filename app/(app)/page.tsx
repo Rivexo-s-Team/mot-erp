@@ -19,6 +19,8 @@ const DESCRIPCIONES: Record<string, string> = {
   "/flota": "Los Robox de MOT: número de serie, estado y datos del equipo.",
   "/inventario":
     "Existencia de partes y accesorios, con sus entradas y salidas.",
+  "/documentos-acceso":
+    "Documentos de MOT y de su personal para entrar a planta, con su vencimiento.",
   "/catalogos":
     "Aceites, parámetros de laboratorio, partes, actividades y fallas.",
   "/parametros":

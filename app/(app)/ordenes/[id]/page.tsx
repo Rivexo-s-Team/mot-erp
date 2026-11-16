@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
+import { AccesoPlanta } from "@/components/acceso-planta";
 import { CerrarOrden } from "@/components/cerrar-orden";
 import { PageHeader } from "@/components/layout/page-header";
 import { OrdenCaptura } from "@/components/orden-captura";
@@ -13,6 +14,7 @@ import { nombreEquipo } from "@/lib/flota/campos";
 import { formatDia, formatFecha } from "@/lib/format";
 import { accionesOrden, etiqueta, TIPOS_ORDEN } from "@/lib/ordenes/campos";
 import { faltantesParaCerrar } from "@/lib/ordenes/captura";
+import { requisitosDeAcceso, revisionDeAcceso } from "@/lib/acceso/data";
 import {
   catalogosCaptura,
   directorioTecnicos,
@@ -49,6 +51,23 @@ export default async function OrdenPage({
     evidenciasDeOrden(o.id),
   ]);
   const catalogos = hayCaptura ? await catalogosCaptura(captura) : null;
+  // Antes de la visita: requisitos de la planta y documentos de quienes van.
+  const verAcceso =
+    o.tipo === "visita" &&
+    o.planta_id !== null &&
+    (o.estado === "programada" || o.estado === "en_curso") &&
+    tienePermiso(sesion, "documentos_acceso.ver");
+  const acceso =
+    verAcceso && o.planta_id
+      ? await Promise.all([
+          requisitosDeAcceso(o.planta_id),
+          revisionDeAcceso(
+            o.acompanante_id
+              ? [o.tecnico_id, o.acompanante_id]
+              : [o.tecnico_id],
+          ),
+        ])
+      : null;
 
   const datos: [string, React.ReactNode][] = [
     ["Tipo", etiqueta(TIPOS_ORDEN, o.tipo)],
@@ -200,6 +219,9 @@ export default async function OrdenPage({
           </CardContent>
         </Card>
         <div className="space-y-6">
+          {acceso ? (
+            <AccesoPlanta requisitos={acceso[0]} documentos={acceso[1]} />
+          ) : null}
           {catalogos ? (
             <OrdenCaptura
               captura={captura}
