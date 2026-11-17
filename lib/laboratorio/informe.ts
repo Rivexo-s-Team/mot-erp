@@ -55,6 +55,12 @@ export type FilaInforme = {
   valores: ({ texto: string; veredicto: Veredicto } | null)[];
   /** Cambio de la última muestra contra su referencia, como fracción (-0.93 = -93 %). */
   desviacion: number | null;
+  /**
+   * Límites como números, para dibujarlos en la gráfica: uno si es máximo o
+   * mínimo, dos si es un rango. Los informes validados antes de que hubiera
+   * gráficas no lo traen.
+   */
+  limites?: number[];
 };
 
 export type ContenidoInforme = {
@@ -120,6 +126,41 @@ function textoLimite(p: ParametroLab, nominal: number | null): string | null {
 }
 
 /**
+ * Límites de un parámetro como números. El rango contra la muestra virgen es
+ * el que le toca a la última muestra del informe.
+ */
+function limitesNumericos(
+  p: ParametroLab,
+  nominal: number | null,
+  virgen: MuestraDeInforme | null,
+): number[] {
+  const n = p.limite_valor;
+  if (n === null) return [];
+  const rango = (centro: number, tolerancia: number) => [
+    Number((centro - tolerancia).toFixed(6)),
+    Number((centro + tolerancia).toFixed(6)),
+  ];
+  switch (p.tipo_regla) {
+    case "maximo":
+    case "minimo":
+      return [n];
+    case "nominal_pct":
+      return nominal === null ? [] : rango(nominal, (nominal * n) / 100);
+    case "linea_base_abs":
+    case "linea_base_pct": {
+      const base = leerValor(virgen?.resultados[p.id]);
+      if (base.numero === null || base.calificador) return [];
+      return rango(
+        base.numero,
+        p.tipo_regla === "linea_base_abs" ? n : (base.numero * n) / 100,
+      );
+    }
+    default:
+      return [];
+  }
+}
+
+/**
  * Cambio de la última muestra contra su referencia: la muestra de aceite usado
  * o la virgen, según el parámetro. Solo entre números exactos y con una
  * referencia distinta de cero.
@@ -172,6 +213,12 @@ export function armarInforme(datos: {
     return evaluarMuestra(datos.parametros, m.resultados, ctx, datos.umbrales);
   });
 
+  const ultimaMuestra = muestras.at(-1);
+  const virgenDeLaUltima =
+    ultimaMuestra && ultimaMuestra.tipo !== "virgen"
+      ? elegirVirgen(datos.virgenes, ultimaMuestra.fecha_muestreo)
+      : null;
+
   const grupos = GRUPOS_PARAMETRO.map((g) => ({
     grupo: g.value as string,
     titulo: g.label as string,
@@ -197,6 +244,7 @@ export function armarInforme(datos: {
             : null;
         }),
         desviacion: desviacion(p, muestras),
+        limites: limitesNumericos(p, datos.nominal, virgenDeLaUltima),
       })),
   })).filter((g) => g.filas.length > 0);
 
