@@ -1202,6 +1202,140 @@ export type Database = {
         };
         Relationships: [];
       };
+      informe_muestras: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          equipo_cliente_id: string;
+          informe_id: string;
+          muestra_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          equipo_cliente_id: string;
+          informe_id: string;
+          muestra_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          equipo_cliente_id?: string;
+          informe_id?: string;
+          muestra_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "informe_muestras_informe_id_equipo_cliente_id_fkey";
+            columns: ["informe_id", "equipo_cliente_id"];
+            isOneToOne: false;
+            referencedRelation: "informes";
+            referencedColumns: ["id", "equipo_cliente_id"];
+          },
+          {
+            foreignKeyName: "informe_muestras_muestra_id_equipo_cliente_id_fkey";
+            columns: ["muestra_id", "equipo_cliente_id"];
+            isOneToOne: false;
+            referencedRelation: "muestras";
+            referencedColumns: ["id", "equipo_cliente_id"];
+          },
+        ];
+      };
+      informes: {
+        Row: {
+          contenido: Json | null;
+          created_at: string;
+          created_by: string | null;
+          cuenta_id: string;
+          deleted_at: string | null;
+          elaboro_id: string | null;
+          equipo_cliente_id: string;
+          estado: string;
+          fecha_emision: string;
+          folio: string;
+          id: string;
+          observaciones: string | null;
+          planta_id: string;
+          updated_at: string;
+          validado_at: string | null;
+          valido_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          contenido?: Json | null;
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id: string;
+          deleted_at?: string | null;
+          elaboro_id?: string | null;
+          equipo_cliente_id: string;
+          estado?: string;
+          fecha_emision?: string;
+          folio: string;
+          id?: string;
+          observaciones?: string | null;
+          planta_id: string;
+          updated_at?: string;
+          validado_at?: string | null;
+          valido_id?: string | null;
+        };
+        Update: {
+          contenido?: Json | null;
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id?: string;
+          deleted_at?: string | null;
+          elaboro_id?: string | null;
+          equipo_cliente_id?: string;
+          estado?: string;
+          fecha_emision?: string;
+          folio?: string;
+          id?: string;
+          observaciones?: string | null;
+          planta_id?: string;
+          updated_at?: string;
+          validado_at?: string | null;
+          valido_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "informes_cuenta_id_fkey";
+            columns: ["cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "informes_elaboro_id_fkey";
+            columns: ["elaboro_id"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "informes_equipo_cliente_id_planta_id_fkey";
+            columns: ["equipo_cliente_id", "planta_id"];
+            isOneToOne: false;
+            referencedRelation: "equipos_cliente";
+            referencedColumns: ["id", "planta_id"];
+          },
+          {
+            foreignKeyName: "informes_planta_id_cuenta_id_fkey";
+            columns: ["planta_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "plantas";
+            referencedColumns: ["id", "cuenta_id"];
+          },
+          {
+            foreignKeyName: "informes_valido_id_fkey";
+            columns: ["valido_id"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       inventario_movimientos: {
         Row: {
           cantidad: number;

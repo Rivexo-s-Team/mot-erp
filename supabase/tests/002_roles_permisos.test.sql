@@ -1,6 +1,6 @@
 -- Un usuario de cada rol ve solo lo que le corresponde.
 begin;
-select plan(51);
+select plan(52);
 
 -- Todo lo de la prueba vive en un esquema temporal y se deshace con el rollback.
 create schema pruebas;
@@ -119,6 +119,7 @@ select is(pruebas.cuenta('parametros_negocio'), 0, 'laboratorio no ve los parám
 select ok(not public.tiene_permiso('precios.ver'), 'laboratorio no ve precios');
 select is(pruebas.cuenta('perfiles'), 1, 'laboratorio solo ve su perfil');
 select ok(public.tiene_permiso('laboratorio.editar'), 'laboratorio registra muestras');
+select ok(public.tiene_permiso('laboratorio.validar'), 'laboratorio valida informes');
 
 select pruebas.entrar('cliente');
 select is(pruebas.cuenta('parametros_negocio'), 0, 'cliente no ve los parámetros');
