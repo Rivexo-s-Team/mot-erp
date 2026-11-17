@@ -44,6 +44,7 @@ export async function GET(
       estado: informe.estado,
       fecha_emision: informe.fecha_emision,
       observaciones: informe.observaciones,
+      recomienda_cambio_filtro: informe.recomienda_cambio_filtro,
       cliente: informe.cuentas?.nombre ?? null,
       planta: informe.plantas?.nombre ?? null,
       direccion,

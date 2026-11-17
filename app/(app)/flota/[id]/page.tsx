@@ -20,6 +20,7 @@ import {
   carruselDeAsignacion,
   movimientosDeAsignacion,
   obtenerRobox,
+  recomendacionesDeLaboratorio,
   ubicaciones,
   ultimasLecturasDeFiltro,
 } from "@/lib/flota/data";
@@ -27,6 +28,7 @@ import {
   estadoFiltro,
   lecturaAgotada,
   lecturaVigente,
+  recomendacionVigente,
 } from "@/lib/flota/filtros";
 import { formatDia, formatFecha, hoyEnMexico } from "@/lib/format";
 import { deshacerUltimoMovimiento } from "../asignaciones-actions";
@@ -43,15 +45,15 @@ export default async function RoboxPage({ params }: PageProps<"/flota/[id]">) {
 
   const edita = tienePermiso(sesion, "flota.editar");
   const veContratos = tienePermiso(sesion, "contratos.ver");
-  const [ubicacion, asignaciones, filtros, lecturas, meses] = await Promise.all(
-    [
+  const [ubicacion, asignaciones, filtros, lecturas, meses, delLaboratorio] =
+    await Promise.all([
       ubicaciones({ roboxIds: [robox.id] }),
       asignacionesDeRobox(robox.id),
       filtrosDeRobox(robox.id),
       ultimasLecturasDeFiltro([robox.id]),
       mesesCambioFiltro(),
-    ],
-  );
+      recomendacionesDeLaboratorio([robox.id]),
+    ]);
   const hoy = hoyEnMexico();
   const instalados = filtros.filter((f) => f.fecha_retiro === null);
   const retirados = filtros.filter((f) => f.fecha_retiro !== null);
@@ -62,6 +64,13 @@ export default async function RoboxPage({ params }: PageProps<"/flota/[id]">) {
       lectura,
       instalados.map((f) => ({ fechaInstalacion: f.fecha_instalacion })),
     ) && lecturaAgotada(lectura);
+  // Lo que el laboratorio recomendó y aún no se atiende con un filtro nuevo.
+  const recomendaciones = (delLaboratorio.get(robox.id) ?? []).filter((r) =>
+    recomendacionVigente(
+      r,
+      instalados.map((f) => ({ fechaInstalacion: f.fecha_instalacion })),
+    ),
+  );
   // La ubicación se calcula de la asignación activa y el último movimiento.
   const actual = ubicacion.get(robox.id);
   const [carrusel, movimientos] = actual
@@ -242,6 +251,12 @@ export default async function RoboxPage({ params }: PageProps<"/flota/[id]">) {
                   {agotado ? " La pantalla ya lo marca agotado." : ""}
                 </p>
               ) : null}
+              {recomendaciones.map((r) => (
+                <p key={r.folio} className="font-medium text-destructive">
+                  El laboratorio recomienda cambiar el filtro: informe {r.folio}
+                  , equipo {r.equipo}, validado el {formatDia(r.fecha)}.
+                </p>
+              ))}
               {retirados.length > 0 ? (
                 <details>
                   <summary className="cursor-pointer text-muted-foreground">

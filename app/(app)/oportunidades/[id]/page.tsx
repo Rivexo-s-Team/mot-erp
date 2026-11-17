@@ -16,6 +16,7 @@ import { cotizacionesDeOportunidad } from "@/lib/cotizaciones/data";
 import { formatDia, formatFecha, formatImporte } from "@/lib/format";
 import { listarMuestras } from "@/lib/laboratorio/data";
 import {
+  avisoDeMuestras,
   camposEtapa,
   ETAPAS,
   etiqueta,
@@ -306,6 +307,7 @@ export default async function OportunidadPage({
                   : null
               }
               vacio="Aún no hay muestras de esta oportunidad. Las registra el laboratorio."
+              aviso={avisoDeMuestras(o.etapa, muestras)}
             />
           ) : null}
 
