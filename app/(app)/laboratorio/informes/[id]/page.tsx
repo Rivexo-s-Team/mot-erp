@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { z } from "zod";
 import { InformeAccion } from "@/components/informe-acciones";
+import { InformeGraficas } from "@/components/informe-graficas";
 import { InformeTendencias } from "@/components/informe-tendencias";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,7 @@ import { nombreEquipo } from "@/lib/flota/campos";
 import { formatDia, formatFecha } from "@/lib/format";
 import { contenidoDeInforme, obtenerInforme } from "@/lib/laboratorio/data";
 import { CONDICIONES } from "@/lib/laboratorio/evaluacion";
+import { seriesDeTendencia } from "@/lib/laboratorio/graficas";
 import { accionesInforme } from "@/lib/laboratorio/informe";
 import { directorioTecnicos } from "@/lib/ordenes/data";
 
@@ -32,6 +34,7 @@ export default async function InformePage({
     contenidoDeInforme(informe),
     directorioTecnicos(),
   ]);
+  const graficas = seriesDeTendencia(contenido);
   const acciones = accionesInforme(informe.estado);
   const edita = tienePermiso(sesion, "laboratorio.editar");
   const valida = tienePermiso(sesion, "laboratorio.validar");
@@ -179,6 +182,26 @@ export default async function InformePage({
             ))}
           </ul>
         </section>
+
+        {graficas.length > 0 ? (
+          <section>
+            <h2 className="mb-1 text-lg font-semibold tracking-tight">
+              Gráficas de tendencia
+            </h2>
+            <p className="mb-3 text-sm text-muted-foreground">
+              Una por parámetro, de la muestra más antigua a la más reciente.
+              Toca o pasa el cursor por un punto para ver su valor; los puntos
+              huecos en rojo no pasan.
+            </p>
+            <InformeGraficas
+              grupos={graficas}
+              muestras={contenido.muestras.map((m) => ({
+                idMuestra: m.idMuestra,
+                fecha: m.fecha,
+              }))}
+            />
+          </section>
+        ) : null}
       </div>
     </>
   );
