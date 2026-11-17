@@ -2,11 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { EstadoFacturaBadge } from "@/components/factura-estado-badge";
 import { PageHeader } from "@/components/layout/page-header";
+import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
-import { listarFacturas } from "@/lib/facturacion/data";
+import {
+  listarFacturas,
+  saldosDeFacturas,
+  type SaldoFactura,
+} from "@/lib/facturacion/data";
 import { ESTADOS_FACTURA, folioFactura } from "@/lib/facturacion/facturas";
+import { ESTADOS_COBRO, estadoCobro } from "@/lib/facturacion/pagos";
 import { formatDia, formatImporte } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Facturas" };
@@ -21,6 +27,9 @@ export default async function FacturasPage({
     : "";
   const edita = tienePermiso(sesion, "facturacion.editar");
   const facturas = await listarFacturas({ estado });
+  const saldos = await saldosDeFacturas(
+    facturas.filter((f) => f.estado === "emitida").map((f) => f.id),
+  );
   const filtros = [{ value: "", label: "Todas" }, ...ESTADOS_FACTURA];
 
   return (
@@ -89,8 +98,11 @@ export default async function FacturasPage({
                       : "conceptos"}{" "}
                     · total con IVA
                   </p>
-                  <div>
+                  <div className="flex flex-wrap gap-1">
                     <EstadoFacturaBadge estado={f.estado} />
+                    {saldos.has(f.id) ? (
+                      <CobroBadge saldo={saldos.get(f.id)} moneda={f.moneda} />
+                    ) : null}
                   </div>
                 </Card>
               </Link>
@@ -99,5 +111,22 @@ export default async function FacturasPage({
         </ul>
       )}
     </>
+  );
+}
+
+/** Cómo va el cobro de una factura emitida. */
+function CobroBadge({
+  saldo,
+  moneda,
+}: {
+  saldo: SaldoFactura | undefined;
+  moneda: string;
+}) {
+  if (!saldo) return null;
+  return (
+    <Badge variant={saldo.saldo <= 0 ? "outline" : "secondary"}>
+      {ESTADOS_COBRO[estadoCobro(saldo)]}
+      {saldo.saldo > 0 ? ` · saldo ${formatImporte(saldo.saldo, moneda)}` : ""}
+    </Badge>
   );
 }

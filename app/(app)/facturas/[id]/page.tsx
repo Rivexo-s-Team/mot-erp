@@ -5,6 +5,7 @@ import { z } from "zod";
 import { SubirArchivoFactura } from "@/components/factura-archivos";
 import { EstadoFacturaBadge } from "@/components/factura-estado-badge";
 import { PageHeader } from "@/components/layout/page-header";
+import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
@@ -18,6 +19,8 @@ import {
   conceptosDeFactura,
   creditoDeCuenta,
   obtenerFactura,
+  pagosDeFactura,
+  saldosDeFacturas,
 } from "@/lib/facturacion/data";
 import { totalDistinto } from "@/lib/facturacion/cfdi";
 import {
@@ -25,6 +28,7 @@ import {
   faltantesParaTimbrar,
   folioFactura,
 } from "@/lib/facturacion/facturas";
+import { ESTADOS_COBRO, estadoCobro } from "@/lib/facturacion/pagos";
 import { formatDia, formatFecha, formatImporte } from "@/lib/format";
 import { directorioTecnicos } from "@/lib/ordenes/data";
 import { quitarConcepto } from "../actions";
@@ -43,6 +47,12 @@ export default async function FacturaPage({
     creditoDeCuenta(f.cuenta_id),
     directorioTecnicos(),
   ]);
+  // Cobro: solo una factura emitida tiene saldo y pagos.
+  const emitida = f.estado === "emitida";
+  const [saldos, pagos] = emitida
+    ? await Promise.all([saldosDeFacturas([f.id]), pagosDeFactura(f.id)])
+    : [null, []];
+  const saldo = saldos?.get(f.id) ?? null;
   const acciones = accionesFactura(f.estado);
   const puede = tienePermiso(sesion, "facturacion.editar");
   const edita = puede && acciones.editar;
@@ -152,6 +162,14 @@ export default async function FacturaPage({
 
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <EstadoFacturaBadge estado={f.estado} />
+        {saldo ? (
+          <Badge variant={saldo.saldo <= 0 ? "outline" : "secondary"}>
+            {ESTADOS_COBRO[estadoCobro(saldo)]}
+            {saldo.saldo > 0
+              ? ` · saldo ${formatImporte(saldo.saldo, f.moneda)}`
+              : ""}
+          </Badge>
+        ) : null}
         {puede && acciones.emitir && conceptos.length > 0 ? (
           <Link
             href={`/facturas/${f.id}/emitir`}
@@ -358,8 +376,80 @@ export default async function FacturaPage({
             <dd className="text-right font-medium">
               {formatImporte(totales?.total ?? 0, f.moneda)}
             </dd>
+            {saldo ? (
+              <>
+                <dt className="text-muted-foreground">Pagado</dt>
+                <dd className="text-right">
+                  {formatImporte(saldo.pagado, f.moneda)}
+                </dd>
+                <dt className="font-medium">Saldo</dt>
+                <dd className="text-right font-medium">
+                  {formatImporte(saldo.saldo, f.moneda)}
+                </dd>
+              </>
+            ) : null}
           </dl>
         </section>
+
+        {emitida ? (
+          <section>
+            <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+              <h2 className="text-lg font-semibold tracking-tight">
+                Pagos
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  {pagos.length}
+                </span>
+              </h2>
+              {puede && saldo && saldo.saldo > 0 ? (
+                <Link
+                  href={`/pagos/nuevo?cuenta=${f.cuenta_id}`}
+                  className={buttonVariants({
+                    variant: "outline",
+                    size: "sm",
+                    className: "h-8",
+                  })}
+                >
+                  Registrar pago
+                </Link>
+              ) : null}
+            </div>
+            {pagos.length === 0 ? (
+              <Card className="px-4 py-6 text-center text-sm text-muted-foreground">
+                Aún no se le aplica ningún pago.
+              </Card>
+            ) : (
+              <ul className="space-y-2">
+                {pagos.map((a) => (
+                  <li key={a.id}>
+                    <Link href={`/pagos/${a.pago_id}`} className="block">
+                      <Card className="gap-1 px-4 py-3 transition-colors hover:border-primary/40 hover:bg-accent/40">
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <p className="text-sm font-medium">
+                            Pago del {a.pagos ? formatDia(a.pagos.fecha) : ""}
+                          </p>
+                          <p className="font-medium tabular-nums">
+                            {formatImporte(a.monto, f.moneda)}
+                          </p>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {a.pagos?.forma_pago
+                            ? etiqueta(FORMAS_PAGO, a.pagos.forma_pago)
+                            : ""}
+                          {a.pagos?.referencia
+                            ? ` · ${a.pagos.referencia}`
+                            : ""}
+                          {a.pagos?.rep_folio
+                            ? ` · complemento ${a.pagos.rep_folio}`
+                            : ""}
+                        </p>
+                      </Card>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ) : null}
       </div>
     </div>
   );
