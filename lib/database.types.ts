@@ -354,6 +354,13 @@ export type Database = {
             foreignKeyName: "cargos_factura_id_fkey";
             columns: ["factura_id"];
             isOneToOne: false;
+            referencedRelation: "factura_saldos";
+            referencedColumns: ["factura_id"];
+          },
+          {
+            foreignKeyName: "cargos_factura_id_fkey";
+            columns: ["factura_id"];
+            isOneToOne: false;
             referencedRelation: "factura_totales";
             referencedColumns: ["factura_id"];
           },
@@ -1248,6 +1255,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "cargos";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "factura_conceptos_factura_id_fkey";
+            columns: ["factura_id"];
+            isOneToOne: false;
+            referencedRelation: "factura_saldos";
+            referencedColumns: ["factura_id"];
           },
           {
             foreignKeyName: "factura_conceptos_factura_id_fkey";
@@ -2643,6 +2657,146 @@ export type Database = {
           },
         ];
       };
+      pago_aplicaciones: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          factura_id: string;
+          id: string;
+          monto: number;
+          pago_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          factura_id: string;
+          id?: string;
+          monto: number;
+          pago_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          factura_id?: string;
+          id?: string;
+          monto?: number;
+          pago_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "pago_aplicaciones_factura_id_fkey";
+            columns: ["factura_id"];
+            isOneToOne: false;
+            referencedRelation: "factura_saldos";
+            referencedColumns: ["factura_id"];
+          },
+          {
+            foreignKeyName: "pago_aplicaciones_factura_id_fkey";
+            columns: ["factura_id"];
+            isOneToOne: false;
+            referencedRelation: "factura_totales";
+            referencedColumns: ["factura_id"];
+          },
+          {
+            foreignKeyName: "pago_aplicaciones_factura_id_fkey";
+            columns: ["factura_id"];
+            isOneToOne: false;
+            referencedRelation: "facturas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pago_aplicaciones_pago_id_fkey";
+            columns: ["pago_id"];
+            isOneToOne: false;
+            referencedRelation: "pago_saldos";
+            referencedColumns: ["pago_id"];
+          },
+          {
+            foreignKeyName: "pago_aplicaciones_pago_id_fkey";
+            columns: ["pago_id"];
+            isOneToOne: false;
+            referencedRelation: "pagos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      pagos: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          cuenta_id: string;
+          deleted_at: string | null;
+          fecha: string;
+          forma_pago: string | null;
+          id: string;
+          moneda: string;
+          monto: number;
+          notas: string | null;
+          razon_social_id: string;
+          referencia: string | null;
+          rep_folio: string | null;
+          rep_uuid: string | null;
+          tipo_cambio: number | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id: string;
+          deleted_at?: string | null;
+          fecha: string;
+          forma_pago?: string | null;
+          id?: string;
+          moneda: string;
+          monto: number;
+          notas?: string | null;
+          razon_social_id: string;
+          referencia?: string | null;
+          rep_folio?: string | null;
+          rep_uuid?: string | null;
+          tipo_cambio?: number | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id?: string;
+          deleted_at?: string | null;
+          fecha?: string;
+          forma_pago?: string | null;
+          id?: string;
+          moneda?: string;
+          monto?: number;
+          notas?: string | null;
+          razon_social_id?: string;
+          referencia?: string | null;
+          rep_folio?: string | null;
+          rep_uuid?: string | null;
+          tipo_cambio?: number | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "pagos_cuenta_id_fkey";
+            columns: ["cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pagos_razon_social_id_cuenta_id_fkey";
+            columns: ["razon_social_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "razones_sociales";
+            referencedColumns: ["id", "cuenta_id"];
+          },
+        ];
+      };
       parametros_laboratorio: {
         Row: {
           activo: boolean;
@@ -3298,6 +3452,16 @@ export type Database = {
         ComputedFields: never;
         Relationships: [];
       };
+      factura_saldos: {
+        Row: {
+          factura_id: string;
+          pagado: number | null;
+          saldo: number | null;
+          total: number | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
       factura_totales: {
         Row: {
           conceptos: number | null;
@@ -3314,6 +3478,15 @@ export type Database = {
           existencia: number | null;
           parte_id: string;
           ultimo_movimiento: string | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
+      pago_saldos: {
+        Row: {
+          aplicado: number | null;
+          pago_id: string;
+          por_aplicar: number | null;
         };
         ComputedFields: never;
         Relationships: [];
@@ -3404,6 +3577,10 @@ export type Database = {
         Returns: string;
       };
       puede_llenar_orden: { Args: { p_orden: string }; Returns: boolean };
+      registrar_pago: {
+        Args: { p_aplicaciones: Json; p_datos: Json; p_razon_social: string };
+        Returns: string;
+      };
       rentas_del_mes: {
         Args: { p_periodo: string };
         Returns: {
