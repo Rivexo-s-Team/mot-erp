@@ -1,8 +1,9 @@
 import "server-only";
 import {
-  TIPOS_PERMITIDOS,
+  ARCHIVOS_GENERALES,
   validarArchivo,
   type MetaArchivo,
+  type TiposArchivo,
 } from "@/lib/archivos/config";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,10 +19,11 @@ export async function permisoTemporal(
   bucket: string,
   carpeta: string,
   meta: MetaArchivo,
+  aceptados: TiposArchivo = ARCHIVOS_GENERALES,
 ): Promise<Subida | { error: string }> {
-  const problema = validarArchivo(meta);
+  const problema = validarArchivo(meta, aceptados);
   if (problema) return { error: problema };
-  const ruta = `${carpeta}/${crypto.randomUUID()}.${TIPOS_PERMITIDOS[meta.tipo]}`;
+  const ruta = `${carpeta}/${crypto.randomUUID()}.${aceptados.tipos[meta.tipo]}`;
 
   // Con la sesión del usuario: Storage aplica sus políticas por rol.
   const supabase = await createClient();

@@ -14,10 +14,35 @@ export const ACEPTA = Object.keys(TIPOS_PERMITIDOS).join(",");
 
 export type MetaArchivo = { nombre: string; tipo: string; tamano: number };
 
+/** Tipos de archivo de una subida: los que acepta y cómo decirlo si llega otro. */
+export type TiposArchivo = {
+  tipos: Record<string, string>;
+  mensaje: string;
+};
+
+export const ARCHIVOS_GENERALES: TiposArchivo = {
+  tipos: TIPOS_PERMITIDOS,
+  mensaje: "Solo se aceptan PDF o imágenes (JPG, PNG, WEBP, HEIC).",
+};
+
+/** El XML de un CFDI. Los navegadores lo reportan de las dos maneras. */
+export const ARCHIVOS_XML: TiposArchivo = {
+  tipos: { "text/xml": "xml", "application/xml": "xml" },
+  mensaje: "Debe ser el archivo XML de la factura.",
+};
+
+export const ARCHIVOS_PDF: TiposArchivo = {
+  tipos: { "application/pdf": "pdf" },
+  mensaje: "Debe ser un archivo PDF.",
+};
+
 /** Devuelve el motivo por el que no se puede subir, o null si está bien. */
-export function validarArchivo(meta: MetaArchivo): string | null {
-  if (!(meta.tipo in TIPOS_PERMITIDOS)) {
-    return "Solo se aceptan PDF o imágenes (JPG, PNG, WEBP, HEIC).";
+export function validarArchivo(
+  meta: MetaArchivo,
+  aceptados: TiposArchivo = ARCHIVOS_GENERALES,
+): string | null {
+  if (!(meta.tipo in aceptados.tipos)) {
+    return aceptados.mensaje;
   }
   if (!Number.isFinite(meta.tamano) || meta.tamano <= 0)
     return "El archivo está vacío.";
@@ -42,6 +67,7 @@ export function formatTamano(bytes: number): string {
 }
 
 export const BUCKETS = {
+  factura: "facturas",
   adjunto: "adjuntos-oportunidades",
   comprobante: "comprobantes-precio",
   evidencia: "evidencias",
