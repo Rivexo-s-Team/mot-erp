@@ -278,8 +278,11 @@ export type Database = {
           importe: number | null;
           moneda: string;
           notas: string | null;
+          orden_compra_id: string | null;
           orden_id: string | null;
+          periodo: string | null;
           precio_unitario: number | null;
+          tarifa_id: string | null;
           tipo: string;
           unidad: string | null;
           updated_at: string;
@@ -298,8 +301,11 @@ export type Database = {
           importe?: never;
           moneda?: string;
           notas?: string | null;
+          orden_compra_id?: string | null;
           orden_id?: string | null;
+          periodo?: string | null;
           precio_unitario?: number | null;
+          tarifa_id?: string | null;
           tipo: string;
           unidad?: string | null;
           updated_at?: string;
@@ -317,8 +323,11 @@ export type Database = {
           importe?: never;
           moneda?: string;
           notas?: string | null;
+          orden_compra_id?: string | null;
           orden_id?: string | null;
+          periodo?: string | null;
           precio_unitario?: number | null;
+          tarifa_id?: string | null;
           tipo?: string;
           unidad?: string | null;
           updated_at?: string;
@@ -339,10 +348,24 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "cargos_orden_compra_id_fkey";
+            columns: ["orden_compra_id"];
+            isOneToOne: false;
+            referencedRelation: "ordenes_compra";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "cargos_orden_id_fkey";
             columns: ["orden_id"];
             isOneToOne: false;
             referencedRelation: "ordenes_servicio";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cargos_tarifa_id_fkey";
+            columns: ["tarifa_id"];
+            isOneToOne: false;
+            referencedRelation: "contrato_tarifas";
             referencedColumns: ["id"];
           },
         ];
@@ -3126,6 +3149,7 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: number;
       };
+      generar_rentas_mes: { Args: { p_periodo: string }; Returns: number };
       guardar_captura_orden: {
         Args: { p_captura: Json; p_orden: string };
         Returns: undefined;
@@ -3141,6 +3165,23 @@ export type Database = {
         Returns: string;
       };
       puede_llenar_orden: { Args: { p_orden: string }; Returns: boolean };
+      rentas_del_mes: {
+        Args: { p_periodo: string };
+        Returns: {
+          cargo_estado: string;
+          cargo_id: string;
+          concepto: string;
+          contrato_id: string;
+          cuenta: string;
+          cuenta_id: string;
+          moneda: string;
+          orden_compra_id: string;
+          parcial: boolean;
+          planta: string;
+          precio: number;
+          tarifa_id: string;
+        }[];
+      };
       siguiente_folio_cotizacion: {
         Args: Record<PropertyKey, never>;
         Returns: string;
