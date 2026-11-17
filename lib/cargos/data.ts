@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import type { RentaDelMes } from "./rentas";
 
 /** Lecturas de cargos. RLS: solo quien tiene cargos.ver y precios.ver. */
 
@@ -63,4 +64,14 @@ export async function partesDeOrden(ordenId: string): Promise<string[]> {
   return data
     .sort((a, b) => (a.partes?.orden ?? 0) - (b.partes?.orden ?? 0))
     .map((p) => `${p.partes?.nombre ?? "Parte"} (${p.cantidad})`);
+}
+
+/** Rentas que le tocan a un mes (su primer día), con el cargo que ya tengan. */
+export async function rentasDelMes(periodo: string): Promise<RentaDelMes[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("rentas_del_mes", {
+    p_periodo: periodo,
+  });
+  if (error) throw new Error("No se pudieron cargar las rentas del mes.");
+  return data;
 }
