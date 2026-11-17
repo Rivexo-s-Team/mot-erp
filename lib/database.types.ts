@@ -409,6 +409,77 @@ export type Database = {
           },
         ];
       };
+      condiciones_credito: {
+        Row: {
+          contacto_cxp_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          cuenta_id: string;
+          dias_credito: number;
+          forma_pago: string | null;
+          id: string | null;
+          metodo_pago: string | null;
+          notas: string | null;
+          portal: string | null;
+          razon_social_id: string;
+          requiere_orden_compra: boolean;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          contacto_cxp_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id: string;
+          dias_credito?: number;
+          forma_pago?: string | null;
+          id?: never;
+          metodo_pago?: string | null;
+          notas?: string | null;
+          portal?: string | null;
+          razon_social_id: string;
+          requiere_orden_compra?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          contacto_cxp_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id?: string;
+          dias_credito?: number;
+          forma_pago?: string | null;
+          id?: never;
+          metodo_pago?: string | null;
+          notas?: string | null;
+          portal?: string | null;
+          razon_social_id?: string;
+          requiere_orden_compra?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "condiciones_credito_contacto_cxp_id_cuenta_id_fkey";
+            columns: ["contacto_cxp_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "contactos";
+            referencedColumns: ["id", "cuenta_id"];
+          },
+          {
+            foreignKeyName: "condiciones_credito_cuenta_id_fkey";
+            columns: ["cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "condiciones_credito_razon_social_id_cuenta_id_fkey";
+            columns: ["razon_social_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "razones_sociales";
+            referencedColumns: ["id", "cuenta_id"];
+          },
+        ];
+      };
       contactos: {
         Row: {
           area: string;
