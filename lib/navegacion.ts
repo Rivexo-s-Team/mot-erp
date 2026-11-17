@@ -13,6 +13,7 @@ export type IconoMenu =
   | "documentos"
   | "cargos"
   | "muestras"
+  | "informes"
   | "ordenes"
   | "agenda"
   | "campo"
@@ -101,6 +102,12 @@ const MENU: GrupoMenu[] = [
         href: "/laboratorio/muestras",
         label: "Muestras",
         icono: "muestras",
+        permiso: "laboratorio.ver",
+      },
+      {
+        href: "/laboratorio/informes",
+        label: "Informes",
+        icono: "informes",
         permiso: "laboratorio.ver",
       },
     ],
