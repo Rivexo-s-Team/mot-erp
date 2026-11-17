@@ -34,6 +34,7 @@ describe("menuPara", () => {
       "/inventario",
       "/documentos-acceso",
       "/laboratorio/muestras",
+      "/laboratorio/informes",
       "/cargos",
       "/catalogos",
       "/parametros",

@@ -251,3 +251,20 @@ cross join lateral (values
 ) as v (id_muestra, valor)
 join public.muestras m on m.id_muestra = v.id_muestra
 where v.valor is not null;
+
+-- Informe en borrador del equipo 11B113 con sus seis muestras, para compararlo
+-- contra el FOLAB-26-092 real. Las observaciones son de ejemplo.
+with informe as (
+  insert into public.informes (folio, cuenta_id, planta_id, equipo_cliente_id, fecha_emision, observaciones, elaboro_id)
+  select 'FOLAB-26-092', p.cuenta_id, p.id, e.id, date '2026-07-15',
+         'Observaciones de ejemplo: el código de limpieza ya está dentro del límite.',
+         (select id from public.perfiles where correo = 'laboratorio@mot.test')
+  from public.plantas p
+  join public.equipos_cliente e on e.planta_id = p.id and e.identificador = '11B113'
+  where p.nombre = 'BYPASA'
+  returning id, equipo_cliente_id
+)
+insert into public.informe_muestras (informe_id, muestra_id, equipo_cliente_id)
+select i.id, m.id, i.equipo_cliente_id
+from informe i
+join public.muestras m on m.equipo_cliente_id = i.equipo_cliente_id;

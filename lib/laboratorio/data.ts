@@ -2,6 +2,12 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { ESTADOS_EN_PROCESO, type OpcionesMuestra } from "./muestras";
 import type { ContextoMuestra, Umbrales } from "./evaluacion";
+import {
+  armarInforme,
+  type ContenidoInforme,
+  type MuestraDeInforme,
+  type ParametroInforme,
+} from "./informe";
 import type { ParametroLab } from "./resultados";
 
 /** Lecturas de muestras. RLS: quien tiene laboratorio.ver. */
@@ -172,4 +178,97 @@ export async function contextoDeMuestra(m: Muestra): Promise<ContextoMuestra> {
         }
       : null,
   };
+}
+
+// Informes -----------------------------------------------------------------------
+
+const COLUMNAS_INFORME =
+  "id, folio, cuenta_id, planta_id, equipo_cliente_id, estado, fecha_emision, observaciones, elaboro_id, valido_id, validado_at, contenido, created_at, cuentas (nombre), plantas (nombre), equipos_cliente (identificador, alias, aceites (marca, nombre_comercial, viscosidad_nominal_40c)), informe_muestras (muestra_id)";
+
+export async function listarInformes(filtro: { estado?: string }) {
+  const supabase = await createClient();
+  let query = supabase
+    .from("informes")
+    .select(COLUMNAS_INFORME)
+    .is("deleted_at", null)
+    .order("fecha_emision", { ascending: false })
+    .order("folio", { ascending: false });
+  if (filtro.estado) query = query.eq("estado", filtro.estado);
+  const { data, error } = await query;
+  if (error) throw new Error("No se pudieron cargar los informes.");
+  return data;
+}
+
+export type Informe = Awaited<ReturnType<typeof listarInformes>>[number];
+
+export async function obtenerInforme(id: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("informes")
+    .select(COLUMNAS_INFORME)
+    .eq("id", id)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (error) throw new Error("No se pudo cargar el informe.");
+  return data;
+}
+
+/** Muestras de un equipo (sin las canceladas) con sus resultados, de la más antigua a la más reciente. */
+export async function muestrasDeEquipo(
+  equipoId: string,
+): Promise<MuestraDeInforme[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("muestras")
+    .select(
+      "id, id_muestra, tipo, fecha_muestreo, nivel_analisis, notas, muestra_resultados (parametro_id, valor_texto)",
+    )
+    .eq("equipo_cliente_id", equipoId)
+    .neq("estado", "cancelada")
+    .is("deleted_at", null)
+    .order("fecha_muestreo")
+    .order("id_muestra");
+  if (error) throw new Error("No se pudieron cargar las muestras del equipo.");
+  return data.map(({ muestra_resultados, ...m }) => ({
+    ...m,
+    resultados: Object.fromEntries(
+      muestra_resultados.map((r) => [r.parametro_id, r.valor_texto]),
+    ),
+  }));
+}
+
+/** Catálogo de parámetros con lo que el informe necesita además de la captura. */
+export async function listarParametrosInforme(): Promise<ParametroInforme[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("parametros_laboratorio")
+    .select(`${COLUMNAS_PARAMETRO}, base_comparacion`)
+    .order("orden")
+    .order("nombre");
+  if (error) throw new Error("No se pudieron cargar los parámetros.");
+  return data as unknown as ParametroInforme[];
+}
+
+/**
+ * Lo que dice un informe. Validado: la copia fija que se guardó al validarlo.
+ * En borrador: se calcula con los resultados y límites de este momento.
+ */
+export async function contenidoDeInforme(
+  informe: Informe,
+): Promise<ContenidoInforme> {
+  if (informe.estado === "validado" && informe.contenido)
+    return informe.contenido as unknown as ContenidoInforme;
+  const [delEquipo, parametros, umbrales] = await Promise.all([
+    muestrasDeEquipo(informe.equipo_cliente_id),
+    listarParametrosInforme(),
+    umbralesCondicion(),
+  ]);
+  const incluidas = new Set(informe.informe_muestras.map((m) => m.muestra_id));
+  return armarInforme({
+    parametros,
+    muestras: delEquipo.filter((m) => incluidas.has(m.id)),
+    virgenes: delEquipo.filter((m) => m.tipo === "virgen"),
+    nominal: informe.equipos_cliente?.aceites?.viscosidad_nominal_40c ?? null,
+    umbrales,
+  });
 }
