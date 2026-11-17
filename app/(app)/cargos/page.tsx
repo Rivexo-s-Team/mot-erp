@@ -33,6 +33,7 @@ export default async function CargosPage({
         ? String(estadoParam)
         : "pendiente";
   const edita = tienePermiso(sesion, "cargos.editar");
+  const veFacturas = tienePermiso(sesion, "facturacion.ver");
 
   const [cargos, pendientes] = await Promise.all([
     listarCargos({ estado }),
@@ -126,6 +127,9 @@ export default async function CargosPage({
                   · {formatFecha(c.created_at)}
                 </p>
                 <div className="flex flex-wrap gap-1">
+                  {c.factura_id ? (
+                    <Badge variant="secondary">En una factura</Badge>
+                  ) : null}
                   {porCompletar(c) && c.estado === "pendiente" ? (
                     <Badge variant="destructive">Por completar</Badge>
                   ) : null}
@@ -139,7 +143,14 @@ export default async function CargosPage({
             );
             return (
               <li key={c.id}>
-                {edita && c.estado !== "facturado" ? (
+                {c.factura_id && veFacturas ? (
+                  <Link
+                    href={`/facturas/${c.factura_id}`}
+                    className="block h-full"
+                  >
+                    {tarjeta}
+                  </Link>
+                ) : edita && c.estado !== "facturado" && !c.factura_id ? (
                   <Link href={`/cargos/${c.id}`} className="block h-full">
                     {tarjeta}
                   </Link>
