@@ -272,3 +272,39 @@ export async function contenidoDeInforme(
     umbrales,
   });
 }
+
+/** Datos del equipo que imprime el informe. */
+export async function equipoParaInformePdf(equipoId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("equipos_cliente")
+    .select(
+      "identificador, alias, aplicacion, volumen_reservorio_l, aceites (marca, nombre_comercial)",
+    )
+    .eq("id", equipoId)
+    .maybeSingle();
+  if (error) throw new Error("No se pudo cargar el equipo.");
+  if (!data) return null;
+  return {
+    identificador: data.identificador,
+    alias: data.alias,
+    aplicacion: data.aplicacion,
+    volumen_reservorio_l: data.volumen_reservorio_l,
+    aceite: data.aceites
+      ? `${data.aceites.marca} ${data.aceites.nombre_comercial}`
+      : null,
+  };
+}
+
+/** ID de caso de una muestra (el que va en el frasco). */
+export async function idCasoDeMuestra(
+  muestraId: string,
+): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("muestras")
+    .select("id_caso")
+    .eq("id", muestraId)
+    .maybeSingle();
+  return data?.id_caso ?? null;
+}
