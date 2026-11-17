@@ -189,3 +189,137 @@ export async function razonesParaFacturar(cuentaId: string) {
   if (error) throw new Error("No se pudieron cargar las razones sociales.");
   return data;
 }
+
+// Pagos --------------------------------------------------------------------------
+
+export type SaldoFactura = { total: number; pagado: number; saldo: number };
+
+/** Total, pagado y saldo de varias facturas (vista `factura_saldos`). */
+export async function saldosDeFacturas(
+  ids: string[],
+): Promise<Map<string, SaldoFactura>> {
+  if (ids.length === 0) return new Map();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("factura_saldos")
+    .select("factura_id, total, pagado, saldo")
+    .in("factura_id", ids);
+  if (error) throw new Error("No se pudieron cargar los saldos.");
+  return new Map(
+    data.map((s) => [
+      s.factura_id ?? "",
+      { total: s.total ?? 0, pagado: s.pagado ?? 0, saldo: s.saldo ?? 0 },
+    ]),
+  );
+}
+
+/**
+ * Facturas emitidas con saldo: las que se pueden pagar. De un cliente, o de
+ * todos (para saber quién debe algo).
+ */
+export async function facturasPorCobrar(cuentaId?: string) {
+  const supabase = await createClient();
+  let query = supabase
+    .from("facturas")
+    .select(
+      "id, cuenta_id, razon_social_id, fecha, moneda, serie, folio, dias_credito, metodo_pago, cuentas (nombre), razones_sociales (razon_social, rfc)",
+    )
+    .eq("estado", "emitida")
+    .is("deleted_at", null)
+    .order("fecha")
+    .order("folio");
+  if (cuentaId) query = query.eq("cuenta_id", cuentaId);
+  const { data, error } = await query;
+  if (error) throw new Error("No se pudieron cargar las facturas.");
+  const saldos = await saldosDeFacturas(data.map((f) => f.id));
+  return data
+    .map((f) => ({
+      ...f,
+      saldos: saldos.get(f.id) ?? { total: 0, pagado: 0, saldo: 0 },
+    }))
+    .filter((f) => f.saldos.saldo > 0);
+}
+
+const COLUMNAS_PAGO =
+  "id, cuenta_id, razon_social_id, fecha, monto, moneda, tipo_cambio, forma_pago, referencia, notas, rep_folio, rep_uuid, created_at, created_by, cuentas (nombre), razones_sociales (razon_social, rfc)";
+
+type SaldoPago = { aplicado: number; por_aplicar: number };
+
+async function conSaldoDePago<T extends { id: string; monto: number }>(
+  pagos: T[],
+): Promise<(T & { saldos: SaldoPago })[]> {
+  if (pagos.length === 0) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("pago_saldos")
+    .select("pago_id, aplicado, por_aplicar")
+    .in(
+      "pago_id",
+      pagos.map((p) => p.id),
+    );
+  if (error) throw new Error("No se pudieron cargar los pagos.");
+  const porPago = new Map(
+    data.map((s) => [
+      s.pago_id,
+      { aplicado: s.aplicado ?? 0, por_aplicar: s.por_aplicar ?? 0 },
+    ]),
+  );
+  return pagos.map((p) => ({
+    ...p,
+    saldos: porPago.get(p.id) ?? { aplicado: 0, por_aplicar: p.monto },
+  }));
+}
+
+export async function listarPagos() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("pagos")
+    .select(COLUMNAS_PAGO)
+    .is("deleted_at", null)
+    .order("fecha", { ascending: false })
+    .order("created_at", { ascending: false });
+  if (error) throw new Error("No se pudieron cargar los pagos.");
+  return conSaldoDePago(data);
+}
+
+export type Pago = Awaited<ReturnType<typeof listarPagos>>[number];
+
+export async function obtenerPago(id: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("pagos")
+    .select(COLUMNAS_PAGO)
+    .eq("id", id)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (error) throw new Error("No se pudo cargar el pago.");
+  return data ? ((await conSaldoDePago([data]))[0] ?? null) : null;
+}
+
+/** A qué facturas se aplicó un pago. */
+export async function aplicacionesDePago(pagoId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("pago_aplicaciones")
+    .select(
+      "id, factura_id, monto, facturas (serie, folio, fecha, metodo_pago, moneda)",
+    )
+    .eq("pago_id", pagoId)
+    .order("created_at");
+  if (error) throw new Error("No se pudieron cargar las aplicaciones.");
+  return data;
+}
+
+/** Qué pagos se le han aplicado a una factura. */
+export async function pagosDeFactura(facturaId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("pago_aplicaciones")
+    .select(
+      "id, pago_id, monto, pagos (fecha, forma_pago, referencia, rep_folio)",
+    )
+    .eq("factura_id", facturaId)
+    .order("created_at");
+  if (error) throw new Error("No se pudieron cargar los pagos de la factura.");
+  return data;
+}
