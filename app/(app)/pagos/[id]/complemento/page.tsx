@@ -23,12 +23,13 @@ export default async function ComplementoPage({
   return (
     <div className="mx-auto max-w-xl">
       <PageHeader
-        title="Complemento de pago"
+        title={p.anticipo_factura_id ? "CFDI de egreso" : "Complemento de pago"}
         description={`${p.razones_sociales?.razon_social ?? ""} · ${formatImporte(p.monto, p.moneda)} · ${formatDia(p.fecha)}`}
       />
       <p className="mb-4 text-sm text-muted-foreground">
-        Por ahora el complemento (REP) se timbra fuera del sistema. Captura aquí
-        su folio y su folio fiscal para dejar constancia.
+        {p.anticipo_factura_id
+          ? "Al aplicar un anticipo se emite un CFDI de egreso. Por ahora se timbra fuera del sistema; captura aquí su folio y su folio fiscal."
+          : "Por ahora el complemento (REP) se timbra fuera del sistema. Captura aquí su folio y su folio fiscal para dejar constancia."}
       </p>
       <Card>
         <CardContent>

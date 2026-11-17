@@ -140,3 +140,12 @@ export const CAMPOS_COMPLEMENTO: Campo[] = [
  */
 export const requiereComplemento = (metodosDeFacturas: (string | null)[]) =>
   metodosDeFacturas.includes("PPD");
+
+/** Forma "30" del SAT: el pago no es dinero nuevo, sale de un anticipo. */
+export const FORMA_ANTICIPO = "30";
+
+/** Nombre de la forma de pago, incluida la aplicación de anticipos. */
+export const nombreFormaPago = (clave: string | null) =>
+  clave === FORMA_ANTICIPO
+    ? "30 · Aplicación de anticipos"
+    : (FORMAS_PAGO.find((f) => f.value === clave)?.label ?? clave ?? "—");

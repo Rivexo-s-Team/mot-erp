@@ -155,6 +155,12 @@ export function camposTarifa(
       tipo: "numero",
     },
     {
+      name: "es_anticipo",
+      label:
+        "Es un anticipo (pago único que después se descuenta de otras facturas)",
+      tipo: "casilla",
+    },
+    {
       name: "equipo_cliente_id",
       label: "Equipo del cliente",
       tipo: "referencia",

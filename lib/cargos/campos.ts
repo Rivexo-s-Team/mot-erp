@@ -5,6 +5,8 @@ import type { Campo, Opcion } from "@/lib/forms/campos";
 
 export const TIPOS_CARGO: Opcion[] = [
   { value: "renta", label: "Renta mensual" },
+  { value: "anticipo", label: "Anticipo" },
+  { value: "pago_unico", label: "Pago único del contrato" },
   { value: "evento_litro", label: "Evento por litro" },
   { value: "partes_mal_uso", label: "Partes dañadas por el cliente" },
   { value: "servicio", label: "Servicio" },
@@ -13,10 +15,11 @@ export const TIPOS_CARGO: Opcion[] = [
 ];
 
 /**
- * Tipos que genera el sistema: la renta (al generar las rentas del mes) y el
- * cargo por litros (al cerrar la orden). A mano se capturan los demás.
+ * Tipos que genera el sistema: la renta (al generar las rentas del mes), el
+ * pago único del contrato (desde su ficha) y el cargo por litros (al cerrar la
+ * orden). A mano se capturan los demás, incluido un anticipo fuera de contrato.
  */
-export const TIPOS_GENERADOS = ["renta", "evento_litro"];
+export const TIPOS_GENERADOS = ["renta", "pago_unico", "evento_litro"];
 export const TIPOS_CARGO_MANUAL = TIPOS_CARGO.filter(
   (t) => !TIPOS_GENERADOS.includes(t.value),
 );

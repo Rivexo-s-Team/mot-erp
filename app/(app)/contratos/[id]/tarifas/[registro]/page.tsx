@@ -56,6 +56,7 @@ export default async function TarifaPage({
       concepto: tarifa.concepto,
       unidad: tarifa.unidad,
       precio: tarifa.precio,
+      es_anticipo: tarifa.es_anticipo,
       equipo_cliente_id: tarifa.equipo_cliente_id,
       orden_compra_id: tarifa.orden_compra_id,
       orden: tarifa.orden,

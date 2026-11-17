@@ -174,6 +174,8 @@ export async function guardarTarifa(
   const parsed = esquemaCampos(campos).safeParse(valores);
   if (!parsed.success) return { error: "Revisa los datos del formulario." };
 
+  if (parsed.data.es_anticipo === true && parsed.data.unidad !== "unico")
+    return { error: "Solo un pago único puede ser anticipo." };
   const fila = aFila(campos, parsed.data, id !== null);
   const t = await tabla("contrato_tarifas");
   const { data, error } = id
@@ -277,4 +279,25 @@ export async function eliminarOrdenCompra(
 
   revalidatePath(`/contratos/${contratoId}`);
   redirect(`/contratos/${contratoId}`);
+}
+
+/**
+ * Genera el cargo de un pago único del contrato (anticipo, instalación). Lo
+ * pide quien captura cargos; la base no deja generarlo dos veces.
+ */
+export async function generarCargoUnico(
+  contratoId: string,
+  tarifaId: string,
+): Promise<void> {
+  await requirePermiso("cargos.editar");
+  if (!esId(contratoId) || !esId(tarifaId)) return;
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("generar_cargo_unico", {
+    p_tarifa: tarifaId,
+  });
+  revalidatePath(`/contratos/${contratoId}`);
+  revalidatePath("/cargos");
+  redirect(
+    `/contratos/${contratoId}${error ? `?error=${encodeURIComponent(error.code === "P0001" ? error.message : "No se pudo generar el cargo.")}` : ""}`,
+  );
 }

@@ -20,6 +20,7 @@ import type { ActionResult } from "@/lib/auth/schemas";
 import { requirePermiso } from "@/lib/auth/session";
 import { leerCfdi, problemaConCfdi } from "@/lib/facturacion/cfdi";
 import { obtenerFactura } from "@/lib/facturacion/data";
+import { esImporte } from "@/lib/facturacion/pagos";
 import {
   accionesFactura,
   CAMPOS_CANCELACION,
@@ -317,4 +318,37 @@ export async function registrarArchivoFactura(
   if (error || !data?.[0])
     return { error: "El archivo se subió, pero no se pudo registrar." };
   refrescar(id);
+}
+
+/**
+ * Descuenta de una factura parte de un anticipo que el cliente ya pagó. La
+ * base revisa que alcance lo disponible y el saldo de la factura.
+ */
+export async function aplicarAnticipo(
+  facturaId: string,
+  formulario: FormData,
+): Promise<void> {
+  await requirePermiso("facturacion.editar");
+  if (!esId(facturaId)) redirect("/facturas");
+  const volver = (motivo?: string) =>
+    redirect(
+      `/facturas/${facturaId}${motivo ? `?error=${encodeURIComponent(motivo)}` : ""}`,
+    );
+  const anticipo = formulario.get("anticipo");
+  const monto = String(formulario.get("monto") ?? "").trim();
+  if (!esId(anticipo)) return volver("Elige el anticipo.");
+  if (!esImporte(monto))
+    return volver("Escribe el monto a aplicar, por ejemplo 348.00.");
+
+  const supabase = (await createClient()) as unknown as SupabaseClient;
+  const { error } = await supabase.rpc("aplicar_anticipo", {
+    p_anticipo: anticipo,
+    p_factura: facturaId,
+    p_monto: monto,
+    p_fecha: hoyEnMexico(),
+  });
+  refrescar(facturaId);
+  revalidatePath("/pagos");
+  revalidatePath("/facturas", "layout");
+  return volver(error ? mensajeError(error) : undefined);
 }

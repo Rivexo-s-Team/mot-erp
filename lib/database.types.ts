@@ -354,6 +354,13 @@ export type Database = {
             foreignKeyName: "cargos_factura_id_fkey";
             columns: ["factura_id"];
             isOneToOne: false;
+            referencedRelation: "anticipo_saldos";
+            referencedColumns: ["factura_id"];
+          },
+          {
+            foreignKeyName: "cargos_factura_id_fkey";
+            columns: ["factura_id"];
+            isOneToOne: false;
             referencedRelation: "factura_saldos";
             referencedColumns: ["factura_id"];
           },
@@ -608,6 +615,7 @@ export type Database = {
           created_by: string | null;
           deleted_at: string | null;
           equipo_cliente_id: string | null;
+          es_anticipo: boolean;
           id: string;
           notas: string | null;
           orden: number;
@@ -625,6 +633,7 @@ export type Database = {
           created_by?: string | null;
           deleted_at?: string | null;
           equipo_cliente_id?: string | null;
+          es_anticipo?: boolean;
           id?: string;
           notas?: string | null;
           orden?: number;
@@ -641,6 +650,7 @@ export type Database = {
           created_by?: string | null;
           deleted_at?: string | null;
           equipo_cliente_id?: string | null;
+          es_anticipo?: boolean;
           id?: string;
           notas?: string | null;
           orden?: number;
@@ -1260,6 +1270,13 @@ export type Database = {
             foreignKeyName: "factura_conceptos_factura_id_fkey";
             columns: ["factura_id"];
             isOneToOne: false;
+            referencedRelation: "anticipo_saldos";
+            referencedColumns: ["factura_id"];
+          },
+          {
+            foreignKeyName: "factura_conceptos_factura_id_fkey";
+            columns: ["factura_id"];
+            isOneToOne: false;
             referencedRelation: "factura_saldos";
             referencedColumns: ["factura_id"];
           },
@@ -1290,6 +1307,7 @@ export type Database = {
           dias_credito: number;
           emitida_at: string | null;
           emitida_por: string | null;
+          es_anticipo: boolean;
           estado: string;
           fecha: string;
           folio: string | null;
@@ -1322,6 +1340,7 @@ export type Database = {
           dias_credito?: number;
           emitida_at?: string | null;
           emitida_por?: string | null;
+          es_anticipo?: boolean;
           estado?: string;
           fecha?: string;
           folio?: string | null;
@@ -1353,6 +1372,7 @@ export type Database = {
           dias_credito?: number;
           emitida_at?: string | null;
           emitida_por?: string | null;
+          es_anticipo?: boolean;
           estado?: string;
           fecha?: string;
           folio?: string | null;
@@ -2691,6 +2711,13 @@ export type Database = {
             foreignKeyName: "pago_aplicaciones_factura_id_fkey";
             columns: ["factura_id"];
             isOneToOne: false;
+            referencedRelation: "anticipo_saldos";
+            referencedColumns: ["factura_id"];
+          },
+          {
+            foreignKeyName: "pago_aplicaciones_factura_id_fkey";
+            columns: ["factura_id"];
+            isOneToOne: false;
             referencedRelation: "factura_saldos";
             referencedColumns: ["factura_id"];
           },
@@ -2726,6 +2753,7 @@ export type Database = {
       };
       pagos: {
         Row: {
+          anticipo_factura_id: string | null;
           created_at: string;
           created_by: string | null;
           cuenta_id: string;
@@ -2745,6 +2773,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          anticipo_factura_id?: string | null;
           created_at?: string;
           created_by?: string | null;
           cuenta_id: string;
@@ -2763,6 +2792,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          anticipo_factura_id?: string | null;
           created_at?: string;
           created_by?: string | null;
           cuenta_id?: string;
@@ -2781,6 +2811,34 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "pagos_anticipo_factura_id_fkey";
+            columns: ["anticipo_factura_id"];
+            isOneToOne: false;
+            referencedRelation: "anticipo_saldos";
+            referencedColumns: ["factura_id"];
+          },
+          {
+            foreignKeyName: "pagos_anticipo_factura_id_fkey";
+            columns: ["anticipo_factura_id"];
+            isOneToOne: false;
+            referencedRelation: "factura_saldos";
+            referencedColumns: ["factura_id"];
+          },
+          {
+            foreignKeyName: "pagos_anticipo_factura_id_fkey";
+            columns: ["anticipo_factura_id"];
+            isOneToOne: false;
+            referencedRelation: "factura_totales";
+            referencedColumns: ["factura_id"];
+          },
+          {
+            foreignKeyName: "pagos_anticipo_factura_id_fkey";
+            columns: ["anticipo_factura_id"];
+            isOneToOne: false;
+            referencedRelation: "facturas";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "pagos_cuenta_id_fkey";
             columns: ["cuenta_id"];
@@ -3432,6 +3490,34 @@ export type Database = {
       };
     };
     Views: {
+      anticipo_saldos: {
+        Row: {
+          aplicado: number | null;
+          cuenta_id: string;
+          disponible: number | null;
+          factura_id: string;
+          moneda: string;
+          pagado: number | null;
+          razon_social_id: string;
+        };
+        ComputedFields: never;
+        Relationships: [
+          {
+            foreignKeyName: "facturas_cuenta_id_fkey";
+            columns: ["cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "facturas_razon_social_id_cuenta_id_fkey";
+            columns: ["razon_social_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "razones_sociales";
+            referencedColumns: ["id", "cuenta_id"];
+          },
+        ];
+      };
       contrato_totales: {
         Row: {
           contrato_id: string;
@@ -3532,6 +3618,15 @@ export type Database = {
         Args: { p_contada: number; p_notas?: string; p_parte: string };
         Returns: number;
       };
+      aplicar_anticipo: {
+        Args: {
+          p_anticipo: string;
+          p_factura: string;
+          p_fecha: string;
+          p_monto: number;
+        };
+        Returns: string;
+      };
       crear_factura: {
         Args: { p_cargos: string[]; p_razon_social: string };
         Returns: string;
@@ -3560,6 +3655,7 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: number;
       };
+      generar_cargo_unico: { Args: { p_tarifa: string }; Returns: string };
       generar_rentas_mes: { Args: { p_periodo: string }; Returns: number };
       guardar_captura_orden: {
         Args: { p_captura: Json; p_orden: string };
@@ -3572,6 +3668,18 @@ export type Database = {
       iva_tasa: { Args: Record<PropertyKey, never>; Returns: number };
       mi_rol_id: { Args: Record<PropertyKey, never>; Returns: string };
       mis_permisos: { Args: Record<PropertyKey, never>; Returns: string[] };
+      pagos_unicos_de_contrato: {
+        Args: { p_contrato: string };
+        Returns: {
+          cargo_estado: string;
+          cargo_id: string;
+          concepto: string;
+          es_anticipo: boolean;
+          moneda: string;
+          precio: number;
+          tarifa_id: string;
+        }[];
+      };
       programar_visita: {
         Args: { p_tecnico?: string; p_visita: string };
         Returns: string;

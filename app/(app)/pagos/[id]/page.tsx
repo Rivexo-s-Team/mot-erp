@@ -13,14 +13,13 @@ import {
   NativeSelectOption,
 } from "@/components/ui/native-select";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
-import { etiqueta, FORMAS_PAGO } from "@/lib/facturacion/credito";
 import {
   aplicacionesDePago,
   facturasPorCobrar,
   obtenerPago,
 } from "@/lib/facturacion/data";
 import { folioFactura } from "@/lib/facturacion/facturas";
-import { requiereComplemento } from "@/lib/facturacion/pagos";
+import { nombreFormaPago, requiereComplemento } from "@/lib/facturacion/pagos";
 import { formatDia, formatImporte } from "@/lib/format";
 import { directorioTecnicos } from "@/lib/ordenes/data";
 import { aplicarPago, eliminarPago, quitarAplicacion } from "../actions";
@@ -50,7 +49,10 @@ export default async function PagoPage({
       f.moneda === p.moneda &&
       !aplicadas.has(f.id),
   );
+  // Una aplicación de anticipo no es dinero nuevo: sale de una factura de anticipo.
+  const esAnticipo = p.anticipo_factura_id !== null;
   const faltaComplemento =
+    !esAnticipo &&
     !p.rep_uuid &&
     requiereComplemento(
       aplicaciones.map((a) => a.facturas?.metodo_pago ?? null),
@@ -71,9 +73,20 @@ export default async function PagoPage({
     ],
     ["Fecha", formatDia(p.fecha)],
     ["Monto", formatImporte(p.monto, p.moneda)],
-    ["Forma de pago", p.forma_pago ? etiqueta(FORMAS_PAGO, p.forma_pago) : "—"],
+    ["Forma de pago", nombreFormaPago(p.forma_pago)],
   ];
-  if (p.referencia) datos.push(["Referencia", p.referencia]);
+  if (p.anticipo_factura_id)
+    datos.push([
+      "Sale del anticipo",
+      <Link
+        key="a"
+        href={`/facturas/${p.anticipo_factura_id}`}
+        className={enlace}
+      >
+        Ver la factura de anticipo
+      </Link>,
+    ]);
+  else if (p.referencia) datos.push(["Referencia", p.referencia]);
   if (p.tipo_cambio !== null)
     datos.push(["Tipo de cambio del pago", String(p.tipo_cambio)]);
   datos.push([
@@ -85,7 +98,7 @@ export default async function PagoPage({
     <div className="mx-auto max-w-3xl">
       <title>{`Pago de ${p.razones_sociales?.razon_social ?? ""} · Sistema MOT`}</title>
       <PageHeader
-        title="Pago recibido"
+        title={esAnticipo ? "Aplicación de anticipo" : "Pago recibido"}
         description={`${p.razones_sociales?.razon_social ?? ""} · ${formatDia(p.fecha)}`}
       >
         <Link
@@ -139,7 +152,9 @@ export default async function PagoPage({
           </Card>
           <Card className="h-fit">
             <CardHeader>
-              <CardTitle>Complemento de pago</CardTitle>
+              <CardTitle>
+                {esAnticipo ? "CFDI de egreso" : "Complemento de pago"}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               {p.rep_uuid ? (
@@ -150,6 +165,12 @@ export default async function PagoPage({
               ) : faltaComplemento ? (
                 <p className="font-medium text-destructive">
                   Falta registrarlo: este pago cubre una factura PPD.
+                </p>
+              ) : esAnticipo ? (
+                <p className="text-muted-foreground">
+                  Al aplicar un anticipo se emite un CFDI de egreso por ese
+                  monto. Por ahora se timbra fuera del sistema; registra aquí su
+                  folio.
                 </p>
               ) : (
                 <p className="text-muted-foreground">
@@ -167,9 +188,13 @@ export default async function PagoPage({
                     className: "h-8",
                   })}
                 >
-                  {p.rep_uuid
-                    ? "Corregir complemento"
-                    : "Registrar complemento"}
+                  {esAnticipo
+                    ? p.rep_uuid
+                      ? "Corregir CFDI de egreso"
+                      : "Registrar CFDI de egreso"
+                    : p.rep_uuid
+                      ? "Corregir complemento"
+                      : "Registrar complemento"}
                 </Link>
               ) : null}
             </CardContent>
@@ -228,7 +253,7 @@ export default async function PagoPage({
           )}
         </section>
 
-        {edita && p.saldos.por_aplicar > 0 ? (
+        {edita && p.saldos.por_aplicar > 0 && !esAnticipo ? (
           <Card>
             <CardHeader>
               <CardTitle>
@@ -285,7 +310,9 @@ export default async function PagoPage({
         {edita && !p.rep_uuid ? (
           <form action={eliminarPago.bind(null, p.id)}>
             <Button type="submit" variant="ghost" size="sm" className="h-8">
-              Eliminar este pago (se capturó por error)
+              {esAnticipo
+                ? "Deshacer esta aplicación de anticipo"
+                : "Eliminar este pago (se capturó por error)"}
             </Button>
           </form>
         ) : null}

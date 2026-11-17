@@ -4,7 +4,8 @@ import { z } from "zod";
 import { EstadoContratoBadge } from "@/components/contrato-estado-badge";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { textoFrecuencia } from "@/lib/agenda/campos";
 import { listarVisitas } from "@/lib/agenda/data";
@@ -23,7 +24,9 @@ import {
   ordenesDeContrato,
   tarifasDeContrato,
   totalesDeContratos,
+  pagosUnicosDeContrato,
 } from "@/lib/contratos/data";
+import { generarCargoUnico } from "../actions";
 import { roboxDeContrato } from "@/lib/flota/data";
 import {
   formatDia,
@@ -40,7 +43,7 @@ export default async function ContratoPage({
 }: PageProps<"/contratos/[id]">) {
   const sesion = await requirePermiso("contratos.ver");
   const { id } = await params;
-  const { aviso } = await searchParams;
+  const { aviso, error } = await searchParams;
   if (!z.uuid().safeParse(id).success) notFound();
   const c = await obtenerContrato(id);
   if (!c) notFound();
@@ -60,6 +63,12 @@ export default async function ContratoPage({
         ? listarVisitas({ contratoId: c.id })
         : [],
     ]);
+  // Pagos únicos (anticipo, instalación) que faltan de cobrar: para quien captura cargos.
+  const generaCargos =
+    vePrecios &&
+    tienePermiso(sesion, "cargos.editar") &&
+    c.estado === "vigente";
+  const pagosUnicos = vePrecios ? await pagosUnicosDeContrato(c.id) : [];
   const hoy = hoyEnMexico();
   const tarifasPorOrden = new Map<string, number>();
   for (const t of tarifas) {
@@ -144,6 +153,11 @@ export default async function ContratoPage({
         ) : null}
       </div>
 
+      {typeof error === "string" ? (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : null}
       {aviso === "tarifas" ? (
         <Card className="mb-6 border-destructive/40 px-4 py-3 text-sm">
           El contrato se creó, pero no se pudieron copiar las partidas de la
@@ -356,6 +370,67 @@ export default async function ContratoPage({
                   </dt>
                 </dl>
               ) : null}
+            </section>
+          ) : null}
+
+          {pagosUnicos.length > 0 ? (
+            <section>
+              <h2 className="mb-1 text-lg font-semibold tracking-tight">
+                Pagos únicos
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  {pagosUnicos.length}
+                </span>
+              </h2>
+              <p className="mb-3 text-sm text-muted-foreground">
+                El anticipo y la instalación se cobran una sola vez: al generar
+                su cargo pasan a Cargos por facturar.
+              </p>
+              <ul className="space-y-2">
+                {pagosUnicos.map((u) => (
+                  <li key={u.tarifa_id}>
+                    <Card className="gap-1 px-4 py-3">
+                      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
+                        <p className="font-medium break-words">{u.concepto}</p>
+                        <p className="font-medium tabular-nums">
+                          {formatImporte(u.precio, u.moneda)}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {u.es_anticipo ? (
+                          <Badge variant="outline">Anticipo</Badge>
+                        ) : null}
+                        {u.cargo_id ? (
+                          <Badge variant="secondary">
+                            {u.cargo_estado === "facturado"
+                              ? "Facturado"
+                              : u.cargo_estado === "cancelado"
+                                ? "Cargo cancelado"
+                                : "Cargo generado"}
+                          </Badge>
+                        ) : generaCargos ? (
+                          <form
+                            action={generarCargoUnico.bind(
+                              null,
+                              c.id,
+                              u.tarifa_id,
+                            )}
+                          >
+                            <Button type="submit" size="sm" className="h-8">
+                              Generar cargo
+                            </Button>
+                          </form>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">
+                            {c.estado === "vigente"
+                              ? "Sin cobrar"
+                              : "Se cobra cuando el contrato esté vigente"}
+                          </span>
+                        )}
+                      </div>
+                    </Card>
+                  </li>
+                ))}
+              </ul>
             </section>
           ) : null}
 
