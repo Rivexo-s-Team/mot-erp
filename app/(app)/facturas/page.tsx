@@ -100,6 +100,9 @@ export default async function FacturasPage({
                   </p>
                   <div className="flex flex-wrap gap-1">
                     <EstadoFacturaBadge estado={f.estado} />
+                    {f.es_anticipo ? (
+                      <Badge variant="outline">Anticipo</Badge>
+                    ) : null}
                     {saldos.has(f.id) ? (
                       <CobroBadge saldo={saldos.get(f.id)} moneda={f.moneda} />
                     ) : null}

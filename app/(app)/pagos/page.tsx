@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
-import { etiqueta, FORMAS_PAGO } from "@/lib/facturacion/credito";
 import { listarPagos } from "@/lib/facturacion/data";
+import { nombreFormaPago } from "@/lib/facturacion/pagos";
 import { formatDia, formatImporte } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Pagos" };
@@ -52,9 +52,7 @@ export default async function PagosPage() {
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {p.cuentas?.nombre ?? "—"} · {formatDia(p.fecha)}
-                    {p.forma_pago
-                      ? ` · ${etiqueta(FORMAS_PAGO, p.forma_pago)}`
-                      : ""}
+                    {p.forma_pago ? ` · ${nombreFormaPago(p.forma_pago)}` : ""}
                     {p.referencia ? ` · ${p.referencia}` : ""}
                   </p>
                   <div className="flex flex-wrap gap-1">

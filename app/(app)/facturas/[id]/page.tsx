@@ -6,7 +6,13 @@ import { SubirArchivoFactura } from "@/components/factura-archivos";
 import { EstadoFacturaBadge } from "@/components/factura-estado-badge";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import {
@@ -19,6 +25,8 @@ import {
   conceptosDeFactura,
   creditoDeCuenta,
   obtenerFactura,
+  anticiposDeRazon,
+  aplicacionesDeAnticipo,
   pagosDeFactura,
   saldosDeFacturas,
 } from "@/lib/facturacion/data";
@@ -28,18 +36,24 @@ import {
   faltantesParaTimbrar,
   folioFactura,
 } from "@/lib/facturacion/facturas";
-import { ESTADOS_COBRO, estadoCobro } from "@/lib/facturacion/pagos";
+import {
+  ESTADOS_COBRO,
+  estadoCobro,
+  nombreFormaPago,
+} from "@/lib/facturacion/pagos";
 import { formatDia, formatFecha, formatImporte } from "@/lib/format";
 import { directorioTecnicos } from "@/lib/ordenes/data";
-import { quitarConcepto } from "../actions";
+import { aplicarAnticipo, quitarConcepto } from "../actions";
 
 const enlace = "text-primary underline-offset-4 hover:underline";
 
 export default async function FacturaPage({
   params,
+  searchParams,
 }: PageProps<"/facturas/[id]">) {
   const sesion = await requirePermiso("facturacion.ver");
   const { id } = await params;
+  const { error } = await searchParams;
   const f = z.uuid().safeParse(id).success ? await obtenerFactura(id) : null;
   if (!f) notFound();
   const [conceptos, credito, { nombres }] = await Promise.all([
@@ -53,6 +67,16 @@ export default async function FacturaPage({
     ? await Promise.all([saldosDeFacturas([f.id]), pagosDeFactura(f.id)])
     : [null, []];
   const saldo = saldos?.get(f.id) ?? null;
+  // Anticipos de la razón social: esta factura puede ser uno, o recibir uno.
+  const anticipos = emitida
+    ? await anticiposDeRazon(f.razon_social_id, f.moneda)
+    : [];
+  const esteAnticipo = anticipos.find((a) => a.factura_id === f.id) ?? null;
+  const aplicadoA = esteAnticipo ? await aplicacionesDeAnticipo(f.id) : [];
+  const disponibles =
+    f.es_anticipo || !saldo || saldo.saldo <= 0
+      ? []
+      : anticipos.filter((a) => a.disponible > 0);
   const acciones = accionesFactura(f.estado);
   const puede = tienePermiso(sesion, "facturacion.editar");
   const edita = puede && acciones.editar;
@@ -162,6 +186,7 @@ export default async function FacturaPage({
 
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <EstadoFacturaBadge estado={f.estado} />
+        {f.es_anticipo ? <Badge variant="outline">Anticipo</Badge> : null}
         {saldo ? (
           <Badge variant={saldo.saldo <= 0 ? "outline" : "secondary"}>
             {ESTADOS_COBRO[estadoCobro(saldo)]}
@@ -210,6 +235,12 @@ export default async function FacturaPage({
           con IVA
         </span>
       </div>
+
+      {typeof error === "string" ? (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : null}
 
       <div className="space-y-6">
         <div className="grid gap-6 lg:grid-cols-2">
@@ -433,13 +464,118 @@ export default async function FacturaPage({
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {a.pagos?.forma_pago
-                            ? etiqueta(FORMAS_PAGO, a.pagos.forma_pago)
+                            ? nombreFormaPago(a.pagos.forma_pago)
                             : ""}
                           {a.pagos?.referencia
                             ? ` · ${a.pagos.referencia}`
                             : ""}
                           {a.pagos?.rep_folio
                             ? ` · complemento ${a.pagos.rep_folio}`
+                            : ""}
+                        </p>
+                      </Card>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ) : null}
+
+        {disponibles.length > 0 && puede ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Aplicar un anticipo</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Esta razón social tiene anticipo pagado sin aplicar. Lo que
+                apliques baja el saldo de esta factura y queda como un pago con
+                forma “30 · Aplicación de anticipos”.
+              </p>
+              <form
+                action={aplicarAnticipo.bind(null, f.id)}
+                className="grid gap-3 sm:grid-cols-[1fr_9rem_auto] sm:items-end"
+              >
+                <label className="flex flex-col gap-1.5 text-sm font-medium">
+                  Anticipo
+                  <NativeSelect
+                    name="anticipo"
+                    required
+                    className="h-10 w-full font-normal"
+                  >
+                    {disponibles.map((a) => (
+                      <NativeSelectOption
+                        key={a.factura_id}
+                        value={a.factura_id}
+                      >
+                        Factura {folioFactura(a)} · disponible{" "}
+                        {formatImporte(a.disponible, f.moneda)}
+                      </NativeSelectOption>
+                    ))}
+                  </NativeSelect>
+                </label>
+                <label className="flex flex-col gap-1.5 text-sm font-medium">
+                  Monto
+                  <Input
+                    name="monto"
+                    inputMode="decimal"
+                    required
+                    autoComplete="off"
+                    className="h-10 font-normal"
+                  />
+                </label>
+                <Button type="submit" className="h-10">
+                  Aplicar
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {esteAnticipo ? (
+          <section>
+            <h2 className="mb-1 text-lg font-semibold tracking-tight">
+              Uso del anticipo
+            </h2>
+            <p className="mb-3 text-sm tabular-nums">
+              <span className="text-muted-foreground">Pagado </span>
+              {formatImporte(esteAnticipo.pagado, f.moneda)}
+              <span className="text-muted-foreground"> · aplicado </span>
+              {formatImporte(esteAnticipo.aplicado, f.moneda)}
+              <span className="text-muted-foreground"> · disponible </span>
+              <span className="font-medium">
+                {formatImporte(esteAnticipo.disponible, f.moneda)}
+              </span>
+            </p>
+            {aplicadoA.length === 0 ? (
+              <Card className="px-4 py-6 text-center text-sm text-muted-foreground">
+                Aún no se aplica a ninguna factura. Solo se puede aplicar lo que
+                el cliente ya pagó; se hace desde la factura que lo recibe.
+              </Card>
+            ) : (
+              <ul className="space-y-2">
+                {aplicadoA.map((a) => (
+                  <li key={a.id}>
+                    <Link href={`/pagos/${a.id}`} className="block">
+                      <Card className="gap-1 px-4 py-3 transition-colors hover:border-primary/40 hover:bg-accent/40">
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <p className="text-sm font-medium">
+                            Aplicado a la factura{" "}
+                            {a.pago_aplicaciones
+                              .map((x) =>
+                                x.facturas ? folioFactura(x.facturas) : "",
+                              )
+                              .join(", ")}
+                          </p>
+                          <p className="font-medium tabular-nums">
+                            {formatImporte(a.monto, f.moneda)}
+                          </p>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {formatDia(a.fecha)}
+                          {a.rep_folio
+                            ? ` · CFDI de egreso ${a.rep_folio}`
                             : ""}
                         </p>
                       </Card>
