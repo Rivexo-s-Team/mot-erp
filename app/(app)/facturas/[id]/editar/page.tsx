@@ -32,6 +32,7 @@ export default async function EditarFacturaPage({
         <CardContent>
           <FacturaForm
             facturaId={f.id}
+            modo={{ tipo: "encabezado" }}
             campos={campos}
             valores={valoresIniciales(campos, {
               fecha: f.fecha,

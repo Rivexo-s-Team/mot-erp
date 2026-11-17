@@ -6,7 +6,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { listarFacturas } from "@/lib/facturacion/data";
-import { ESTADOS_FACTURA } from "@/lib/facturacion/facturas";
+import { ESTADOS_FACTURA, folioFactura } from "@/lib/facturacion/facturas";
 import { formatDia, formatImporte } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Facturas" };
@@ -81,6 +81,7 @@ export default async function FacturasPage({
                     </p>
                   </div>
                   <p className="text-sm text-muted-foreground">
+                    {folioFactura(f) ? `${folioFactura(f)} · ` : ""}
                     {f.cuentas?.nombre ?? "—"} · {formatDia(f.fecha)} ·{" "}
                     {f.factura_totales?.conceptos ?? 0}{" "}
                     {f.factura_totales?.conceptos === 1

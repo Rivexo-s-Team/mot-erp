@@ -4,13 +4,29 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import {
+  ARCHIVOS_PDF,
+  ARCHIVOS_XML,
+  BUCKETS,
+  validarArchivo,
+  type MetaArchivo,
+} from "@/lib/archivos/config";
+import {
+  existeEnStorage,
+  permisoTemporal,
+  type Subida,
+} from "@/lib/archivos/subida";
 import type { ActionResult } from "@/lib/auth/schemas";
 import { requirePermiso } from "@/lib/auth/session";
+import { leerCfdi, problemaConCfdi } from "@/lib/facturacion/cfdi";
 import { obtenerFactura } from "@/lib/facturacion/data";
 import {
   accionesFactura,
+  CAMPOS_CANCELACION,
   CAMPOS_CONCEPTO,
+  camposEmision,
   camposFactura,
+  validarEmision,
   validarFactura,
 } from "@/lib/facturacion/facturas";
 import { aFila, esquemaCampos, type Valores } from "@/lib/forms/campos";
@@ -152,4 +168,153 @@ export async function eliminarFactura(id: string): Promise<ActionResult> {
   if (error || !data?.[0]) return { error: mensajeError(error) };
   refrescar(id);
   redirect("/facturas");
+}
+
+/**
+ * Registra que la factura ya se timbró (fuera del sistema, D42) o corrige un
+ * dato mal capturado de ese registro. Al quedar emitida, sus cargos pasan a
+ * facturados.
+ */
+export async function registrarEmision(
+  id: string,
+  valores: Valores,
+): Promise<ActionResult> {
+  await requirePermiso("facturacion.editar");
+  if (!esId(id)) return { error: "Registro no válido." };
+  const factura = await obtenerFactura(id);
+  if (!factura) return { error: "La factura ya no existe." };
+  const acciones = accionesFactura(factura.estado);
+  if (!acciones.emitir && !acciones.corregirRegistro)
+    return { error: "La factura está cancelada." };
+  // El XML ya comprobó el folio fiscal: no se cambia después.
+  if (factura.xml_ruta)
+    return { error: "La factura ya tiene su XML: su registro no se corrige." };
+
+  const campos = camposEmision(factura.moneda, hoyEnMexico());
+  const parsed = esquemaCampos(campos, validarEmision).safeParse(valores);
+  if (!parsed.success) return { error: "Revisa los datos del formulario." };
+  const fila = aFila(campos, parsed.data, false);
+
+  const { data, error } = await (
+    await cliente()
+  )
+    .from("facturas")
+    .update({
+      ...fila,
+      uuid_fiscal: String(fila.uuid_fiscal).toLowerCase(),
+      estado: "emitida",
+    })
+    .eq("id", id)
+    .select("id");
+  if (error || !data?.[0])
+    return {
+      error:
+        error?.code === "23505"
+          ? "Ese folio fiscal ya está registrado en otra factura."
+          : mensajeError(error),
+    };
+  refrescar(id);
+  redirect(`/facturas/${id}`);
+}
+
+/** Cancela una factura emitida; sus cargos vuelven a quedar por facturar. */
+export async function cancelarFactura(
+  id: string,
+  valores: Valores,
+): Promise<ActionResult> {
+  await requirePermiso("facturacion.editar");
+  if (!esId(id)) return { error: "Registro no válido." };
+  const parsed = esquemaCampos(CAMPOS_CANCELACION).safeParse(valores);
+  if (!parsed.success) return { error: "Escribe el motivo de la cancelación." };
+
+  const { data, error } = await (
+    await cliente()
+  )
+    .from("facturas")
+    .update({ ...parsed.data, estado: "cancelada" })
+    .eq("id", id)
+    .eq("estado", "emitida")
+    .select("id");
+  if (error || !data?.[0]) return { error: mensajeError(error) };
+  refrescar(id);
+  redirect(`/facturas/${id}`);
+}
+
+type TipoArchivo = "xml" | "pdf";
+const ARCHIVOS = { xml: ARCHIVOS_XML, pdf: ARCHIVOS_PDF } as const;
+
+/** Por qué no se puede subir ese archivo a la factura, o null si se puede. */
+async function problemaArchivo(
+  id: string,
+  tipo: TipoArchivo,
+  meta: MetaArchivo,
+) {
+  if (!esId(id) || !(tipo in ARCHIVOS)) return "Registro no válido.";
+  const problema = validarArchivo(meta, ARCHIVOS[tipo]);
+  if (problema) return problema;
+  const factura = await obtenerFactura(id);
+  if (!factura) return "La factura ya no existe.";
+  if (!accionesFactura(factura.estado).subirArchivos)
+    return "Los archivos se suben cuando la factura ya está registrada como emitida.";
+  if (tipo === "xml" ? factura.xml_ruta : factura.pdf_ruta)
+    return `La factura ya tiene su ${tipo.toUpperCase()}.`;
+  return null;
+}
+
+/** Paso 1 de la subida del XML o el PDF de una factura emitida. */
+export async function prepararArchivoFactura(
+  id: string,
+  tipo: TipoArchivo,
+  meta: MetaArchivo,
+): Promise<Subida | { error: string }> {
+  await requirePermiso("facturacion.editar");
+  const motivo = await problemaArchivo(id, tipo, meta);
+  if (motivo) return { error: motivo };
+  return permisoTemporal(BUCKETS.factura, id, meta, ARCHIVOS[tipo]);
+}
+
+/**
+ * Paso 2: confirma que el archivo llegó y lo liga a la factura. El XML además
+ * se lee: tiene que ser el de esta factura (mismo folio fiscal, RFC y moneda).
+ */
+export async function registrarArchivoFactura(
+  id: string,
+  tipo: TipoArchivo,
+  ruta: string,
+  meta: MetaArchivo,
+): Promise<{ error: string } | undefined> {
+  await requirePermiso("facturacion.editar");
+  const motivo = await problemaArchivo(id, tipo, meta);
+  if (motivo) return { error: motivo };
+  if (!(await existeEnStorage(BUCKETS.factura, id, ruta)))
+    return { error: "El archivo no terminó de subirse. Intenta de nuevo." };
+
+  const fila: Record<string, string | number | null> =
+    tipo === "pdf" ? { pdf_ruta: ruta } : { xml_ruta: ruta };
+  if (tipo === "xml") {
+    const factura = await obtenerFactura(id);
+    const supabase = await createClient();
+    const { data: archivo } = await supabase.storage
+      .from(BUCKETS.factura)
+      .download(ruta);
+    const cfdi = archivo ? leerCfdi(await archivo.text()) : null;
+    const problema = problemaConCfdi(cfdi, {
+      uuid_fiscal: factura?.uuid_fiscal ?? null,
+      rfc: factura?.razones_sociales?.rfc ?? null,
+      moneda: factura?.moneda ?? "",
+    });
+    if (problema) return { error: problema };
+    fila.xml_total = cfdi?.total ?? null;
+  }
+
+  const { data, error } = await (
+    await cliente()
+  )
+    .from("facturas")
+    .update(fila)
+    .eq("id", id)
+    .select("id");
+  if (error || !data?.[0])
+    return { error: "El archivo se subió, pero no se pudo registrar." };
+  refrescar(id);
 }

@@ -35,7 +35,7 @@ export default async function ConceptoPage({
         <CardContent>
           <FacturaForm
             facturaId={f.id}
-            conceptoId={c.id}
+            modo={{ tipo: "concepto", conceptoId: c.id }}
             campos={CAMPOS_CONCEPTO}
             valores={valoresIniciales(CAMPOS_CONCEPTO, {
               descripcion: c.descripcion,
