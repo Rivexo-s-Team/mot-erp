@@ -9,10 +9,12 @@ type Props = {
   /** A dónde lleva "Registrar muestra"; vacío si el rol no las registra. */
   nuevaHref: string | null;
   vacio: string;
+  /** Aviso sobre la etapa de la oportunidad, si lo hay. */
+  aviso?: string | null;
 };
 
 /** Muestras ligadas a una orden de servicio o a una oportunidad. */
-export function MuestrasSeccion({ muestras, nuevaHref, vacio }: Props) {
+export function MuestrasSeccion({ muestras, nuevaHref, vacio, aviso }: Props) {
   return (
     <section>
       <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
@@ -35,6 +37,11 @@ export function MuestrasSeccion({ muestras, nuevaHref, vacio }: Props) {
           </Link>
         ) : null}
       </div>
+      {aviso ? (
+        <p className="mb-3 rounded-md bg-accent px-3 py-2 text-sm text-accent-foreground">
+          {aviso}
+        </p>
+      ) : null}
       {muestras.length === 0 ? (
         <Card className="px-4 py-6 text-center text-sm text-muted-foreground">
           {vacio}

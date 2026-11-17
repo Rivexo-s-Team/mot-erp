@@ -155,6 +155,16 @@ export default async function InformePage({
                 {informe.observaciones ??
                   "Sin observaciones. Se escriben en Editar."}
               </p>
+              {informe.recomienda_cambio_filtro ? (
+                <p className="mt-3 text-sm font-medium">
+                  Se recomienda cambiar el filtro del Robox.
+                  <span className="block font-normal text-muted-foreground">
+                    {validado
+                      ? "El Robox que atiende este equipo muestra la alerta en Flota hasta que se le instale un filtro."
+                      : "La alerta aparecerá en Flota cuando el informe se valide."}
+                  </span>
+                </p>
+              ) : null}
             </CardContent>
           </Card>
         </div>

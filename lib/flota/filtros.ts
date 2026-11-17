@@ -4,7 +4,7 @@ import type { Campo, Opcion, Validador } from "@/lib/forms/campos";
  * Seguimiento de los filtros de cada Robox (DISENO §4.4). Un filtro se cambia
  * a los meses que diga el parámetro `filtro_cambio_meses`, o antes si la
  * pantalla del Robox ya marca que se le acabó la vida ("filter used" llegó a
- * "filter lifetime"). Sin base ni navegador, para poder probarlo.
+ * "filter lifetime") o si el laboratorio lo recomienda en un informe validado. Sin base ni navegador, para poder probarlo.
  */
 
 /** Suma meses a un día "aaaa-mm-dd". Si el día no existe en el mes destino, usa el último. */
@@ -52,6 +52,25 @@ export function lecturaVigente(
   );
 }
 
+/** El laboratorio indicó, en un informe validado, que hay que cambiar el filtro. */
+export type RecomendacionLaboratorio = {
+  folio: string;
+  equipo: string;
+  /** Día en que se validó el informe. */
+  fecha: string;
+};
+
+/**
+ * ¿La recomendación sigue pendiente? Deja de contar cuando se instala un
+ * filtro el día de la validación o después: ya se atendió.
+ */
+export function recomendacionVigente(
+  r: RecomendacionLaboratorio,
+  filtros: { fechaInstalacion: string }[],
+): boolean {
+  return filtros.every((f) => f.fechaInstalacion < r.fecha);
+}
+
 /**
  * Por qué hay que cambiar el filtro de un Robox. Lista vacía = todo en orden.
  * `meses` es nulo si no se pudo leer el parámetro: entonces solo cuenta la lectura.
@@ -61,6 +80,7 @@ export function motivosDeCambio(e: {
   lectura: LecturaFiltro | null | undefined;
   meses: number | null;
   hoy: string;
+  recomendaciones?: RecomendacionLaboratorio[];
 }): string[] {
   const motivos: string[] = [];
   const meses = e.meses;
@@ -74,6 +94,12 @@ export function motivosDeCambio(e: {
     motivos.push(
       `La pantalla del Robox marca ${e.lectura.usados} de ${e.lectura.vida} días de filtro.`,
     );
+  }
+  for (const r of e.recomendaciones ?? []) {
+    if (recomendacionVigente(r, e.filtros))
+      motivos.push(
+        `El laboratorio recomienda cambiar el filtro (informe ${r.folio}, equipo ${r.equipo}).`,
+      );
   }
   return motivos;
 }

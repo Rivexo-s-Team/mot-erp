@@ -34,6 +34,7 @@ export type EntradaPdfInforme = {
     estado: string;
     fecha_emision: string;
     observaciones: string | null;
+    recomienda_cambio_filtro: boolean;
     cliente: string | null;
     planta: string | null;
     direccion: string | null;
@@ -98,6 +99,8 @@ export type DatosPdfInforme = {
   /** Fechas de la primera y la última muestra, para el eje de las gráficas. */
   ejeFechas: [string, string] | null;
   observaciones: string | null;
+  /** Recomendación del laboratorio que se imprime bajo las observaciones. */
+  recomendacion: string | null;
   elaboro: string;
   valido: string;
 };
@@ -266,6 +269,9 @@ export function datosInformePdf(e: EntradaPdfInforme): DatosPdfInforme {
         ? [fechaCorta(muestras[0].fecha), fechaCorta(ultima.fecha)]
         : null,
     observaciones: informe.observaciones?.trim() || null,
+    recomendacion: informe.recomienda_cambio_filtro
+      ? "Se recomienda cambiar el filtro del RecondOil Box."
+      : null,
     elaboro: informe.elaboro ?? "—",
     valido:
       informe.estado === "validado" && informe.valido

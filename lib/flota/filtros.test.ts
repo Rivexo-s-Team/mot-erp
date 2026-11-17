@@ -159,3 +159,46 @@ describe("formulario de filtro", () => {
     ).toBe(true);
   });
 });
+
+describe("recomendación del laboratorio", () => {
+  const r = { folio: "FOLAB-26-092", equipo: "11B113", fecha: "2026-07-16" };
+  const base = { lectura: null, meses: 6, hoy: "2026-07-20" };
+
+  it("pide el cambio mientras no se instale un filtro", () => {
+    expect(
+      motivosDeCambio({
+        ...base,
+        filtros: [{ nombre: "Core", fechaInstalacion: "2026-05-01" }],
+        recomendaciones: [r],
+      }),
+    ).toEqual([
+      "El laboratorio recomienda cambiar el filtro (informe FOLAB-26-092, equipo 11B113).",
+    ]);
+  });
+
+  it("también si el Robox no tiene filtros registrados", () => {
+    expect(
+      motivosDeCambio({ ...base, filtros: [], recomendaciones: [r] }),
+    ).toHaveLength(1);
+  });
+
+  it("deja de pedirlo cuando se instala un filtro ese día o después", () => {
+    for (const fechaInstalacion of ["2026-07-16", "2026-07-18"])
+      expect(
+        motivosDeCambio({
+          ...base,
+          filtros: [{ nombre: "Core", fechaInstalacion }],
+          recomendaciones: [r],
+        }),
+      ).toEqual([]);
+  });
+
+  it("sin recomendaciones no cambia nada", () => {
+    expect(
+      motivosDeCambio({
+        ...base,
+        filtros: [{ nombre: "Core", fechaInstalacion: "2026-05-01" }],
+      }),
+    ).toEqual([]);
+  });
+});

@@ -47,6 +47,7 @@ export default async function EditarInformePage({
               folio: informe.folio,
               fecha_emision: informe.fecha_emision,
               observaciones: informe.observaciones,
+              recomienda_cambio_filtro: informe.recomienda_cambio_filtro,
               ...Object.fromEntries(
                 delEquipo.map((m) => [
                   casillaDeMuestra(m.id),

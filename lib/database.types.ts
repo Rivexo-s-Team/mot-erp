@@ -1257,6 +1257,7 @@ export type Database = {
           id: string;
           observaciones: string | null;
           planta_id: string;
+          recomienda_cambio_filtro: boolean;
           updated_at: string;
           validado_at: string | null;
           valido_id: string | null;
@@ -1276,6 +1277,7 @@ export type Database = {
           id?: string;
           observaciones?: string | null;
           planta_id: string;
+          recomienda_cambio_filtro?: boolean;
           updated_at?: string;
           validado_at?: string | null;
           valido_id?: string | null;
@@ -1294,6 +1296,7 @@ export type Database = {
           id?: string;
           observaciones?: string | null;
           planta_id?: string;
+          recomienda_cambio_filtro?: boolean;
           updated_at?: string;
           validado_at?: string | null;
           valido_id?: string | null;

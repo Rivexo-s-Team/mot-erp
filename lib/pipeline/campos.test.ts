@@ -7,6 +7,7 @@ import {
   ETAPAS,
   ETAPAS_ABIERTAS,
   validarEtapa,
+  avisoDeMuestras,
 } from "./campos";
 
 const ID = "7b0c1a52-6f5e-4c0e-9a57-2d0a1f3b9c11";
@@ -110,5 +111,34 @@ describe("cambio de etapa", () => {
     expect(esquema.safeParse({ etapa: "negociacion", ...sin }).success).toBe(
       false,
     );
+  });
+});
+
+describe("avisoDeMuestras", () => {
+  const m = (estado: string) => ({ estado });
+
+  it("antes de la etapa Muestra, avisa que ya hay una registrada", () => {
+    for (const etapa of ["primer_contacto", "presentacion", "visita"])
+      expect(avisoDeMuestras(etapa, [m("pendiente")])).toMatch(/etapa Muestra/);
+    expect(avisoDeMuestras("visita", [])).toBeNull();
+    expect(avisoDeMuestras("visita", [m("cancelada")])).toBeNull();
+  });
+
+  it("en la etapa Muestra, avisa si falta registrarla o si ya hay resultados", () => {
+    expect(avisoDeMuestras("muestra", [])).toMatch(/aún no registra/);
+    expect(avisoDeMuestras("muestra", [m("en_analisis")])).toBeNull();
+    expect(
+      avisoDeMuestras("muestra", [m("en_analisis"), m("concluida")]),
+    ).toMatch(/Resultados de laboratorio/);
+  });
+
+  it("después ya no avisa nada", () => {
+    for (const etapa of [
+      "resultados_laboratorio",
+      "cotizacion",
+      "ganada",
+      "perdida",
+    ])
+      expect(avisoDeMuestras(etapa, [m("concluida")])).toBeNull();
   });
 });
