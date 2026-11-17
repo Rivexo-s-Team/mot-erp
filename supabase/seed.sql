@@ -268,3 +268,15 @@ insert into public.informe_muestras (informe_id, muestra_id, equipo_cliente_id)
 select i.id, m.id, i.equipo_cliente_id
 from informe i
 join public.muestras m on m.equipo_cliente_id = i.equipo_cliente_id;
+
+-- Razón social y condiciones de crédito de ejemplo para probar la facturación
+-- en local (inventadas: el RFC es el genérico del SAT).
+with razon as (
+  insert into public.razones_sociales (cuenta_id, razon_social, rfc, regimen_fiscal, codigo_postal_fiscal, uso_cfdi, usa_portal_proveedores)
+  select id, 'Rassini Ejemplo SA de CV', 'XAXX010101000', '601', '76800', 'G03', true
+  from public.cuentas where nombre = 'Rassini'
+  returning id, cuenta_id
+)
+insert into public.condiciones_credito
+  (razon_social_id, cuenta_id, dias_credito, requiere_orden_compra, metodo_pago, forma_pago, portal)
+select id, cuenta_id, 30, true, 'PPD', '99', 'Portal de proveedores de ejemplo' from razon;
