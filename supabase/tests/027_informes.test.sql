@@ -1,7 +1,7 @@
 -- Informes de laboratorio: muestras del mismo equipo, validación que fija el
 -- contenido y accesos por rol.
 begin;
-select plan(24);
+select plan(26);
 
 create schema pruebas;
 grant usage on schema pruebas to authenticated;
@@ -103,6 +103,15 @@ update public.informes set contenido = '{"x": 1}', valido_id = pruebas.uid('labo
 select is(
   (select row(contenido, valido_id)::text from public.informes where id = pruebas.inf('a')),
   '(,)', 'en borrador no se guarda contenido ni validador'
+);
+
+select is(
+  (select recomienda_cambio_filtro from public.informes where id = pruebas.inf('a')), false,
+  'un informe nace sin recomendar cambio de filtro'
+);
+select lives_ok(
+  $$update public.informes set recomienda_cambio_filtro = true where id = pruebas.inf('a')$$,
+  'el laboratorio lo puede recomendar mientras es borrador'
 );
 
 -- Validar ----------------------------------------------------------------------------
