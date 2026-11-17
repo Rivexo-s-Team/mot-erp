@@ -222,6 +222,15 @@ describe("armarInforme", () => {
     expect(fila("particulas_4um").limite).toBeNull();
   });
 
+  it("da los límites como números para dibujarlos en las gráficas", () => {
+    expect(fila("solidos_suspendidos").limites).toEqual([0.5]);
+    expect(fila("viscosidad_40c").limites).toEqual([41.4, 50.6]);
+    // Oxidación: virgen 1.372 ± 0.2
+    expect(fila("oxidacion").limites).toEqual([1.172, 1.572]);
+    expect(fila("particulas_4um").limites).toEqual([]);
+    expect(fila("codigo_iso").limites).toEqual([]);
+  });
+
   it("desviación de la última muestra contra el aceite usado, como el informe", () => {
     expect(fila("particulas_4um").desviacion).toBeCloseTo(-0.927884, 6);
     expect(fila("solidos_suspendidos").desviacion).toBeCloseTo(-0.927225, 6);
