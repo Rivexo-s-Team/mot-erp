@@ -1,7 +1,7 @@
 -- Facturas en borrador: se arman con cargos pendientes de una cuenta y
 -- moneda; el cargo queda tomado y la base calcula importes e IVA.
 begin;
-select plan(35);
+select plan(36);
 
 create schema pruebas;
 grant usage on schema pruebas to authenticated;
@@ -219,6 +219,13 @@ select is((select count(*)::int from public.cargos where factura_id = pruebas.fa
 select lives_ok(
   $$select public.crear_factura(pruebas.id('razon'), array[pruebas.id('a'), pruebas.id('b'), pruebas.id('c')])$$,
   'y se pueden facturar de nuevo'
+);
+
+select is(
+  (select string_agg(c.descripcion, ', ' order by c.orden)
+   from public.factura_conceptos c join public.facturas f on f.id = c.factura_id
+   where f.cuenta_id = pruebas.id('cuenta') and f.deleted_at is null and f.moneda = 'USD'),
+  'Cargo a, Cargo b, Cargo c', 'los conceptos quedan en el orden en que se eligieron los cargos'
 );
 
 -- Accesos ------------------------------------------------------------------------------

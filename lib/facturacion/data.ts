@@ -161,13 +161,16 @@ export async function cargosFacturables(cuentaId?: string) {
   let query = supabase
     .from("cargos")
     .select(
-      "id, cuenta_id, concepto, cantidad, unidad, precio_unitario, importe, moneda, tipo, created_at, cuentas (nombre)",
+      "id, cuenta_id, concepto, cantidad, unidad, precio_unitario, importe, moneda, tipo, periodo, created_at, cuentas (nombre)",
     )
     .eq("estado", "pendiente")
     .is("factura_id", null)
     .is("deleted_at", null)
     .not("importe", "is", null)
-    .order("created_at");
+    // Las rentas por mes; lo demás, por antigüedad.
+    .order("periodo")
+    .order("created_at")
+    .order("concepto");
   if (cuentaId) query = query.eq("cuenta_id", cuentaId);
   const { data, error } = await query;
   if (error) throw new Error("No se pudieron cargar los cargos.");

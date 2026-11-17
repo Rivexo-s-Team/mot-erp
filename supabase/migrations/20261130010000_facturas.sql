@@ -332,7 +332,11 @@ begin
   returning id into v_factura;
 
   insert into public.factura_conceptos (factura_id, cargo_id, orden, descripcion, cantidad, precio_unitario, iva_tasa)
-  select v_factura, k.id, row_number() over (order by k.created_at, k.id), k.concepto, 1, 0, public.iva_tasa()
+  -- Orden de los conceptos: las rentas por mes, luego por antigüedad del cargo
+  -- y, si empatan, como se eligieron.
+  select v_factura, k.id,
+         row_number() over (order by k.periodo nulls last, k.created_at, array_position(p_cargos, k.id)),
+         k.concepto, 1, 0, public.iva_tasa()
   from public.cargos k where k.id = any (p_cargos);
   if (select count(*) from public.factura_conceptos where factura_id = v_factura) <> cardinality(p_cargos) then
     raise exception 'Alguno de los cargos no existe.' using errcode = 'P0001';
