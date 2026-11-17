@@ -274,6 +274,7 @@ export type Database = {
           cuenta_id: string;
           deleted_at: string | null;
           estado: string;
+          factura_id: string | null;
           id: string;
           importe: number | null;
           moneda: string;
@@ -297,6 +298,7 @@ export type Database = {
           cuenta_id: string;
           deleted_at?: string | null;
           estado?: string;
+          factura_id?: string | null;
           id?: string;
           importe?: never;
           moneda?: string;
@@ -319,6 +321,7 @@ export type Database = {
           cuenta_id?: string;
           deleted_at?: string | null;
           estado?: string;
+          factura_id?: string | null;
           id?: string;
           importe?: never;
           moneda?: string;
@@ -345,6 +348,20 @@ export type Database = {
             columns: ["cuenta_id"];
             isOneToOne: false;
             referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cargos_factura_id_fkey";
+            columns: ["factura_id"];
+            isOneToOne: false;
+            referencedRelation: "factura_totales";
+            referencedColumns: ["factura_id"];
+          },
+          {
+            foreignKeyName: "cargos_factura_id_fkey";
+            columns: ["factura_id"];
+            isOneToOne: false;
+            referencedRelation: "facturas";
             referencedColumns: ["id"];
           },
           {
@@ -1165,6 +1182,162 @@ export type Database = {
             isOneToOne: true;
             referencedRelation: "equipos_cliente";
             referencedColumns: ["id"];
+          },
+        ];
+      };
+      factura_conceptos: {
+        Row: {
+          cantidad: number;
+          cargo_id: string;
+          clave_prod_serv: string | null;
+          clave_unidad: string | null;
+          created_at: string;
+          created_by: string | null;
+          descripcion: string;
+          factura_id: string;
+          id: string;
+          importe: number | null;
+          iva: number | null;
+          iva_tasa: number;
+          orden: number;
+          precio_unitario: number;
+          unidad: string | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          cantidad: number;
+          cargo_id: string;
+          clave_prod_serv?: string | null;
+          clave_unidad?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          descripcion: string;
+          factura_id: string;
+          id?: string;
+          importe?: never;
+          iva?: never;
+          iva_tasa: number;
+          orden?: number;
+          precio_unitario: number;
+          unidad?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          cantidad?: number;
+          cargo_id?: string;
+          clave_prod_serv?: string | null;
+          clave_unidad?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          descripcion?: string;
+          factura_id?: string;
+          id?: string;
+          importe?: never;
+          iva?: never;
+          iva_tasa?: number;
+          orden?: number;
+          precio_unitario?: number;
+          unidad?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "factura_conceptos_cargo_id_fkey";
+            columns: ["cargo_id"];
+            isOneToOne: false;
+            referencedRelation: "cargos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "factura_conceptos_factura_id_fkey";
+            columns: ["factura_id"];
+            isOneToOne: false;
+            referencedRelation: "factura_totales";
+            referencedColumns: ["factura_id"];
+          },
+          {
+            foreignKeyName: "factura_conceptos_factura_id_fkey";
+            columns: ["factura_id"];
+            isOneToOne: false;
+            referencedRelation: "facturas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      facturas: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          cuenta_id: string;
+          deleted_at: string | null;
+          dias_credito: number;
+          estado: string;
+          fecha: string;
+          forma_pago: string | null;
+          id: string;
+          metodo_pago: string | null;
+          moneda: string;
+          notas: string | null;
+          orden_compra: string | null;
+          razon_social_id: string;
+          tipo_cambio: number | null;
+          updated_at: string;
+          uso_cfdi: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id: string;
+          deleted_at?: string | null;
+          dias_credito?: number;
+          estado?: string;
+          fecha?: string;
+          forma_pago?: string | null;
+          id?: string;
+          metodo_pago?: string | null;
+          moneda: string;
+          notas?: string | null;
+          orden_compra?: string | null;
+          razon_social_id: string;
+          tipo_cambio?: number | null;
+          updated_at?: string;
+          uso_cfdi?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id?: string;
+          deleted_at?: string | null;
+          dias_credito?: number;
+          estado?: string;
+          fecha?: string;
+          forma_pago?: string | null;
+          id?: string;
+          metodo_pago?: string | null;
+          moneda?: string;
+          notas?: string | null;
+          orden_compra?: string | null;
+          razon_social_id?: string;
+          tipo_cambio?: number | null;
+          updated_at?: string;
+          uso_cfdi?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "facturas_cuenta_id_fkey";
+            columns: ["cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "facturas_razon_social_id_cuenta_id_fkey";
+            columns: ["razon_social_id", "cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "razones_sociales";
+            referencedColumns: ["id", "cuenta_id"];
           },
         ];
       };
@@ -3075,6 +3248,17 @@ export type Database = {
         ComputedFields: never;
         Relationships: [];
       };
+      factura_totales: {
+        Row: {
+          conceptos: number | null;
+          factura_id: string;
+          iva: number | null;
+          subtotal: number | null;
+          total: number | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
       inventario_existencias: {
         Row: {
           existencia: number | null;
@@ -3125,6 +3309,10 @@ export type Database = {
         Args: { p_contada: number; p_notas?: string; p_parte: string };
         Returns: number;
       };
+      crear_factura: {
+        Args: { p_cargos: string[]; p_razon_social: string };
+        Returns: string;
+      };
       directorio_comercial: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -3158,6 +3346,7 @@ export type Database = {
         Args: { p_muestra: string; p_resultados: Json };
         Returns: undefined;
       };
+      iva_tasa: { Args: Record<PropertyKey, never>; Returns: number };
       mi_rol_id: { Args: Record<PropertyKey, never>; Returns: string };
       mis_permisos: { Args: Record<PropertyKey, never>; Returns: string[] };
       programar_visita: {
