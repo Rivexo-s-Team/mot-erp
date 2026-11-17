@@ -280,3 +280,14 @@ with razon as (
 insert into public.condiciones_credito
   (razon_social_id, cuenta_id, dias_credito, requiere_orden_compra, metodo_pago, forma_pago, portal)
 select id, cuenta_id, 30, true, 'PPD', '99', 'Portal de proveedores de ejemplo' from razon;
+
+-- Pagos únicos del contrato de ejemplo (D15: dos meses de anticipo más la
+-- instalación). Los importes son de ejemplo.
+insert into public.contrato_tarifas (contrato_id, planta_id, concepto, unidad, precio, es_anticipo, orden)
+select c.id, c.planta_id, v.concepto, 'unico', v.precio, v.es_anticipo, v.orden
+from public.contratos c
+cross join (values
+  ('Anticipo de 2 meses de renta', 600, true, 10),
+  ('Instalación del Robox', 1000, false, 20)
+) as v (concepto, precio, es_anticipo, orden)
+where c.notas = 'Contrato de ejemplo.';
