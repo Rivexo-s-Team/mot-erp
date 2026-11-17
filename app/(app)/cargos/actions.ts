@@ -8,6 +8,7 @@ import type { ActionResult } from "@/lib/auth/schemas";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { camposCargo } from "@/lib/cargos/campos";
 import { obtenerCargo } from "@/lib/cargos/data";
+import { periodoDeMes } from "@/lib/cargos/rentas";
 import { aFila, esquemaCampos, type Valores } from "@/lib/forms/campos";
 import { obtenerOrden } from "@/lib/ordenes/data";
 import { createClient } from "@/lib/supabase/server";
@@ -97,4 +98,21 @@ export async function guardarCargo(
 
   refrescar(ordenId);
   redirect(ordenId ? `/ordenes/${ordenId}` : "/cargos");
+}
+
+/**
+ * Genera los cargos de renta que le falten al mes ("aaaa-mm"). Repetirlo no
+ * duplica nada: la base solo crea los que no existen.
+ */
+export async function generarRentas(mes: string): Promise<void> {
+  await requireCargos();
+  const periodo = periodoDeMes(mes);
+  if (!periodo) return;
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("generar_rentas_mes", {
+    p_periodo: periodo,
+  });
+  revalidatePath("/cargos");
+  revalidatePath("/cargos/rentas");
+  redirect(`/cargos/rentas?mes=${mes}${error ? "&error=1" : "&listo=1"}`);
 }

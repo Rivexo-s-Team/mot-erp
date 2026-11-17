@@ -4,6 +4,7 @@ import type { Campo, Opcion } from "@/lib/forms/campos";
 /** Cargos por facturar (DISENO §4.4 y §4.6). La factura llega en la Etapa 5. */
 
 export const TIPOS_CARGO: Opcion[] = [
+  { value: "renta", label: "Renta mensual" },
   { value: "evento_litro", label: "Evento por litro" },
   { value: "partes_mal_uso", label: "Partes dañadas por el cliente" },
   { value: "servicio", label: "Servicio" },
@@ -11,9 +12,13 @@ export const TIPOS_CARGO: Opcion[] = [
   { value: "otro", label: "Otro" },
 ];
 
-/** El cargo por litros lo genera el sistema al cerrar la orden; a mano se capturan los demás. */
+/**
+ * Tipos que genera el sistema: la renta (al generar las rentas del mes) y el
+ * cargo por litros (al cerrar la orden). A mano se capturan los demás.
+ */
+export const TIPOS_GENERADOS = ["renta", "evento_litro"];
 export const TIPOS_CARGO_MANUAL = TIPOS_CARGO.filter(
-  (t) => t.value !== "evento_litro",
+  (t) => !TIPOS_GENERADOS.includes(t.value),
 );
 
 export const ESTADOS_CARGO: Opcion[] = [
@@ -37,9 +42,11 @@ export function camposCargo(esEdicion: boolean, tipoActual?: string): Campo[] {
       name: "tipo",
       label: "Tipo de cargo",
       tipo: "opciones",
-      // Un cargo por litros ya creado conserva su tipo.
+      // Un cargo generado por el sistema conserva su tipo.
       opciones:
-        tipoActual === "evento_litro" ? TIPOS_CARGO : TIPOS_CARGO_MANUAL,
+        tipoActual && TIPOS_GENERADOS.includes(tipoActual)
+          ? TIPOS_CARGO
+          : TIPOS_CARGO_MANUAL,
       soloAlCrear: true,
     },
     { name: "concepto", label: "Concepto", tipo: "texto", max: 300 },
