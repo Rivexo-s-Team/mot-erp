@@ -480,6 +480,11 @@ function InformePdf({ d }: { d: DatosPdfInforme }) {
           <Text style={s.observaciones}>
             {d.observaciones ?? "Sin observaciones."}
           </Text>
+          {d.recomendacion ? (
+            <Text style={[s.observaciones, s.fuerte, { marginTop: 4 }]}>
+              {d.recomendacion}
+            </Text>
+          ) : null}
           <View style={s.firmas}>
             <View style={s.firma}>
               <Text style={s.firmaTitulo}>Elaboró</Text>

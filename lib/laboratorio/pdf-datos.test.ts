@@ -74,6 +74,7 @@ const entrada = (
     estado: "validado",
     fecha_emision: "2026-07-15",
     observaciones: "  El aceite mejora.  ",
+    recomienda_cambio_filtro: false,
     cliente: "Rassini",
     planta: "BYPASA",
     direccion: null,
@@ -186,6 +187,11 @@ describe("datosInformePdf", () => {
     expect(d.observaciones).toBe("El aceite mejora.");
     expect(d.elaboro).toBe("Laura Laboratorio");
     expect(d.valido).toBe("Diana Dirección · 16/07/2026");
+    expect(d.recomendacion).toBeNull();
+    expect(
+      datosInformePdf(entrada(3, { recomienda_cambio_filtro: true }))
+        .recomendacion,
+    ).toBe("Se recomienda cambiar el filtro del RecondOil Box.");
   });
 
   it("un borrador lo advierte y no lleva quién validó", () => {

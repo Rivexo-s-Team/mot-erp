@@ -46,6 +46,11 @@ const camposBase = (hoy: string, esAlta: boolean): Campo[] => [
     max: 4000,
     ayuda: "Lo que el laboratorio concluye y recomienda. Sale en el informe.",
   },
+  {
+    name: "recomienda_cambio_filtro",
+    label: "Recomendar el cambio de filtro del Robox",
+    tipo: "casilla",
+  },
 ];
 
 /** Alta: de qué equipo es. Sus muestras con resultados se incluyen solas. */

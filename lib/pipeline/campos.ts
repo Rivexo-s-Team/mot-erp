@@ -147,3 +147,24 @@ export const validarEtapa: Validador = (v) =>
         mensaje: "Elige por qué se perdió, o escríbelo en el detalle.",
       }
     : null;
+
+/**
+ * Aviso para quien lleva la oportunidad según sus muestras de laboratorio. No
+ * mueve la etapa: solo dice cuándo conviene moverla. Null si no hay nada que avisar.
+ */
+export function avisoDeMuestras(
+  etapa: string,
+  muestras: { estado: string }[],
+): string | null {
+  const vivas = muestras.filter((m) => m.estado !== "cancelada");
+  const antesDeMuestra = ["primer_contacto", "presentacion", "visita"];
+  if (antesDeMuestra.includes(etapa) && vivas.length > 0)
+    return "Ya hay una muestra registrada: puedes pasar la oportunidad a la etapa Muestra.";
+  if (etapa === "muestra") {
+    if (vivas.length === 0)
+      return "La oportunidad está en la etapa Muestra, pero el laboratorio aún no registra ninguna.";
+    if (vivas.some((m) => m.estado === "concluida"))
+      return "El laboratorio ya concluyó el análisis: puedes pasarla a Resultados de laboratorio.";
+  }
+  return null;
+}

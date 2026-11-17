@@ -1,7 +1,12 @@
 import "server-only";
 import { hoyEnMexico } from "@/lib/format";
+import { nombreEquipo } from "./campos";
 import { createClient } from "@/lib/supabase/server";
-import { motivosDeCambio, type LecturaFiltro } from "./filtros";
+import {
+  motivosDeCambio,
+  type LecturaFiltro,
+  type RecomendacionLaboratorio,
+} from "./filtros";
 
 /** Lecturas de la flota. RLS decide qué ve cada rol. */
 
@@ -305,12 +310,67 @@ export async function ultimasLecturasDeFiltro(roboxIds: string[]) {
   return mapa;
 }
 
+/**
+ * Recomendaciones de cambio de filtro del laboratorio, por Robox. Cuenta el
+ * informe validado más reciente de cada equipo que el Robox atiende hoy (los
+ * tanques de su carrusel), y solo si recomienda el cambio. Quien no puede ver
+ * el laboratorio no recibe ninguna.
+ */
+export async function recomendacionesDeLaboratorio(roboxIds: string[]) {
+  const mapa = new Map<string, RecomendacionLaboratorio[]>();
+  if (roboxIds.length === 0) return mapa;
+  const supabase = await createClient();
+  const carrusel = await supabase
+    .from("carrusel_equipos")
+    .select(
+      "equipo_cliente_id, asignaciones_robox!inner (robox_id, fecha_fin, deleted_at)",
+    )
+    .in("asignaciones_robox.robox_id", roboxIds)
+    .is("asignaciones_robox.fecha_fin", null)
+    .is("asignaciones_robox.deleted_at", null)
+    .is("deleted_at", null);
+  if (carrusel.error) throw new Error("No se pudo cargar el carrusel.");
+  const equipos = [...new Set(carrusel.data.map((c) => c.equipo_cliente_id))];
+  if (equipos.length === 0) return mapa;
+
+  const informes = await supabase
+    .from("informes")
+    .select(
+      "folio, equipo_cliente_id, validado_at, recomienda_cambio_filtro, equipos_cliente (identificador, alias)",
+    )
+    .in("equipo_cliente_id", equipos)
+    .eq("estado", "validado")
+    .is("deleted_at", null)
+    .order("validado_at", { ascending: false });
+  if (informes.error) throw new Error("No se pudieron cargar los informes.");
+
+  // El primero de cada equipo es el más reciente.
+  const ultimo = new Map<string, (typeof informes.data)[number]>();
+  for (const i of informes.data)
+    if (!ultimo.has(i.equipo_cliente_id)) ultimo.set(i.equipo_cliente_id, i);
+
+  for (const c of carrusel.data) {
+    const i = ultimo.get(c.equipo_cliente_id);
+    if (!i?.recomienda_cambio_filtro || !i.validado_at) continue;
+    const roboxId = c.asignaciones_robox.robox_id;
+    mapa.set(roboxId, [
+      ...(mapa.get(roboxId) ?? []),
+      {
+        folio: i.folio,
+        equipo: i.equipos_cliente ? nombreEquipo(i.equipos_cliente) : "—",
+        fecha: hoyEnMexico(new Date(i.validado_at)),
+      },
+    ]);
+  }
+  return mapa;
+}
+
 /** Por qué hay que cambiar el filtro de cada Robox. Solo trae los que tienen algún motivo. */
 export async function alertasDeFiltro(roboxIds: string[]) {
   const alertas = new Map<string, string[]>();
   if (roboxIds.length === 0) return alertas;
   const supabase = await createClient();
-  const [instalados, lecturas, meses] = await Promise.all([
+  const [instalados, lecturas, meses, recomendaciones] = await Promise.all([
     supabase
       .from("filtros_instalados")
       .select("robox_id, fecha_instalacion, partes (nombre)")
@@ -319,6 +379,7 @@ export async function alertasDeFiltro(roboxIds: string[]) {
       .is("deleted_at", null),
     ultimasLecturasDeFiltro(roboxIds),
     mesesCambioFiltro(),
+    recomendacionesDeLaboratorio(roboxIds),
   ]);
   if (instalados.error) throw new Error("No se pudieron cargar los filtros.");
 
@@ -334,6 +395,7 @@ export async function alertasDeFiltro(roboxIds: string[]) {
       lectura: lecturas.get(id),
       meses,
       hoy,
+      recomendaciones: recomendaciones.get(id),
     });
     if (motivos.length > 0) alertas.set(id, motivos);
   }
