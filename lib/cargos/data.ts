@@ -5,7 +5,7 @@ import type { RentaDelMes } from "./rentas";
 /** Lecturas de cargos. RLS: solo quien tiene cargos.ver y precios.ver. */
 
 const COLUMNAS =
-  "id, cuenta_id, contrato_id, orden_id, tipo, concepto, cantidad, unidad, precio_unitario, importe, moneda, estado, notas, created_at, cuentas (nombre), ordenes_servicio (folio)";
+  "id, cuenta_id, contrato_id, orden_id, tipo, concepto, cantidad, unidad, precio_unitario, importe, moneda, estado, notas, factura_id, created_at, cuentas (nombre), ordenes_servicio (folio)";
 
 export async function listarCargos(filtro: {
   estado?: string;
