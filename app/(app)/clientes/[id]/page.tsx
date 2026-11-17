@@ -7,6 +7,11 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { resumenCredito } from "@/lib/facturacion/credito";
+import {
+  creditoDeCuenta,
+  type CondicionesCredito,
+} from "@/lib/facturacion/data";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { direccionPlanta, etiquetaArea } from "@/lib/clientes/campos";
 import { contarEquiposPorPlanta, obtenerCuenta } from "@/lib/clientes/data";
@@ -38,6 +43,10 @@ export default async function CuentaPage({
   const oportunidades = veOportunidades
     ? await oportunidadesDeCuenta(cuenta.id)
     : [];
+  // Condiciones de crédito: solo para quien ve facturación.
+  const veFacturacion = tienePermiso(sesion, "facturacion.ver");
+  const editaFacturacion = tienePermiso(sesion, "facturacion.editar");
+  const credito = veFacturacion ? await creditoDeCuenta(cuenta.id) : null;
   const equiposPorPlanta = await contarEquiposPorPlanta(
     cuenta.plantas.map((p) => p.id),
   );
@@ -121,32 +130,43 @@ export default async function CuentaPage({
           }
         >
           {cuenta.razonesSociales.map((r) => (
-            <Tarjeta
-              key={r.id}
-              href={editaRazones ? `${base}/razones-sociales/${r.id}` : null}
-            >
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <p className="font-medium">{r.razon_social}</p>
-                {r.usa_portal_proveedores ? (
-                  <Badge variant="secondary">Portal de proveedores</Badge>
+            <div key={r.id} className="flex flex-col gap-1.5">
+              <Tarjeta
+                href={editaRazones ? `${base}/razones-sociales/${r.id}` : null}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <p className="font-medium">{r.razon_social}</p>
+                  {r.usa_portal_proveedores ? (
+                    <Badge variant="secondary">Portal de proveedores</Badge>
+                  ) : null}
+                </div>
+                <p className="font-mono text-sm">{r.rfc}</p>
+                <p className="text-sm text-muted-foreground">
+                  {[
+                    r.regimen_fiscal ? `Régimen ${r.regimen_fiscal}` : null,
+                    r.codigo_postal_fiscal
+                      ? `C.P. ${r.codigo_postal_fiscal}`
+                      : null,
+                    r.uso_cfdi ? `Uso CFDI ${r.uso_cfdi}` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ") || "Faltan datos fiscales"}
+                </p>
+                {r.notas ? (
+                  <p className="text-sm text-muted-foreground">{r.notas}</p>
                 ) : null}
-              </div>
-              <p className="font-mono text-sm">{r.rfc}</p>
-              <p className="text-sm text-muted-foreground">
-                {[
-                  r.regimen_fiscal ? `Régimen ${r.regimen_fiscal}` : null,
-                  r.codigo_postal_fiscal
-                    ? `C.P. ${r.codigo_postal_fiscal}`
-                    : null,
-                  r.uso_cfdi ? `Uso CFDI ${r.uso_cfdi}` : null,
-                ]
-                  .filter(Boolean)
-                  .join(" · ") || "Faltan datos fiscales"}
-              </p>
-              {r.notas ? (
-                <p className="text-sm text-muted-foreground">{r.notas}</p>
+              </Tarjeta>
+              {credito ? (
+                <CreditoRazon
+                  credito={credito.get(r.id)}
+                  href={
+                    editaFacturacion
+                      ? `${base}/razones-sociales/${r.id}/credito`
+                      : null
+                  }
+                />
               ) : null}
-            </Tarjeta>
+            </div>
           ))}
         </Seccion>
 
@@ -322,5 +342,44 @@ function Tarjeta({
         tarjeta
       )}
     </li>
+  );
+}
+
+/** Condiciones de crédito de una razón social, bajo su tarjeta. */
+function CreditoRazon({
+  credito,
+  href,
+}: {
+  credito: CondicionesCredito | undefined;
+  href: string | null;
+}) {
+  return (
+    <p className="px-1 text-sm">
+      <span className="text-muted-foreground">Crédito: </span>
+      {credito ? resumenCredito(credito) : "sin definir"}
+      {credito?.contactos ? (
+        <span className="text-muted-foreground">
+          {" "}
+          · cuentas por pagar: {credito.contactos.nombre}
+        </span>
+      ) : null}
+      {credito?.portal ? (
+        <span className="text-muted-foreground">
+          {" "}
+          · portal: {credito.portal}
+        </span>
+      ) : null}
+      {href ? (
+        <>
+          {" · "}
+          <Link
+            href={href}
+            className="text-primary underline-offset-4 hover:underline"
+          >
+            {credito ? "Cambiar" : "Capturar"}
+          </Link>
+        </>
+      ) : null}
+    </p>
   );
 }
