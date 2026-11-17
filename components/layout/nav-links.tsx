@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Banknote,
   BookOpen,
   Building2,
   Home,
@@ -35,6 +36,7 @@ const ICONOS: Record<IconoMenu, LucideIcon> = {
   documentos: ShieldCheck,
   cargos: Receipt,
   facturas: FileText,
+  pagos: Banknote,
   muestras: FlaskConical,
   informes: FileChartColumn,
   agenda: CalendarDays,

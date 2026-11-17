@@ -38,6 +38,7 @@ describe("menuPara", () => {
       "/laboratorio/informes",
       "/cargos",
       "/facturas",
+      "/pagos",
       "/catalogos",
       "/parametros",
       "/usuarios",

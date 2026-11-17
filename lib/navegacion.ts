@@ -13,6 +13,7 @@ export type IconoMenu =
   | "documentos"
   | "cargos"
   | "facturas"
+  | "pagos"
   | "muestras"
   | "informes"
   | "ordenes"
@@ -126,6 +127,12 @@ const MENU: GrupoMenu[] = [
         href: "/facturas",
         label: "Facturas",
         icono: "facturas",
+        permiso: "facturacion.ver",
+      },
+      {
+        href: "/pagos",
+        label: "Pagos",
+        icono: "pagos",
         permiso: "facturacion.ver",
       },
     ],
