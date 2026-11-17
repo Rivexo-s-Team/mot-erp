@@ -82,6 +82,16 @@ export default async function InformePage({
         title={`Informe ${informe.folio}`}
         description={`${informe.cuentas?.nombre ?? ""}${informe.equipos_cliente ? ` · ${nombreEquipo(informe.equipos_cliente)}` : ""}`}
       >
+        {contenido.muestras.length > 0 ? (
+          <a
+            href={`/laboratorio/informes/${informe.id}/pdf`}
+            target="_blank"
+            rel="noreferrer"
+            className={buttonVariants({ variant: "outline", className: "h-9" })}
+          >
+            PDF
+          </a>
+        ) : null}
         {edita && acciones.editar ? (
           <Link
             href={`/laboratorio/informes/${informe.id}/editar`}
