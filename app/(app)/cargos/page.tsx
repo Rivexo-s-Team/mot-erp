@@ -47,6 +47,12 @@ export default async function CargosPage({
         title="Cargos por facturar"
         description="Lo que nace de las órdenes de servicio y falta cobrar. La factura se emitirá desde aquí en la etapa de facturación."
       >
+        <Link
+          href="/cargos/rentas"
+          className={buttonVariants({ variant: "outline", className: "h-9" })}
+        >
+          Rentas del mes
+        </Link>
         {edita ? (
           <Link
             href="/cargos/nuevo"
