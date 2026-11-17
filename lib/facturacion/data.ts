@@ -63,7 +63,7 @@ export async function razonSocialParaCredito(
 // Facturas -----------------------------------------------------------------------
 
 const COLUMNAS_FACTURA =
-  "id, cuenta_id, razon_social_id, estado, fecha, moneda, tipo_cambio, metodo_pago, forma_pago, uso_cfdi, orden_compra, dias_credito, notas, serie, folio, uuid_fiscal, timbrado, emitida_at, emitida_por, xml_ruta, pdf_ruta, xml_total, cancelada_at, cancelada_por, motivo_cancelacion, created_at, cuentas (nombre), razones_sociales (razon_social, rfc, regimen_fiscal, codigo_postal_fiscal)";
+  "id, cuenta_id, razon_social_id, estado, fecha, moneda, tipo_cambio, metodo_pago, forma_pago, uso_cfdi, orden_compra, dias_credito, notas, es_anticipo, serie, folio, uuid_fiscal, timbrado, emitida_at, emitida_por, xml_ruta, pdf_ruta, xml_total, cancelada_at, cancelada_por, motivo_cancelacion, created_at, cuentas (nombre), razones_sociales (razon_social, rfc, regimen_fiscal, codigo_postal_fiscal)";
 
 export async function listarFacturas(filtro: { estado?: string }) {
   const supabase = await createClient();
@@ -241,7 +241,7 @@ export async function facturasPorCobrar(cuentaId?: string) {
 }
 
 const COLUMNAS_PAGO =
-  "id, cuenta_id, razon_social_id, fecha, monto, moneda, tipo_cambio, forma_pago, referencia, notas, rep_folio, rep_uuid, created_at, created_by, cuentas (nombre), razones_sociales (razon_social, rfc)";
+  "id, cuenta_id, razon_social_id, fecha, monto, moneda, tipo_cambio, forma_pago, referencia, notas, rep_folio, rep_uuid, anticipo_factura_id, created_at, created_by, cuentas (nombre), razones_sociales (razon_social, rfc)";
 
 type SaldoPago = { aplicado: number; por_aplicar: number };
 
@@ -321,5 +321,70 @@ export async function pagosDeFactura(facturaId: string) {
     .eq("factura_id", facturaId)
     .order("created_at");
   if (error) throw new Error("No se pudieron cargar los pagos de la factura.");
+  return data;
+}
+
+// Anticipos ----------------------------------------------------------------------
+
+export type SaldoAnticipo = {
+  factura_id: string;
+  serie: string | null;
+  folio: string | null;
+  pagado: number;
+  aplicado: number;
+  disponible: number;
+};
+
+/**
+ * Facturas de anticipo emitidas de una razón social en una moneda, con lo que
+ * el cliente pagó, lo ya aplicado y lo disponible.
+ */
+export async function anticiposDeRazon(
+  razonSocialId: string,
+  moneda: string,
+): Promise<SaldoAnticipo[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("anticipo_saldos")
+    .select("factura_id, pagado, aplicado, disponible")
+    .eq("razon_social_id", razonSocialId)
+    .eq("moneda", moneda);
+  if (error) throw new Error("No se pudieron cargar los anticipos.");
+  const ids = data.flatMap((a) => (a.factura_id ? [a.factura_id] : []));
+  if (ids.length === 0) return [];
+  const folios = await supabase
+    .from("facturas")
+    .select("id, serie, folio")
+    .in("id", ids);
+  if (folios.error) throw new Error("No se pudieron cargar los anticipos.");
+  const porId = new Map(folios.data.map((f) => [f.id, f]));
+  return data.flatMap((a) =>
+    a.factura_id
+      ? [
+          {
+            factura_id: a.factura_id,
+            serie: porId.get(a.factura_id)?.serie ?? null,
+            folio: porId.get(a.factura_id)?.folio ?? null,
+            pagado: a.pagado ?? 0,
+            aplicado: a.aplicado ?? 0,
+            disponible: a.disponible ?? 0,
+          },
+        ]
+      : [],
+  );
+}
+
+/** A qué facturas se ha aplicado un anticipo. */
+export async function aplicacionesDeAnticipo(anticipoFacturaId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("pagos")
+    .select(
+      "id, fecha, monto, rep_folio, pago_aplicaciones (factura_id, facturas (serie, folio))",
+    )
+    .eq("anticipo_factura_id", anticipoFacturaId)
+    .is("deleted_at", null)
+    .order("fecha");
+  if (error) throw new Error("No se pudieron cargar las aplicaciones.");
   return data;
 }

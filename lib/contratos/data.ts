@@ -90,7 +90,7 @@ export async function tarifasDeContrato(contratoId: string) {
   const { data, error } = await supabase
     .from("contrato_tarifas")
     .select(
-      "id, orden, concepto, unidad, precio, equipo_cliente_id, orden_compra_id, notas, equipos_cliente (identificador, alias), ordenes_compra (numero)",
+      "id, orden, concepto, unidad, precio, es_anticipo, equipo_cliente_id, orden_compra_id, notas, equipos_cliente (identificador, alias), ordenes_compra (numero)",
     )
     .eq("contrato_id", contratoId)
     .is("deleted_at", null)
@@ -226,4 +226,14 @@ export async function cotizacionAceptada(oportunidadId: string) {
     equipo_planta_id: l.equipos_cliente?.planta_id ?? null,
   }));
   return { ...cotizacion, partidas };
+}
+
+/** Pagos únicos del contrato (anticipo, instalación) con el cargo que ya tengan. */
+export async function pagosUnicosDeContrato(contratoId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("pagos_unicos_de_contrato", {
+    p_contrato: contratoId,
+  });
+  if (error) throw new Error("No se pudieron cargar los pagos únicos.");
+  return data;
 }

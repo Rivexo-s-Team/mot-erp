@@ -6,6 +6,7 @@ import {
   estadoCobro,
   FORMAS_DE_PAGO_RECIBIDO,
   leerPago,
+  nombreFormaPago,
   requiereComplemento,
 } from "./pagos";
 
@@ -119,5 +120,17 @@ describe("complemento de pago", () => {
     expect(requiereComplemento(["PUE", "PPD"])).toBe(true);
     expect(requiereComplemento(["PUE", null])).toBe(false);
     expect(requiereComplemento([])).toBe(false);
+  });
+});
+
+describe("nombreFormaPago", () => {
+  it("nombra las formas del SAT y la aplicación de anticipos", () => {
+    expect(nombreFormaPago("03")).toBe("03 · Transferencia electrónica");
+    expect(nombreFormaPago("30")).toBe("30 · Aplicación de anticipos");
+    expect(nombreFormaPago(null)).toBe("—");
+  });
+  it("la aplicación de anticipos no se ofrece al registrar un pago con dinero", () => {
+    expect(FORMAS_DE_PAGO_RECIBIDO.some((f) => f.value === "30")).toBe(false);
+    expect(leerPago({ ...base, forma_pago: "30" }).ok).toBe(false);
   });
 });
