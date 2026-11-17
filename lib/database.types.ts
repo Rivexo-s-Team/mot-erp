@@ -1267,69 +1267,119 @@ export type Database = {
       };
       facturas: {
         Row: {
+          cancelada_at: string | null;
+          cancelada_por: string | null;
           created_at: string;
           created_by: string | null;
           cuenta_id: string;
           deleted_at: string | null;
           dias_credito: number;
+          emitida_at: string | null;
+          emitida_por: string | null;
           estado: string;
           fecha: string;
+          folio: string | null;
           forma_pago: string | null;
           id: string;
           metodo_pago: string | null;
           moneda: string;
+          motivo_cancelacion: string | null;
           notas: string | null;
           orden_compra: string | null;
+          pdf_ruta: string | null;
           razon_social_id: string;
+          serie: string | null;
+          timbrado: string | null;
           tipo_cambio: number | null;
           updated_at: string;
           uso_cfdi: string | null;
+          uuid_fiscal: string | null;
+          xml_ruta: string | null;
+          xml_total: number | null;
         };
         ComputedFields: never;
         Insert: {
+          cancelada_at?: string | null;
+          cancelada_por?: string | null;
           created_at?: string;
           created_by?: string | null;
           cuenta_id: string;
           deleted_at?: string | null;
           dias_credito?: number;
+          emitida_at?: string | null;
+          emitida_por?: string | null;
           estado?: string;
           fecha?: string;
+          folio?: string | null;
           forma_pago?: string | null;
           id?: string;
           metodo_pago?: string | null;
           moneda: string;
+          motivo_cancelacion?: string | null;
           notas?: string | null;
           orden_compra?: string | null;
+          pdf_ruta?: string | null;
           razon_social_id: string;
+          serie?: string | null;
+          timbrado?: string | null;
           tipo_cambio?: number | null;
           updated_at?: string;
           uso_cfdi?: string | null;
+          uuid_fiscal?: string | null;
+          xml_ruta?: string | null;
+          xml_total?: number | null;
         };
         Update: {
+          cancelada_at?: string | null;
+          cancelada_por?: string | null;
           created_at?: string;
           created_by?: string | null;
           cuenta_id?: string;
           deleted_at?: string | null;
           dias_credito?: number;
+          emitida_at?: string | null;
+          emitida_por?: string | null;
           estado?: string;
           fecha?: string;
+          folio?: string | null;
           forma_pago?: string | null;
           id?: string;
           metodo_pago?: string | null;
           moneda?: string;
+          motivo_cancelacion?: string | null;
           notas?: string | null;
           orden_compra?: string | null;
+          pdf_ruta?: string | null;
           razon_social_id?: string;
+          serie?: string | null;
+          timbrado?: string | null;
           tipo_cambio?: number | null;
           updated_at?: string;
           uso_cfdi?: string | null;
+          uuid_fiscal?: string | null;
+          xml_ruta?: string | null;
+          xml_total?: number | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "facturas_cancelada_por_fkey";
+            columns: ["cancelada_por"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "facturas_cuenta_id_fkey";
             columns: ["cuenta_id"];
             isOneToOne: false;
             referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "facturas_emitida_por_fkey";
+            columns: ["emitida_por"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
             referencedColumns: ["id"];
           },
           {

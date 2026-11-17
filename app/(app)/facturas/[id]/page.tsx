@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { z } from "zod";
+import { SubirArchivoFactura } from "@/components/factura-archivos";
 import { EstadoFacturaBadge } from "@/components/factura-estado-badge";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -18,11 +19,14 @@ import {
   creditoDeCuenta,
   obtenerFactura,
 } from "@/lib/facturacion/data";
+import { totalDistinto } from "@/lib/facturacion/cfdi";
 import {
   accionesFactura,
   faltantesParaTimbrar,
+  folioFactura,
 } from "@/lib/facturacion/facturas";
-import { formatDia, formatImporte } from "@/lib/format";
+import { formatDia, formatFecha, formatImporte } from "@/lib/format";
+import { directorioTecnicos } from "@/lib/ordenes/data";
 import { quitarConcepto } from "../actions";
 
 const enlace = "text-primary underline-offset-4 hover:underline";
@@ -34,13 +38,17 @@ export default async function FacturaPage({
   const { id } = await params;
   const f = z.uuid().safeParse(id).success ? await obtenerFactura(id) : null;
   if (!f) notFound();
-  const [conceptos, credito] = await Promise.all([
+  const [conceptos, credito, { nombres }] = await Promise.all([
     conceptosDeFactura(f.id),
     creditoDeCuenta(f.cuenta_id),
+    directorioTecnicos(),
   ]);
-  const edita =
-    tienePermiso(sesion, "facturacion.editar") &&
-    accionesFactura(f.estado).editar;
+  const acciones = accionesFactura(f.estado);
+  const puede = tienePermiso(sesion, "facturacion.editar");
+  const edita = puede && acciones.editar;
+  const persona = (uid: string | null) =>
+    uid ? (nombres.get(uid) ?? "Usuario dado de baja") : "—";
+  const folio = folioFactura(f);
   const razon = f.razones_sociales;
   const totales = f.factura_totales;
   const faltantes =
@@ -54,6 +62,31 @@ export default async function FacturaPage({
         })
       : [];
 
+  // Datos del timbre: solo existen cuando la factura ya se registró como emitida.
+  const timbre: [string, ReactNode][] = f.uuid_fiscal
+    ? [
+        ["Serie y folio", folio || "—"],
+        [
+          "Folio fiscal",
+          <span key="u" className="font-mono text-xs break-all">
+            {f.uuid_fiscal}
+          </span>,
+        ],
+        [
+          "Registrada",
+          `${persona(f.emitida_por)} · ${f.emitida_at ? formatFecha(f.emitida_at) : ""}${f.timbrado === "manual" ? " · timbrada fuera del sistema" : ""}`,
+        ],
+      ]
+    : [];
+  if (f.estado === "cancelada")
+    timbre.push(
+      [
+        "Cancelada",
+        `${persona(f.cancelada_por)} · ${f.cancelada_at ? formatFecha(f.cancelada_at) : ""}`,
+      ],
+      ["Motivo", f.motivo_cancelacion ?? "—"],
+    );
+
   const datos: [string, ReactNode][] = [
     [
       "Cliente",
@@ -62,7 +95,10 @@ export default async function FacturaPage({
       </Link>,
     ],
     ["Razón social", razon ? `${razon.razon_social} · ${razon.rfc}` : "—"],
-    ["Fecha", formatDia(f.fecha)],
+    [
+      f.estado === "borrador" ? "Fecha" : "Fecha de emisión",
+      formatDia(f.fecha),
+    ],
     [
       "Vence",
       f.dias_credito === 0
@@ -93,7 +129,9 @@ export default async function FacturaPage({
     <div className="mx-auto max-w-4xl">
       <title>{`Factura de ${razon?.razon_social ?? ""} · Sistema MOT`}</title>
       <PageHeader
-        title={f.estado === "borrador" ? "Factura en borrador" : "Factura"}
+        title={
+          f.estado === "borrador" ? "Factura en borrador" : `Factura ${folio}`
+        }
         description={`${razon?.razon_social ?? ""} · ${formatDia(f.fecha)}`}
       >
         <Link
@@ -114,6 +152,38 @@ export default async function FacturaPage({
 
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <EstadoFacturaBadge estado={f.estado} />
+        {puede && acciones.emitir && conceptos.length > 0 ? (
+          <Link
+            href={`/facturas/${f.id}/emitir`}
+            className={buttonVariants({ size: "sm", className: "h-8" })}
+          >
+            Registrar como emitida
+          </Link>
+        ) : null}
+        {puede && acciones.corregirRegistro && !f.xml_ruta ? (
+          <Link
+            href={`/facturas/${f.id}/emitir`}
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              className: "h-8",
+            })}
+          >
+            Corregir registro
+          </Link>
+        ) : null}
+        {puede && acciones.cancelar ? (
+          <Link
+            href={`/facturas/${f.id}/cancelar`}
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              className: "h-8",
+            })}
+          >
+            Cancelar factura
+          </Link>
+        ) : null}
         <span className="text-sm text-muted-foreground">
           Total{" "}
           <span className="font-medium text-foreground tabular-nums">
@@ -131,7 +201,7 @@ export default async function FacturaPage({
             </CardHeader>
             <CardContent>
               <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[auto_1fr]">
-                {datos.map(([nombre, valor]) => (
+                {[...timbre, ...datos].map(([nombre, valor]) => (
                   <div key={nombre} className="contents">
                     <dt className="text-muted-foreground">{nombre}</dt>
                     <dd className="break-words">{valor}</dd>
@@ -164,12 +234,53 @@ export default async function FacturaPage({
                   </>
                 )}
                 <p className="text-muted-foreground">
-                  Por ahora la factura se timbra fuera del sistema; el registro
-                  del folio fiscal llega en el siguiente paso.
+                  Por ahora la factura se timbra fuera del sistema. Cuando ya
+                  esté timbrada, regístrala aquí como emitida con su folio
+                  fiscal.
                 </p>
               </CardContent>
             </Card>
-          ) : null}
+          ) : (
+            <Card className="h-fit">
+              <CardHeader>
+                <CardTitle>Archivos</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                {(["xml", "pdf"] as const).map((tipo) => {
+                  const ruta = tipo === "xml" ? f.xml_ruta : f.pdf_ruta;
+                  return (
+                    <div key={tipo}>
+                      {ruta ? (
+                        <a
+                          href={`/archivos/factura/${f.id}/${tipo}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={enlace}
+                        >
+                          {tipo === "xml" ? "Descargar XML" : "Abrir PDF"}
+                        </a>
+                      ) : puede && acciones.subirArchivos ? (
+                        <SubirArchivoFactura facturaId={f.id} tipo={tipo} />
+                      ) : (
+                        <p className="text-muted-foreground">
+                          Sin {tipo.toUpperCase()}.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+                {totalDistinto(f.xml_total, totales?.total ?? null) ? (
+                  <p className="font-medium text-destructive">
+                    El total del XML (
+                    {formatImporte(f.xml_total ?? 0, f.moneda)}) no coincide con
+                    el del sistema (
+                    {formatImporte(totales?.total ?? 0, f.moneda)}
+                    ). Revisa cuál es el correcto.
+                  </p>
+                ) : null}
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <section>

@@ -1,33 +1,68 @@
 "use client";
 
 import { ConfigForm } from "@/components/forms/config-form";
-import { validarFactura } from "@/lib/facturacion/facturas";
+import { validarEmision, validarFactura } from "@/lib/facturacion/facturas";
 import type { Campo, Valores } from "@/lib/forms/campos";
-import { eliminarFactura, guardarConcepto, guardarFactura } from "./actions";
+import {
+  cancelarFactura,
+  eliminarFactura,
+  guardarConcepto,
+  guardarFactura,
+  registrarEmision,
+} from "./actions";
 
 type Props = {
   facturaId: string;
-  /** Si viene, se edita ese concepto; si no, el encabezado de la factura. */
-  conceptoId?: string;
+  /**
+   * Qué se captura: el encabezado del borrador, un concepto, el registro de
+   * la factura ya timbrada o su cancelación.
+   */
+  modo:
+    | { tipo: "encabezado" }
+    | { tipo: "concepto"; conceptoId: string }
+    | { tipo: "emision"; yaEmitida: boolean }
+    | { tipo: "cancelacion" };
   campos: Campo[];
   valores: Valores;
 };
 
-export function FacturaForm({ facturaId, conceptoId, campos, valores }: Props) {
+export function FacturaForm({ facturaId, modo, campos, valores }: Props) {
   return (
     <ConfigForm
       campos={campos}
       valores={valores}
-      esEdicion
-      validar={conceptoId ? undefined : validarFactura}
+      esEdicion={modo.tipo !== "cancelacion"}
+      validar={
+        modo.tipo === "encabezado"
+          ? validarFactura
+          : modo.tipo === "emision"
+            ? validarEmision
+            : undefined
+      }
       guardar={(v) =>
-        conceptoId
-          ? guardarConcepto(facturaId, conceptoId, v)
-          : guardarFactura(facturaId, v)
+        modo.tipo === "concepto"
+          ? guardarConcepto(facturaId, modo.conceptoId, v)
+          : modo.tipo === "emision"
+            ? registrarEmision(facturaId, v)
+            : modo.tipo === "cancelacion"
+              ? cancelarFactura(facturaId, v)
+              : guardarFactura(facturaId, v)
       }
       cancelarHref={`/facturas/${facturaId}`}
-      textoGuardar="Guardar cambios"
-      eliminar={conceptoId ? undefined : () => eliminarFactura(facturaId)}
+      textoGuardar={
+        modo.tipo === "emision"
+          ? modo.yaEmitida
+            ? "Corregir registro"
+            : "Registrar como emitida"
+          : modo.tipo === "cancelacion"
+            ? "Cancelar la factura"
+            : "Guardar cambios"
+      }
+      eliminar={
+        modo.tipo === "encabezado"
+          ? () => eliminarFactura(facturaId)
+          : undefined
+      }
       confirmarEliminar="¿Eliminar este borrador? Sus cargos vuelven a quedar por facturar."
     />
   );

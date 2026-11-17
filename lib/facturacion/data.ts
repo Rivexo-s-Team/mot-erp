@@ -63,7 +63,7 @@ export async function razonSocialParaCredito(
 // Facturas -----------------------------------------------------------------------
 
 const COLUMNAS_FACTURA =
-  "id, cuenta_id, razon_social_id, estado, fecha, moneda, tipo_cambio, metodo_pago, forma_pago, uso_cfdi, orden_compra, dias_credito, notas, created_at, cuentas (nombre), razones_sociales (razon_social, rfc, regimen_fiscal, codigo_postal_fiscal)";
+  "id, cuenta_id, razon_social_id, estado, fecha, moneda, tipo_cambio, metodo_pago, forma_pago, uso_cfdi, orden_compra, dias_credito, notas, serie, folio, uuid_fiscal, timbrado, emitida_at, emitida_por, xml_ruta, pdf_ruta, xml_total, cancelada_at, cancelada_por, motivo_cancelacion, created_at, cuentas (nombre), razones_sociales (razon_social, rfc, regimen_fiscal, codigo_postal_fiscal)";
 
 export async function listarFacturas(filtro: { estado?: string }) {
   const supabase = await createClient();

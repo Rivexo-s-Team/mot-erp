@@ -8,6 +8,7 @@ import {
   ACEPTA,
   validarArchivo,
   type MetaArchivo,
+  type TiposArchivo,
 } from "@/lib/archivos/config";
 import { createClient } from "@/lib/supabase/client";
 
@@ -19,6 +20,8 @@ type FileUploaderProps = {
   acepta?: string;
   /** Texto de ayuda bajo el botón. */
   ayuda?: string;
+  /** Qué tipos se aceptan, si no son los generales (PDF e imágenes). */
+  aceptados?: TiposArchivo;
   /** Paso 1: el servidor revisa permisos y da un permiso temporal para subir. */
   preparar: (meta: MetaArchivo) => Promise<Subida | { error: string }>;
   /** Paso 2: el servidor confirma que el archivo llegó y lo registra. */
@@ -33,6 +36,7 @@ export function FileUploader({
   texto,
   acepta = ACEPTA,
   ayuda = "PDF o imagen, hasta 10 MB.",
+  aceptados,
   preparar,
   registrar,
 }: FileUploaderProps) {
@@ -48,7 +52,7 @@ export function FileUploader({
       tipo: archivo.type,
       tamano: archivo.size,
     };
-    const problema = validarArchivo(meta);
+    const problema = validarArchivo(meta, aceptados);
     if (problema) return setError(problema);
 
     setError(null);

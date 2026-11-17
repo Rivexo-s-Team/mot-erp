@@ -188,7 +188,7 @@ select throws_ok(
 );
 select throws_ok(
   $$update public.facturas set estado = 'emitida' where id = pruebas.fac('uno')$$,
-  'P0001', null, 'todavía no se emite desde el sistema'
+  '23514', null, 'no pasa a emitida sin los datos del timbre'
 );
 update public.factura_conceptos set descripcion = 'Servicio de limpieza', clave_prod_serv = '81141500',
   clave_unidad = 'E48', cantidad = 99, precio_unitario = 99
