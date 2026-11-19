@@ -122,7 +122,7 @@ function TarjetaOportunidad({
             <Badge variant="outline">{o.canales_venta.nombre}</Badge>
           ) : null}
           {o.etapa === "ganada" ? (
-            <Badge variant="secondary">Pendiente de contrato</Badge>
+            <Badge variant="aviso">Pendiente de contrato</Badge>
           ) : null}
           {o.fecha_cierre ? (
             <Badge variant="outline">{formatFecha(o.fecha_cierre)}</Badge>

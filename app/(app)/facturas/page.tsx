@@ -127,7 +127,7 @@ function CobroBadge({
 }) {
   if (!saldo) return null;
   return (
-    <Badge variant={saldo.saldo <= 0 ? "outline" : "secondary"}>
+    <Badge variant={saldo.saldo <= 0 ? "exito" : "aviso"}>
       {ESTADOS_COBRO[estadoCobro(saldo)]}
       {saldo.saldo > 0 ? ` · saldo ${formatImporte(saldo.saldo, moneda)}` : ""}
     </Badge>

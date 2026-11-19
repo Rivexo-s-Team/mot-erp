@@ -103,7 +103,7 @@ export default async function InformePage({
       </PageHeader>
 
       <div className="mb-6 flex flex-wrap items-center gap-2">
-        <Badge variant={validado ? "outline" : "secondary"}>
+        <Badge variant={validado ? "exito" : "aviso"}>
           {validado ? "Validado" : "Borrador"}
         </Badge>
         {contenido.condicionGeneral ? (

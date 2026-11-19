@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { EstadoBadge } from "@/components/estado-badge";
 import {
   CONDICIONES,
   type ResumenCondicion,
@@ -17,17 +17,9 @@ export function CondicionBadge({ titulo, resumen }: Props) {
       <span className="text-muted-foreground">{titulo}</span>
       {resumen ? (
         <>
-          <Badge
-            variant={
-              resumen.condicion === "critico"
-                ? "destructive"
-                : resumen.condicion === "precaucion"
-                  ? "secondary"
-                  : "outline"
-            }
-          >
+          <EstadoBadge tipo="condicion" estado={resumen.condicion}>
             {CONDICIONES[resumen.condicion]}
-          </Badge>
+          </EstadoBadge>
           <span className="text-muted-foreground">
             {resumen.noPasa === 0
               ? "todo pasa"

@@ -118,7 +118,7 @@ export default async function UsuariosPage() {
 
 function EstadoBadge({ activo }: { activo: boolean }) {
   return activo ? (
-    <Badge variant="secondary">Activo</Badge>
+    <Badge variant="exito">Activo</Badge>
   ) : (
     <Badge variant="outline" className="text-muted-foreground">
       Inactivo

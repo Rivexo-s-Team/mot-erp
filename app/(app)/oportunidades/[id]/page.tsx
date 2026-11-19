@@ -117,7 +117,7 @@ export default async function OportunidadPage({
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <Badge>{etiqueta(ETAPAS, o.etapa)}</Badge>
         {o.etapa === "ganada" && !contrato ? (
-          <Badge variant="secondary">Pendiente de contrato</Badge>
+          <Badge variant="aviso">Pendiente de contrato</Badge>
         ) : null}
         {contrato ? (
           <Link

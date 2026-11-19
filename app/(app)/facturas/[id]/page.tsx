@@ -200,7 +200,7 @@ export default async function FacturaPage({
         <EstadoFacturaBadge estado={f.estado} />
         {f.es_anticipo ? <Badge variant="outline">Anticipo</Badge> : null}
         {saldo ? (
-          <Badge variant={saldo.saldo <= 0 ? "outline" : "secondary"}>
+          <Badge variant={saldo.saldo <= 0 ? "exito" : "aviso"}>
             {ESTADOS_COBRO[estadoCobro(saldo)]}
             {saldo.saldo > 0
               ? ` · saldo ${formatImporte(saldo.saldo, f.moneda)}`

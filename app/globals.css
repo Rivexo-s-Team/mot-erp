@@ -8,6 +8,8 @@
   --color-marca-azul: var(--marca-azul);
   --color-marca-cian: var(--marca-cian);
   --color-marca-verde: var(--marca-verde);
+  --color-exito: var(--exito);
+  --color-aviso: var(--aviso);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
@@ -56,6 +58,9 @@
   --marca-azul: oklch(0.41 0.13 266);
   --marca-cian: oklch(0.68 0.11 215);
   --marca-verde: oklch(0.76 0.11 140);
+  /* Estados: verde = terminado o al corriente; ámbar = pendiente de atender. */
+  --exito: oklch(0.47 0.12 150);
+  --aviso: oklch(0.5 0.12 65);
   --background: oklch(1 0 0);
   --foreground: oklch(0.2 0.03 262);
   --card: oklch(1 0 0);

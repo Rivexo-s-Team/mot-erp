@@ -118,7 +118,7 @@ export default async function PagoPage({
             Por aplicar {formatImporte(p.saldos.por_aplicar, p.moneda)}
           </Badge>
         ) : (
-          <Badge variant="outline">Aplicado completo</Badge>
+          <Badge variant="exito">Aplicado completo</Badge>
         )}
       </div>
 
