@@ -1,3 +1,4 @@
+import { ColumnaEtapa, TarjetaArrastrable } from "./tablero-arrastre";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
@@ -25,6 +26,7 @@ export default async function OportunidadesPage({
 }: PageProps<"/oportunidades">) {
   const sesion = await requirePermiso("oportunidades.ver");
   const { ver, tipo: tipoParam } = await searchParams;
+  const edita = tienePermiso(sesion, "oportunidades.editar");
   const cerradas = ver === "cerradas";
   const tipo = TIPOS_CORTOS.some((t) => t.value === tipoParam)
     ? (tipoParam as string)
@@ -52,7 +54,9 @@ export default async function OportunidadesPage({
         description={
           cerradas
             ? "Todas las ventas ganadas y perdidas."
-            : "Ventas por etapa, hasta ganada o perdida. Abre una para moverla."
+            : edita
+              ? "Ventas por etapa, hasta ganada o perdida. Arrastra una tarjeta para cambiarla de etapa."
+              : "Ventas por etapa, hasta ganada o perdida."
         }
       >
         <Link
@@ -61,7 +65,7 @@ export default async function OportunidadesPage({
         >
           {cerradas ? "Ver tablero" : "Historial de cerradas"}
         </Link>
-        {tienePermiso(sesion, "oportunidades.editar") ? (
+        {edita ? (
           <Link
             href="/oportunidades/nueva"
             className={buttonVariants({ className: "h-9" })}
@@ -92,10 +96,12 @@ export default async function OportunidadesPage({
         {columnas.map((etapa) => {
           const tarjetas = oportunidades.filter((o) => o.etapa === etapa.value);
           return (
-            <section
+            <ColumnaEtapa
               key={etapa.value}
-              className="lg:w-56 lg:shrink-0 xl:w-auto xl:min-w-0 xl:flex-1 xl:shrink"
-              aria-label={etapa.label}
+              etapa={etapa.value}
+              nombre={etapa.label}
+              activa={edita}
+              className="lg:min-h-40 lg:w-56 lg:shrink-0 xl:w-auto xl:min-w-0 xl:flex-1 xl:shrink"
             >
               <h2
                 className={`mb-2 flex items-end justify-between gap-2 border-b-2 pb-1.5 text-sm leading-tight font-semibold xl:min-h-11 ${etapa.value === "ganada" ? "border-exito text-exito" : etapa.value === "perdida" ? "border-muted-foreground/40 text-muted-foreground" : "border-primary/30"}`}
@@ -113,15 +119,21 @@ export default async function OportunidadesPage({
                 <ul className="space-y-2">
                   {tarjetas.map((o) => (
                     <li key={o.id}>
-                      <TarjetaOportunidad
-                        o={o}
-                        responsable={nombres.get(o.responsable_id)}
-                      />
+                      <TarjetaArrastrable
+                        id={o.id}
+                        etapa={o.etapa}
+                        activa={edita}
+                      >
+                        <TarjetaOportunidad
+                          o={o}
+                          responsable={nombres.get(o.responsable_id)}
+                        />
+                      </TarjetaArrastrable>
                     </li>
                   ))}
                 </ul>
               )}
-            </section>
+            </ColumnaEtapa>
           );
         })}
       </div>
@@ -137,7 +149,7 @@ function TarjetaOportunidad({
   responsable?: string;
 }) {
   return (
-    <Link href={`/oportunidades/${o.id}`} className="block">
+    <Link href={`/oportunidades/${o.id}`} className="block" draggable={false}>
       <Card className="gap-1 px-3 py-2.5 transition-colors hover:border-primary/40 hover:bg-accent/40">
         <p className="text-sm font-medium break-words">{o.nombre}</p>
         <p className="text-sm break-words text-muted-foreground">
