@@ -32,6 +32,7 @@ import {
 } from "@/lib/facturacion/facturas";
 import { aFila, esquemaCampos, type Valores } from "@/lib/forms/campos";
 import { hoyEnMexico } from "@/lib/format";
+import { CAMPOS_PORTAL, validarPortal } from "@/lib/facturacion/cobranza";
 import { createClient } from "@/lib/supabase/server";
 
 const esId = (v: unknown): v is string => z.uuid().safeParse(v).success;
@@ -351,4 +352,37 @@ export async function aplicarAnticipo(
   revalidatePath("/pagos");
   revalidatePath("/facturas", "layout");
   return volver(error ? mensajeError(error) : undefined);
+}
+
+/** Guarda cómo va la factura en el portal de proveedores del cliente. */
+export async function guardarPortal(
+  facturaId: string,
+  valores: Valores,
+): Promise<ActionResult> {
+  await requirePermiso("facturacion.editar");
+  if (!esId(facturaId)) return { error: "Registro no válido." };
+  const parsed = esquemaCampos(CAMPOS_PORTAL, validarPortal).safeParse(valores);
+  if (!parsed.success) return { error: "Revisa los datos del formulario." };
+  const v = parsed.data;
+  const { error } = await (await cliente()).from("portal_proveedor").upsert(
+    {
+      factura_id: facturaId,
+      estado: v.estado,
+      fecha_subida: v.fecha_subida || null,
+      fecha_aprobacion: v.fecha_aprobacion || null,
+      fecha_pago_programado: v.fecha_pago_programado || null,
+      notas: v.notas || null,
+    },
+    { onConflict: "factura_id" },
+  );
+  if (error)
+    return {
+      error:
+        error.code === "23514"
+          ? "Revisa las fechas: la de subida es obligatoria y la aprobación no puede ser anterior."
+          : mensajeError(error),
+    };
+  refrescar(facturaId);
+  revalidatePath("/cobranza");
+  redirect(`/facturas/${facturaId}`);
 }

@@ -1,3 +1,5 @@
+import { ordenExcedida, type SaldoOrden } from "@/lib/facturacion/cobranza";
+import { saldosDeOrdenes } from "@/lib/facturacion/data";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
@@ -69,6 +71,11 @@ export default async function ContratoPage({
     tienePermiso(sesion, "cargos.editar") &&
     c.estado === "vigente";
   const pagosUnicos = vePrecios ? await pagosUnicosDeContrato(c.id) : [];
+  // Saldo de cada orden de compra: solo para quien ve la facturación.
+  const saldosOrden =
+    vePrecios && tienePermiso(sesion, "facturacion.ver")
+      ? await saldosDeOrdenes(c.id)
+      : new Map<string, SaldoOrden>();
   const hoy = hoyEnMexico();
   const tarifasPorOrden = new Map<string, number>();
   for (const t of tarifas) {
@@ -464,6 +471,7 @@ export default async function ContratoPage({
                 <ul className="space-y-2">
                   {ordenes.map((o) => {
                     const cubre = tarifasPorOrden.get(o.id) ?? 0;
+                    const saldo = saldosOrden.get(o.id);
                     const tarjeta = (
                       <Card
                         className={`gap-1 px-4 py-3 ${edita ? "transition-colors hover:border-primary/40 hover:bg-accent/40" : ""}`}
@@ -492,6 +500,19 @@ export default async function ContratoPage({
                             ? "General (sin tarifas ligadas)"
                             : `Cubre ${cubre} ${cubre === 1 ? "tarifa" : "tarifas"}`}
                         </p>
+                        {saldo &&
+                        (saldo.facturado > 0 || saldo.monto !== null) ? (
+                          <p
+                            className={`text-sm tabular-nums ${ordenExcedida(saldo) ? "font-medium text-destructive" : "text-muted-foreground"}`}
+                          >
+                            Facturado {formatImporte(saldo.facturado, c.moneda)}
+                            {saldo.saldo !== null
+                              ? ordenExcedida(saldo)
+                                ? ` · excedida por ${formatImporte(-saldo.saldo, c.moneda)}`
+                                : ` · saldo ${formatImporte(saldo.saldo, c.moneda)}`
+                              : ""}
+                          </p>
+                        ) : null}
                         {o.notas ? (
                           <p className="text-sm whitespace-pre-line">
                             {o.notas}
