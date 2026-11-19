@@ -29,10 +29,11 @@ export async function AppNav() {
             <Logo priority className="h-9" />
           </Link>
         </div>
-        <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-3">
+        {/* El menú se desplaza por su cuenta; el usuario queda siempre a la vista. */}
+        <div className="flex-1 overflow-y-auto p-3">
           <NavLinks menu={menu} />
-          <div className="mt-auto">{usuario}</div>
         </div>
+        <div className="shrink-0 px-3 pb-3">{usuario}</div>
       </aside>
 
       <header className={TOPBAR}>
