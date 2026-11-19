@@ -33,13 +33,11 @@ export default async function CatalogoPage({
   return (
     <>
       <title>{`${catalogo.titulo} · Sistema MOT`}</title>
-      <PageHeader title={catalogo.titulo} description={catalogo.descripcion}>
-        <Link
-          href="/catalogos"
-          className={buttonVariants({ variant: "outline", className: "h-9" })}
-        >
-          Catálogos
-        </Link>
+      <PageHeader
+        migas={[{ label: "Catálogos", href: "/catalogos" }]}
+        title={catalogo.titulo}
+        description={catalogo.descripcion}
+      >
         {puedeEditar ? (
           <Link
             href={`/catalogos/${catalogo.slug}/nuevo`}

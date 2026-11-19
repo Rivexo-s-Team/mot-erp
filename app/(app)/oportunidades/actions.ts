@@ -8,6 +8,7 @@ import type { ActionResult } from "@/lib/auth/schemas";
 import { requirePermiso } from "@/lib/auth/session";
 import { aFila, esquemaCampos, type Valores } from "@/lib/forms/campos";
 import {
+  ETAPAS,
   camposEtapa,
   camposActividad,
   camposOportunidad,
@@ -104,6 +105,32 @@ export async function cambiarEtapa(
   revalidatePath("/oportunidades");
   revalidatePath(`/oportunidades/${id}`);
   redirect(`/oportunidades/${id}`);
+}
+
+/**
+ * Mueve una oportunidad a otra etapa desde el tablero (arrastrar y soltar).
+ * Marcarla como perdida pide motivo, así que eso se hace en su ficha.
+ */
+export async function moverEtapa(
+  id: string,
+  etapa: string,
+): Promise<ActionResult> {
+  await requirePermiso(PERMISO);
+  if (!esId(id) || !ETAPAS.some((e) => e.value === etapa))
+    return { error: "Movimiento no válido." };
+  if (etapa === "perdida")
+    return { error: "Para marcarla como perdida, abre la oportunidad." };
+  const { data, error } = await (
+    await tabla("oportunidades")
+  )
+    .update({ etapa, motivo_perdida_id: null, motivo_perdida: null })
+    .eq("id", id)
+    .select("id");
+  if (error || !data?.[0])
+    return { error: mensajeError(error?.code ?? "42501") };
+  revalidatePath("/oportunidades");
+  revalidatePath(`/oportunidades/${id}`);
+  revalidatePath("/");
 }
 
 export async function eliminarOportunidad(id: string): Promise<ActionResult> {

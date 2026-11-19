@@ -59,9 +59,12 @@ export function NavLinks({ menu, onNavigate }: NavLinksProps) {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Menú principal" className="flex flex-col gap-5">
+    <nav aria-label="Menú principal" className="flex flex-col gap-5 lg:gap-3.5">
       {menu.map((grupo) => (
-        <div key={grupo.titulo ?? "general"} className="flex flex-col gap-1">
+        <div
+          key={grupo.titulo ?? "general"}
+          className="flex flex-col gap-1 lg:gap-0.5"
+        >
           {grupo.titulo ? (
             <p className="px-3 text-xs font-medium tracking-wide text-muted-foreground uppercase">
               {grupo.titulo}
@@ -77,7 +80,7 @@ export function NavLinks({ menu, onNavigate }: NavLinksProps) {
                 onClick={onNavigate}
                 aria-current={activa ? "page" : undefined}
                 className={cn(
-                  "flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors",
+                  "flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors lg:h-8",
                   activa
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",

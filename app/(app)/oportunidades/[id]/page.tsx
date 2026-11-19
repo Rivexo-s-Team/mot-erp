@@ -39,9 +39,11 @@ import { EtapaForm } from "../etapa-form";
 
 export default async function OportunidadPage({
   params,
+  searchParams,
 }: PageProps<"/oportunidades/[id]">) {
   const sesion = await requirePermiso("oportunidades.ver");
   const { id } = await params;
+  const marcarPerdida = (await searchParams).marcar === "perdida";
   if (!z.uuid().safeParse(id).success) notFound();
   const [o, { nombres }] = await Promise.all([
     obtenerOportunidad(id),
@@ -97,13 +99,11 @@ export default async function OportunidadPage({
   return (
     <>
       <title>{`${o.nombre} · Sistema MOT`}</title>
-      <PageHeader title={o.nombre} description={o.cuentas.nombre}>
-        <Link
-          href="/oportunidades"
-          className={buttonVariants({ variant: "outline", className: "h-9" })}
-        >
-          Oportunidades
-        </Link>
+      <PageHeader
+        migas={[{ label: "Oportunidades", href: "/oportunidades" }]}
+        title={o.nombre}
+        description={o.cuentas.nombre}
+      >
         {edita ? (
           <Link
             href={`/oportunidades/${o.id}/editar`}
@@ -113,6 +113,16 @@ export default async function OportunidadPage({
           </Link>
         ) : null}
       </PageHeader>
+
+      {marcarPerdida && o.etapa !== "perdida" ? (
+        <p
+          role="status"
+          className="mb-4 rounded-lg border border-aviso/40 bg-aviso/10 px-3 py-2 text-sm text-aviso"
+        >
+          Para marcarla como perdida, elige la etapa «Perdida» aquí abajo y
+          escribe el motivo.
+        </p>
+      ) : null}
 
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <Badge>{etiqueta(ETAPAS, o.etapa)}</Badge>

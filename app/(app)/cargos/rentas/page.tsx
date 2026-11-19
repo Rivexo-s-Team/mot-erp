@@ -45,16 +45,10 @@ export default async function RentasPage({
   return (
     <div className="mx-auto max-w-3xl">
       <PageHeader
+        migas={[{ label: "Cargos por facturar", href: "/cargos" }]}
         title="Rentas del mes"
         description="Un cargo por cada Robox rentado en los contratos vigentes. Quedan pendientes de facturar."
-      >
-        <Link
-          href="/cargos"
-          className={buttonVariants({ variant: "outline", className: "h-9" })}
-        >
-          Cargos
-        </Link>
-      </PageHeader>
+      ></PageHeader>
 
       <form
         action="/cargos/rentas"

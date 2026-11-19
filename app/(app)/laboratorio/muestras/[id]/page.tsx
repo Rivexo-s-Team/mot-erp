@@ -108,6 +108,7 @@ export default async function MuestraPage({
     <div className="mx-auto max-w-3xl">
       <title>{`Muestra ${m.id_muestra} · Sistema MOT`}</title>
       <PageHeader
+        migas={[{ label: "Muestras", href: "/laboratorio/muestras" }]}
         title={`Muestra ${m.id_muestra}`}
         description={`${m.cuentas?.nombre ?? ""}${m.equipos_cliente ? ` · ${nombreEquipo(m.equipos_cliente)}` : ""}`}
       >
