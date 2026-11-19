@@ -31,13 +31,14 @@ export default async function PlantaPage({
   return (
     <>
       <title>{`${planta.nombre} · ${planta.cuenta.nombre} · Sistema MOT`}</title>
-      <PageHeader title={planta.nombre} description={planta.cuenta.nombre}>
-        <Link
-          href={`/clientes/${id}`}
-          className={buttonVariants({ variant: "outline", className: "h-9" })}
-        >
-          {planta.cuenta.nombre}
-        </Link>
+      <PageHeader
+        migas={[
+          { label: "Clientes", href: "/clientes" },
+          { label: planta.cuenta.nombre, href: `/clientes/${id}` },
+        ]}
+        title={planta.nombre}
+        description={planta.cuenta.nombre}
+      >
         {edita ? (
           <Link
             href={`${base}/editar`}

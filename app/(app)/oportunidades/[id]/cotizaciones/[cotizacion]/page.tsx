@@ -54,15 +54,13 @@ export default async function CotizacionPage({
     <>
       <title>{`Cotización v${c.version} · ${oportunidad.nombre} · Sistema MOT`}</title>
       <PageHeader
+        migas={[
+          { label: "Oportunidades", href: "/oportunidades" },
+          { label: oportunidad.nombre, href: `/oportunidades/${id}` },
+        ]}
         title={`Cotización ${c.folio}`}
         description={`Versión ${c.version} · ${oportunidad.nombre}`}
       >
-        <Link
-          href={`/oportunidades/${id}`}
-          className={buttonVariants({ variant: "outline", className: "h-9" })}
-        >
-          Oportunidad
-        </Link>
         <a
           href={`${base}/pdf`}
           target="_blank"

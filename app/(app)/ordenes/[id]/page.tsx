@@ -149,6 +149,7 @@ export default async function OrdenPage({
     <>
       <title>{`Orden ${o.folio} · Sistema MOT`}</title>
       <PageHeader
+        migas={[{ label: "Órdenes de servicio", href: "/ordenes" }]}
         title={`Orden ${o.folio}`}
         description={
           o.cuentas
@@ -156,9 +157,6 @@ export default async function OrdenPage({
             : "Trabajo de taller"
         }
       >
-        <Link href="/ordenes" className={botonChico}>
-          Órdenes
-        </Link>
         {o.estado !== "programada" ? (
           <a
             href={`/ordenes/${o.id}/pdf`}

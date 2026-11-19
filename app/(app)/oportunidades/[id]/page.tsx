@@ -97,13 +97,11 @@ export default async function OportunidadPage({
   return (
     <>
       <title>{`${o.nombre} · Sistema MOT`}</title>
-      <PageHeader title={o.nombre} description={o.cuentas.nombre}>
-        <Link
-          href="/oportunidades"
-          className={buttonVariants({ variant: "outline", className: "h-9" })}
-        >
-          Oportunidades
-        </Link>
+      <PageHeader
+        migas={[{ label: "Oportunidades", href: "/oportunidades" }]}
+        title={o.nombre}
+        description={o.cuentas.nombre}
+      >
         {edita ? (
           <Link
             href={`/oportunidades/${o.id}/editar`}

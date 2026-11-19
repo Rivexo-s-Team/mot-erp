@@ -136,13 +136,11 @@ export default async function ContratoPage({
   return (
     <>
       <title>{`${titulo} · Sistema MOT`}</title>
-      <PageHeader title={nombreContrato(c)} description={c.cuentas.nombre}>
-        <Link
-          href="/contratos"
-          className={buttonVariants({ variant: "outline", className: "h-9" })}
-        >
-          Contratos
-        </Link>
+      <PageHeader
+        migas={[{ label: "Contratos", href: "/contratos" }]}
+        title={nombreContrato(c)}
+        description={c.cuentas.nombre}
+      >
         {edita ? (
           <Link
             href={`/contratos/${c.id}/editar`}

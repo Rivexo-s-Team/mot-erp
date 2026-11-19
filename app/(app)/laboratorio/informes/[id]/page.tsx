@@ -79,6 +79,7 @@ export default async function InformePage({
     <>
       <title>{`Informe ${informe.folio} · Sistema MOT`}</title>
       <PageHeader
+        migas={[{ label: "Informes", href: "/laboratorio/informes" }]}
         title={`Informe ${informe.folio}`}
         description={`${informe.cuentas?.nombre ?? ""}${informe.equipos_cliente ? ` · ${nombreEquipo(informe.equipos_cliente)}` : ""}`}
       >

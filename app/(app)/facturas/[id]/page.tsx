@@ -175,17 +175,12 @@ export default async function FacturaPage({
     <div className="mx-auto max-w-4xl">
       <title>{`Factura de ${razon?.razon_social ?? ""} · Sistema MOT`}</title>
       <PageHeader
+        migas={[{ label: "Facturas", href: "/facturas" }]}
         title={
           f.estado === "borrador" ? "Factura en borrador" : `Factura ${folio}`
         }
         description={`${razon?.razon_social ?? ""} · ${formatDia(f.fecha)}`}
       >
-        <Link
-          href="/facturas"
-          className={buttonVariants({ variant: "outline", className: "h-9" })}
-        >
-          Facturas
-        </Link>
         {edita ? (
           <Link
             href={`/facturas/${f.id}/editar`}

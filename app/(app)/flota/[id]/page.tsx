@@ -98,12 +98,10 @@ export default async function RoboxPage({ params }: PageProps<"/flota/[id]">) {
     <>
       <title>{`Robox ${robox.numero_serie} · Sistema MOT`}</title>
       <PageHeader
+        migas={[{ label: "Flota", href: "/flota" }]}
         title={`Robox ${robox.numero_serie}`}
         description="SKF RecondOil Box"
       >
-        <Link href="/flota" className={botonChico}>
-          Flota
-        </Link>
         {edita ? (
           <Link href={`${base}/editar`} className={botonChico}>
             Editar

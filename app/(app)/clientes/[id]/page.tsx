@@ -55,15 +55,10 @@ export default async function CuentaPage({
     <>
       <title>{`${cuenta.nombre} · Sistema MOT`}</title>
       <PageHeader
+        migas={[{ label: "Clientes", href: "/clientes" }]}
         title={cuenta.nombre}
         description={cuenta.tipo_industria ?? undefined}
       >
-        <Link
-          href="/clientes"
-          className={buttonVariants({ variant: "outline", className: "h-9" })}
-        >
-          Clientes
-        </Link>
         {editaClientes ? (
           <Link
             href={`${base}/editar`}

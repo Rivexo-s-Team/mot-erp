@@ -98,16 +98,10 @@ export default async function PagoPage({
     <div className="mx-auto max-w-3xl">
       <title>{`Pago de ${p.razones_sociales?.razon_social ?? ""} · Sistema MOT`}</title>
       <PageHeader
+        migas={[{ label: "Pagos", href: "/pagos" }]}
         title={esAnticipo ? "Aplicación de anticipo" : "Pago recibido"}
         description={`${p.razones_sociales?.razon_social ?? ""} · ${formatDia(p.fecha)}`}
-      >
-        <Link
-          href="/pagos"
-          className={buttonVariants({ variant: "outline", className: "h-9" })}
-        >
-          Pagos
-        </Link>
-      </PageHeader>
+      ></PageHeader>
 
       <div className="mb-6 flex flex-wrap items-center gap-2 text-sm">
         <span className="font-medium tabular-nums">
