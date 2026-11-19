@@ -1,3 +1,6 @@
+import { Busqueda } from "@/components/busqueda";
+import { TablaLista } from "@/components/tabla-lista";
+import { coincide } from "@/lib/buscar";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
@@ -20,16 +23,20 @@ export default async function OrdenesPage({
   searchParams,
 }: PageProps<"/ordenes">) {
   const sesion = await requirePermiso("ordenes.ver");
-  const { estado: estadoParam } = await searchParams;
+  const { estado: estadoParam, q } = await searchParams;
+  const busqueda = typeof q === "string" ? q : "";
   const estado = ESTADOS_ORDEN.some((e) => e.value === estadoParam)
     ? String(estadoParam)
     : "";
 
-  const [ordenes, { conteo, total }, { nombres }] = await Promise.all([
+  const [todas, { conteo, total }, { nombres }] = await Promise.all([
     listarOrdenes({ estado }),
     contarOrdenesPorEstado(),
     directorioTecnicos(),
   ]);
+  const ordenes = todas.filter((o) =>
+    coincide(busqueda, [o.folio, lugarOrden(o), nombres.get(o.tecnico_id)]),
+  );
   const filtros = [
     { value: "", label: "Todas", cantidad: total },
     ...ESTADOS_ORDEN.map((e) => ({
@@ -75,32 +82,64 @@ export default async function OrdenesPage({
         ))}
       </nav>
 
+      <Busqueda
+        accion="/ordenes"
+        valor={busqueda}
+        placeholder="Buscar por folio, cliente o técnico…"
+        conservar={{ estado }}
+      />
+
       {ordenes.length === 0 ? (
         <Card className="px-4 py-10 text-center text-sm text-muted-foreground">
-          {total === 0
-            ? "Todavía no hay órdenes de servicio."
-            : "No hay órdenes en ese estado."}
+          {busqueda
+            ? `No hay órdenes que coincidan con "${busqueda}".`
+            : total === 0
+              ? "Todavía no hay órdenes de servicio."
+              : "No hay órdenes en ese estado."}
         </Card>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {ordenes.map((o) => (
-            <li key={o.id}>
-              <Link href={`/ordenes/${o.id}`} className="block h-full">
-                <Card className="h-full gap-1 px-4 py-3 transition-colors hover:border-primary/40 hover:bg-accent/40">
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <p className="font-medium tabular-nums">{o.folio}</p>
-                    <EstadoOrdenBadge estado={o.estado} />
-                  </div>
-                  <p className="text-sm">{lugarOrden(o)}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {formatDia(o.fecha_real ?? o.fecha_programada)} ·{" "}
-                    {nombres.get(o.tecnico_id) ?? "—"}
-                  </p>
-                </Card>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <>
+          <TablaLista
+            filas={ordenes}
+            clave={(o) => o.id}
+            href={(o) => `/ordenes/${o.id}`}
+            columnas={[
+              { titulo: "Folio", celda: (o) => o.folio },
+              { titulo: "Cliente y planta", celda: (o) => lugarOrden(o) },
+              {
+                titulo: "Fecha",
+                celda: (o) => formatDia(o.fecha_real ?? o.fecha_programada),
+              },
+              {
+                titulo: "Técnico",
+                celda: (o) => nombres.get(o.tecnico_id) ?? "—",
+              },
+              {
+                titulo: "Estado",
+                celda: (o) => <EstadoOrdenBadge estado={o.estado} />,
+              },
+            ]}
+          />
+          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 lg:hidden">
+            {ordenes.map((o) => (
+              <li key={o.id}>
+                <Link href={`/ordenes/${o.id}`} className="block h-full">
+                  <Card className="h-full gap-1 px-4 py-3 transition-colors hover:border-primary/40 hover:bg-accent/40">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <p className="font-medium tabular-nums">{o.folio}</p>
+                      <EstadoOrdenBadge estado={o.estado} />
+                    </div>
+                    <p className="text-sm">{lugarOrden(o)}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDia(o.fecha_real ?? o.fecha_programada)} ·{" "}
+                      {nombres.get(o.tecnico_id) ?? "—"}
+                    </p>
+                  </Card>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </>
   );

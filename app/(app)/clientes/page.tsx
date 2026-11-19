@@ -1,3 +1,4 @@
+import { TablaLista } from "@/components/tabla-lista";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
@@ -54,27 +55,45 @@ export default async function ClientesPage({
             : "Todavía no hay clientes. Agrega la primera cuenta."}
         </Card>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {cuentas.map((c) => (
-            <li key={c.id}>
-              <Link href={`/clientes/${c.id}`} className="block h-full">
-                <Card className="h-full gap-1 px-4 py-3 transition-colors hover:border-primary/40 hover:bg-accent/40">
-                  <p className="font-medium">{c.nombre}</p>
-                  {c.tipo_industria ? (
+        <>
+          <TablaLista
+            filas={cuentas}
+            clave={(c) => c.id}
+            href={(c) => `/clientes/${c.id}`}
+            columnas={[
+              { titulo: "Cliente", celda: (c) => c.nombre },
+              { titulo: "Industria", celda: (c) => c.tipo_industria ?? "—" },
+              {
+                titulo: "Plantas",
+                celda: (c) =>
+                  c.plantas.length === 0
+                    ? "Sin plantas"
+                    : c.plantas.map((p) => p.nombre).join(" · "),
+              },
+            ]}
+          />
+          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 lg:hidden">
+            {cuentas.map((c) => (
+              <li key={c.id}>
+                <Link href={`/clientes/${c.id}`} className="block h-full">
+                  <Card className="h-full gap-1 px-4 py-3 transition-colors hover:border-primary/40 hover:bg-accent/40">
+                    <p className="font-medium">{c.nombre}</p>
+                    {c.tipo_industria ? (
+                      <p className="text-sm text-muted-foreground">
+                        {c.tipo_industria}
+                      </p>
+                    ) : null}
                     <p className="text-sm text-muted-foreground">
-                      {c.tipo_industria}
+                      {c.plantas.length === 0
+                        ? "Sin plantas"
+                        : c.plantas.map((p) => p.nombre).join(" · ")}
                     </p>
-                  ) : null}
-                  <p className="text-sm text-muted-foreground">
-                    {c.plantas.length === 0
-                      ? "Sin plantas"
-                      : c.plantas.map((p) => p.nombre).join(" · ")}
-                  </p>
-                </Card>
-              </Link>
-            </li>
-          ))}
-        </ul>
+                  </Card>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </>
   );
