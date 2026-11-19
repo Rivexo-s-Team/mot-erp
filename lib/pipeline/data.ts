@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import { ETAPAS_CERRADAS } from "./campos";
+import { DIAS_CERRADAS_EN_TABLERO, ETAPAS_CERRADAS } from "./campos";
 
 /** Lecturas del pipeline. RLS decide qué ve cada rol. */
 
@@ -20,22 +20,36 @@ export async function directorioComercial() {
 const COLUMNAS =
   "id, nombre, etapa, tipo, origen, volumen_estimado_l, responsable_id, fecha_cierre, motivo_perdida, motivo_perdida_id, motivos_perdida (nombre), cuenta_id, planta_id, canal_venta_id, notas, updated_at, cuentas!inner (id, nombre, deleted_at), plantas (nombre), canales_venta (nombre)";
 
-export async function listarOportunidades(cerradas: boolean) {
+/**
+ * Oportunidades para el tablero. `tablero`: las abiertas más las ganadas y
+ * perdidas recientes (DIAS_CERRADAS_EN_TABLERO). `cerradas`: todas las
+ * ganadas y perdidas.
+ */
+export async function listarOportunidades(
+  vista: "tablero" | "cerradas",
+  tipo?: string,
+) {
   const supabase = await createClient();
   let query = supabase
     .from("oportunidades")
     .select(COLUMNAS)
     .is("deleted_at", null)
     .is("cuentas.deleted_at", null);
-  query = cerradas
-    ? query
-        .in("etapa", ETAPAS_CERRADAS)
-        .order("fecha_cierre", { ascending: false })
-    : query
-        .not("etapa", "in", `(${ETAPAS_CERRADAS.join(",")})`)
-        .order("updated_at", {
-          ascending: false,
-        });
+  if (vista === "cerradas") {
+    query = query
+      .in("etapa", ETAPAS_CERRADAS)
+      .order("fecha_cierre", { ascending: false });
+  } else {
+    const desde = new Date(
+      Date.now() - DIAS_CERRADAS_EN_TABLERO * 86_400_000,
+    ).toISOString();
+    query = query
+      .or(
+        `etapa.not.in.(${ETAPAS_CERRADAS.join(",")}),fecha_cierre.gte.${desde}`,
+      )
+      .order("updated_at", { ascending: false });
+  }
+  if (tipo) query = query.eq("tipo", tipo);
   const { data, error } = await query;
   if (error) throw new Error("No se pudieron cargar las oportunidades.");
   return data;

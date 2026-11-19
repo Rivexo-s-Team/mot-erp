@@ -1,20 +1,11 @@
-import { Badge } from "@/components/ui/badge";
+import { EstadoBadge } from "@/components/estado-badge";
 import { ESTADOS_FACTURA, etiqueta } from "@/lib/facturacion/facturas";
 
-/** Estado de una factura con un estilo distinto por estado. */
+/** Estado de una factura. */
 export function EstadoFacturaBadge({ estado }: { estado: string }) {
   return (
-    <Badge
-      variant={
-        estado === "borrador"
-          ? "secondary"
-          : estado === "emitida"
-            ? "default"
-            : "outline"
-      }
-      className={estado === "cancelada" ? "text-muted-foreground" : undefined}
-    >
+    <EstadoBadge tipo="factura" estado={estado}>
       {etiqueta(ESTADOS_FACTURA, estado)}
-    </Badge>
+    </EstadoBadge>
   );
 }

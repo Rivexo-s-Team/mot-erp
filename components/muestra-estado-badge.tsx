@@ -1,20 +1,11 @@
-import { Badge } from "@/components/ui/badge";
+import { EstadoBadge } from "@/components/estado-badge";
 import { ESTADOS_MUESTRA, etiqueta } from "@/lib/laboratorio/muestras";
 
-/** Estado de una muestra con un estilo distinto por estado. */
+/** Estado de una muestra. */
 export function EstadoMuestraBadge({ estado }: { estado: string }) {
-  const variante =
-    estado === "en_analisis"
-      ? "default"
-      : estado === "pendiente" || estado === "recibida"
-        ? "secondary"
-        : "outline";
   return (
-    <Badge
-      variant={variante}
-      className={estado === "cancelada" ? "text-muted-foreground" : undefined}
-    >
+    <EstadoBadge tipo="muestra" estado={estado}>
       {etiqueta(ESTADOS_MUESTRA, estado)}
-    </Badge>
+    </EstadoBadge>
   );
 }

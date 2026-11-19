@@ -127,7 +127,7 @@ export default async function CatalogoPage({
                   ))}
                   <TableCell>
                     {fila.activo ? (
-                      <Badge variant="secondary">Activo</Badge>
+                      <Badge variant="exito">Activo</Badge>
                     ) : (
                       <InactivoBadge />
                     )}

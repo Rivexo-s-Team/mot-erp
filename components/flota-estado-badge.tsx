@@ -1,20 +1,11 @@
-import { Badge } from "@/components/ui/badge";
+import { EstadoBadge } from "@/components/estado-badge";
 import { etiquetaEstado } from "@/lib/flota/campos";
 
-/** Estado de un Robox con un estilo distinto por estado. */
+/** Estado de un Robox. */
 export function EstadoRoboxBadge({ estado }: { estado: string }) {
-  const variante =
-    estado === "en_cliente"
-      ? "default"
-      : estado === "disponible"
-        ? "secondary"
-        : "outline";
   return (
-    <Badge
-      variant={variante}
-      className={estado === "baja" ? "text-muted-foreground" : undefined}
-    >
+    <EstadoBadge tipo="robox" estado={estado}>
       {etiquetaEstado(estado)}
-    </Badge>
+    </EstadoBadge>
   );
 }

@@ -181,7 +181,7 @@ export default async function RentasPage({
                               : "Ya generada"}
                         </Badge>
                       ) : (
-                        <Badge variant="secondary">Por generar</Badge>
+                        <Badge variant="aviso">Por generar</Badge>
                       )}
                       {r.parcial ? (
                         <Badge variant="outline">Mes incompleto</Badge>

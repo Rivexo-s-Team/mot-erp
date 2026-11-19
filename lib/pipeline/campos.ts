@@ -21,8 +21,19 @@ export const ETAPAS_ABIERTAS = ETAPAS.filter(
 
 export const TIPOS: Opcion[] = [
   { value: "nuevo", label: "Cliente nuevo" },
-  { value: "ampliacion", label: "Ampliación (cliente actual)" },
+  { value: "ampliacion", label: "Ampliación (up sell)" },
+  { value: "venta_cruzada", label: "Venta cruzada (cross sell)" },
 ];
+
+/** Nombre corto del tipo, para etiquetas y filtros del tablero. */
+export const TIPOS_CORTOS: Opcion[] = [
+  { value: "nuevo", label: "Cliente nuevo" },
+  { value: "ampliacion", label: "Up sell" },
+  { value: "venta_cruzada", label: "Cross sell" },
+];
+
+/** Días que una oportunidad ganada o perdida sigue a la vista en el tablero. */
+export const DIAS_CERRADAS_EN_TABLERO = 90;
 
 export const ORIGENES: Opcion[] = [
   { value: "prospeccion", label: "Prospección" },
@@ -65,7 +76,14 @@ export function camposOportunidad(
       ayuda:
         "Déjalo en Ninguno si todavía no se sabe o es para toda la cuenta.",
     },
-    { name: "tipo", label: "Tipo", tipo: "opciones", opciones: TIPOS },
+    {
+      name: "tipo",
+      label: "Tipo",
+      tipo: "opciones",
+      opciones: TIPOS,
+      ayuda:
+        "Up sell: más de lo mismo a un cliente actual (otro Robox, otra planta). Cross sell: otro servicio a un cliente actual.",
+    },
     { name: "origen", label: "Origen", tipo: "opciones", opciones: ORIGENES },
     {
       name: "responsable_id",

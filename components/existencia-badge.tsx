@@ -10,8 +10,8 @@ export function ExistenciaBadge({ existencia }: { existencia: number }) {
         nivel === "negativa"
           ? "destructive"
           : nivel === "agotada"
-            ? "outline"
-            : "secondary"
+            ? "aviso"
+            : "neutro"
       }
       className="tabular-nums"
     >
