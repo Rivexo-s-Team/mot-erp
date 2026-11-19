@@ -6,7 +6,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { requireSesion } from "@/lib/auth/session";
+import { formatDia, hoyEnMexico } from "@/lib/format";
+import { conteosDeInicio, proximasVisitas } from "@/lib/inicio/data";
+import { pendientes } from "@/lib/inicio/pendientes";
 import { menuPara } from "@/lib/navegacion";
 
 const DESCRIPCIONES: Record<string, string> = {
@@ -21,7 +25,14 @@ const DESCRIPCIONES: Record<string, string> = {
     "Existencia de partes y accesorios, con sus entradas y salidas.",
   "/documentos-acceso":
     "Documentos de MOT y de su personal para entrar a planta, con su vencimiento.",
-  "/cargos": "Lo que nace de las órdenes de servicio y falta facturar.",
+  "/laboratorio/muestras":
+    "Frascos de aceite, sus resultados y la condición del aceite.",
+  "/laboratorio/informes":
+    "Informes por equipo con tendencias, validación y PDF.",
+  "/cargos": "Rentas, servicios y pagos únicos que falta facturar.",
+  "/facturas": "Facturas en borrador, emitidas y canceladas.",
+  "/pagos": "Pagos recibidos y a qué facturas se aplicaron.",
+  "/cobranza": "Quién debe, cuánto y con cuántos días de atraso.",
   "/catalogos":
     "Aceites, parámetros de laboratorio, partes, actividades y fallas.",
   "/parametros":
@@ -36,6 +47,18 @@ export default async function InicioPage() {
     .flatMap((g) => g.entradas)
     .filter((e) => e.href !== "/");
 
+  const [conteos, visitas] = await Promise.all([
+    conteosDeInicio(sesion),
+    proximasVisitas(sesion),
+  ]);
+  const tarjetas = pendientes(conteos);
+  const hoy = hoyEnMexico();
+  const color = {
+    peligro: "text-destructive",
+    aviso: "text-aviso",
+    neutro: "text-foreground",
+  } as const;
+
   return (
     <>
       <PageHeader
@@ -43,6 +66,68 @@ export default async function InicioPage() {
         description={`Entraste como ${sesion.rol.nombre}${sesion.puesto ? ` · ${sesion.puesto}` : ""}.`}
       />
 
+      {tarjetas.length > 0 ? (
+        <section className="mb-8">
+          <h2 className="mb-3 text-lg font-semibold tracking-tight">
+            Por atender
+          </h2>
+          <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {tarjetas.map((t) => (
+              <li key={t.clave}>
+                <Link href={t.href} className="block h-full">
+                  <Card className="h-full gap-1 px-4 py-3 transition-colors hover:border-primary/40 hover:bg-accent/40">
+                    <p className="text-sm text-muted-foreground">{t.titulo}</p>
+                    <p
+                      className={`text-3xl font-semibold tabular-nums ${t.valor > 0 ? color[t.tono] : "text-muted-foreground"}`}
+                    >
+                      {t.valor}
+                    </p>
+                    <p
+                      className={`text-sm ${t.tono === "peligro" ? "font-medium text-destructive" : "text-muted-foreground"}`}
+                    >
+                      {t.detalle}
+                    </p>
+                  </Card>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {visitas.length > 0 ? (
+        <section className="mb-8">
+          <h2 className="mb-3 text-lg font-semibold tracking-tight">
+            Próximas visitas
+          </h2>
+          <Card className="gap-0 divide-y py-0">
+            {visitas.map((v) => (
+              <Link
+                key={v.id}
+                href={`/ordenes/${v.id}`}
+                className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm transition-colors hover:bg-accent/40"
+              >
+                <span className="min-w-0 font-medium break-words">
+                  {v.cuentas?.nombre ?? "—"}
+                  {v.plantas?.nombre ? ` · ${v.plantas.nombre}` : ""}
+                </span>
+                <span className="flex items-center gap-2 text-muted-foreground">
+                  {v.fecha_programada
+                    ? formatDia(v.fecha_programada)
+                    : "Sin fecha"}
+                  {v.fecha_programada && v.fecha_programada < hoy ? (
+                    <Badge variant="destructive">Atrasada</Badge>
+                  ) : null}
+                </span>
+              </Link>
+            ))}
+          </Card>
+        </section>
+      ) : null}
+
+      {accesos.length > 0 ? (
+        <h2 className="mb-3 text-lg font-semibold tracking-tight">Módulos</h2>
+      ) : null}
       {accesos.length > 0 ? (
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {accesos.map((e) => (
@@ -59,11 +144,6 @@ export default async function InicioPage() {
           ))}
         </ul>
       ) : null}
-
-      <p className="mt-6 text-sm text-muted-foreground">
-        El sistema está en construcción. Los módulos aparecerán aquí y en el
-        menú conforme se liberen, según los permisos de tu rol.
-      </p>
     </>
   );
 }
