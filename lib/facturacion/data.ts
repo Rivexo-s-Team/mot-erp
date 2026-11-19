@@ -222,7 +222,7 @@ export async function facturasPorCobrar(cuentaId?: string) {
   let query = supabase
     .from("facturas")
     .select(
-      "id, cuenta_id, razon_social_id, fecha, moneda, serie, folio, dias_credito, metodo_pago, cuentas (nombre), razones_sociales (razon_social, rfc)",
+      "id, cuenta_id, razon_social_id, fecha, moneda, serie, folio, dias_credito, metodo_pago, cuentas (nombre), razones_sociales (razon_social, rfc, usa_portal_proveedores)",
     )
     .eq("estado", "emitida")
     .is("deleted_at", null)
@@ -387,4 +387,69 @@ export async function aplicacionesDeAnticipo(anticipoFacturaId: string) {
     .order("fecha");
   if (error) throw new Error("No se pudieron cargar las aplicaciones.");
   return data;
+}
+
+// Cobranza -------------------------------------------------------------------------
+
+const COLUMNAS_PORTAL =
+  "factura_id, estado, fecha_subida, fecha_aprobacion, fecha_pago_programado, notas, updated_at";
+
+/** Seguimiento en el portal de proveedores de varias facturas, por factura. */
+export async function portalDeFacturas(ids: string[]) {
+  if (ids.length === 0) return new Map<string, SeguimientoPortal>();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("portal_proveedor")
+    .select(COLUMNAS_PORTAL)
+    .in("factura_id", ids);
+  if (error) throw new Error("No se pudo cargar el seguimiento de portales.");
+  return new Map(data.map((p) => [p.factura_id, p]));
+}
+
+export type SeguimientoPortal = {
+  factura_id: string;
+  estado: string;
+  fecha_subida: string | null;
+  fecha_aprobacion: string | null;
+  fecha_pago_programado: string | null;
+  notas: string | null;
+  updated_at: string;
+};
+
+/** ¿La razón social pide subir sus facturas a un portal? Y cuál. */
+export async function portalDeRazon(razonSocialId: string) {
+  const supabase = await createClient();
+  const [{ data: razon }, { data: credito }] = await Promise.all([
+    supabase
+      .from("razones_sociales")
+      .select("usa_portal_proveedores")
+      .eq("id", razonSocialId)
+      .maybeSingle(),
+    supabase
+      .from("condiciones_credito")
+      .select("portal")
+      .eq("razon_social_id", razonSocialId)
+      .maybeSingle(),
+  ]);
+  return {
+    usa: razon?.usa_portal_proveedores ?? false,
+    portal: credito?.portal ?? null,
+  };
+}
+
+/** Monto, facturado y saldo de las órdenes de compra de un contrato. */
+export async function saldosDeOrdenes(contratoId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("orden_compra_saldos")
+    .select("orden_compra_id, monto, facturado, saldo")
+    .eq("contrato_id", contratoId);
+  if (error)
+    throw new Error("No se pudieron cargar los saldos de las órdenes.");
+  return new Map(
+    data.map((o) => [
+      o.orden_compra_id ?? "",
+      { monto: o.monto, facturado: o.facturado ?? 0, saldo: o.saldo },
+    ]),
+  );
 }
