@@ -28,8 +28,11 @@ import {
   anticiposDeRazon,
   aplicacionesDeAnticipo,
   pagosDeFactura,
+  portalDeFacturas,
+  portalDeRazon,
   saldosDeFacturas,
 } from "@/lib/facturacion/data";
+import { nombreEstadoPortal } from "@/lib/facturacion/cobranza";
 import { totalDistinto } from "@/lib/facturacion/cfdi";
 import {
   accionesFactura,
@@ -77,6 +80,15 @@ export default async function FacturaPage({
     f.es_anticipo || !saldo || saldo.saldo <= 0
       ? []
       : anticipos.filter((a) => a.disponible > 0);
+  // Portal de proveedores: si la razón social lo usa o ya hay seguimiento.
+  const [portales, razonPortal] = emitida
+    ? await Promise.all([
+        portalDeFacturas([f.id]),
+        portalDeRazon(f.razon_social_id),
+      ])
+    : [null, null];
+  const portal = portales?.get(f.id) ?? null;
+  const muestraPortal = emitida && (portal !== null || razonPortal?.usa);
   const acciones = accionesFactura(f.estado);
   const puede = tienePermiso(sesion, "facturacion.editar");
   const edita = puede && acciones.editar;
@@ -331,6 +343,70 @@ export default async function FacturaPage({
             </Card>
           )}
         </div>
+
+        {muestraPortal ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Portal de proveedores</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="secondary">
+                  {nombreEstadoPortal(portal?.estado)}
+                </Badge>
+                {razonPortal?.portal ? (
+                  <span className="text-muted-foreground break-all">
+                    {razonPortal.portal}
+                  </span>
+                ) : null}
+              </div>
+              {portal ? (
+                <p className="text-muted-foreground">
+                  {[
+                    portal.fecha_subida
+                      ? `Subida ${formatDia(portal.fecha_subida)}`
+                      : null,
+                    portal.fecha_aprobacion
+                      ? `aprobada ${formatDia(portal.fecha_aprobacion)}`
+                      : null,
+                    portal.fecha_pago_programado
+                      ? `pago programado ${formatDia(portal.fecha_pago_programado)}`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ") || "Sin fechas todavía."}
+                </p>
+              ) : (
+                <p className="text-muted-foreground">
+                  Este cliente pide subir sus facturas a su portal. Aún no se
+                  registra el seguimiento de esta.
+                </p>
+              )}
+              {portal?.notas ? (
+                <p className="whitespace-pre-line">{portal.notas}</p>
+              ) : null}
+              {puede ? (
+                <Link
+                  href={`/facturas/${f.id}/portal`}
+                  className={buttonVariants({
+                    variant: "outline",
+                    size: "sm",
+                    className: "h-8",
+                  })}
+                >
+                  Actualizar seguimiento
+                </Link>
+              ) : null}
+            </CardContent>
+          </Card>
+        ) : puede && emitida ? (
+          <p className="text-sm text-muted-foreground">
+            ¿Esta factura se sube a un portal de proveedores?{" "}
+            <Link href={`/facturas/${f.id}/portal`} className={enlace}>
+              Registrar seguimiento
+            </Link>
+          </p>
+        ) : null}
 
         <section>
           <h2 className="mb-3 text-lg font-semibold tracking-tight">

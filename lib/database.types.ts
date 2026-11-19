@@ -382,6 +382,13 @@ export type Database = {
             foreignKeyName: "cargos_orden_compra_id_fkey";
             columns: ["orden_compra_id"];
             isOneToOne: false;
+            referencedRelation: "orden_compra_saldos";
+            referencedColumns: ["orden_compra_id"];
+          },
+          {
+            foreignKeyName: "cargos_orden_compra_id_fkey";
+            columns: ["orden_compra_id"];
+            isOneToOne: false;
             referencedRelation: "ordenes_compra";
             referencedColumns: ["id"];
           },
@@ -674,6 +681,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "equipos_cliente";
             referencedColumns: ["id", "planta_id"];
+          },
+          {
+            foreignKeyName: "contrato_tarifas_orden_compra_fkey";
+            columns: ["orden_compra_id", "contrato_id"];
+            isOneToOne: false;
+            referencedRelation: "orden_compra_saldos";
+            referencedColumns: ["orden_compra_id", "contrato_id"];
           },
           {
             foreignKeyName: "contrato_tarifas_orden_compra_fkey";
@@ -3148,6 +3162,75 @@ export type Database = {
           },
         ];
       };
+      portal_proveedor: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          estado: string;
+          factura_id: string;
+          fecha_aprobacion: string | null;
+          fecha_pago_programado: string | null;
+          fecha_subida: string | null;
+          id: string | null;
+          notas: string | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          estado?: string;
+          factura_id: string;
+          fecha_aprobacion?: string | null;
+          fecha_pago_programado?: string | null;
+          fecha_subida?: string | null;
+          id?: never;
+          notas?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          estado?: string;
+          factura_id?: string;
+          fecha_aprobacion?: string | null;
+          fecha_pago_programado?: string | null;
+          fecha_subida?: string | null;
+          id?: never;
+          notas?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "portal_proveedor_factura_id_fkey";
+            columns: ["factura_id"];
+            isOneToOne: true;
+            referencedRelation: "anticipo_saldos";
+            referencedColumns: ["factura_id"];
+          },
+          {
+            foreignKeyName: "portal_proveedor_factura_id_fkey";
+            columns: ["factura_id"];
+            isOneToOne: true;
+            referencedRelation: "factura_saldos";
+            referencedColumns: ["factura_id"];
+          },
+          {
+            foreignKeyName: "portal_proveedor_factura_id_fkey";
+            columns: ["factura_id"];
+            isOneToOne: true;
+            referencedRelation: "factura_totales";
+            referencedColumns: ["factura_id"];
+          },
+          {
+            foreignKeyName: "portal_proveedor_factura_id_fkey";
+            columns: ["factura_id"];
+            isOneToOne: true;
+            referencedRelation: "facturas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       razones_sociales: {
         Row: {
           codigo_postal_fiscal: string | null;
@@ -3567,6 +3650,32 @@ export type Database = {
         };
         ComputedFields: never;
         Relationships: [];
+      };
+      orden_compra_saldos: {
+        Row: {
+          contrato_id: string;
+          facturado: number | null;
+          monto: number | null;
+          orden_compra_id: string;
+          saldo: number | null;
+        };
+        ComputedFields: never;
+        Relationships: [
+          {
+            foreignKeyName: "ordenes_compra_contrato_id_fkey";
+            columns: ["contrato_id"];
+            isOneToOne: false;
+            referencedRelation: "contrato_totales";
+            referencedColumns: ["contrato_id"];
+          },
+          {
+            foreignKeyName: "ordenes_compra_contrato_id_fkey";
+            columns: ["contrato_id"];
+            isOneToOne: false;
+            referencedRelation: "contratos";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       pago_saldos: {
         Row: {
