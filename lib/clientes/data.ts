@@ -1,3 +1,4 @@
+import { tipoDeCuenta } from "./tipo";
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 
@@ -8,7 +9,7 @@ export async function listarCuentas(busqueda: string) {
   let query = supabase
     .from("cuentas")
     .select(
-      "id, nombre, tipo_industria, plantas (id, nombre, municipio, estado, deleted_at)",
+      "id, nombre, tipo_industria, plantas (id, nombre, municipio, estado, deleted_at), contratos (estado, deleted_at)",
     )
     .is("deleted_at", null)
     .order("nombre");
@@ -18,9 +19,13 @@ export async function listarCuentas(busqueda: string) {
 
   const { data, error } = await query;
   if (error) throw new Error("No se pudieron cargar los clientes.");
-  return data.map((c) => ({
+  return data.map(({ contratos, ...c }) => ({
     ...c,
     plantas: c.plantas.filter((p) => p.deleted_at === null),
+    // Prospecto o cliente, según sus contratos (lib/clientes/tipo.ts).
+    tipo: tipoDeCuenta(
+      contratos.filter((k) => k.deleted_at === null).map((k) => k.estado),
+    ),
   }));
 }
 
