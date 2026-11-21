@@ -5,7 +5,7 @@ select plan(7);
 select is(
   (select count(*)::int from public.perfiles p join auth.users u on u.id = p.id
     where u.email like '%@mot.test' and p.activo),
-  6, 'hay un usuario de prueba activo por rol'
+  7, 'hay un usuario de prueba activo por rol'
 );
 select is(
   (select count(distinct rol_id)::int from public.perfiles),
