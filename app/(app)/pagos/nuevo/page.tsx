@@ -12,11 +12,15 @@ import {
 } from "@/components/ui/native-select";
 import { requirePermiso } from "@/lib/auth/session";
 import { fechaVencimiento } from "@/lib/facturacion/credito";
-import { facturasPorCobrar } from "@/lib/facturacion/data";
+import {
+  cuentasBancariasActivas,
+  facturasPorCobrar,
+} from "@/lib/facturacion/data";
 import { folioFactura } from "@/lib/facturacion/facturas";
 import {
   CAMPO_APLICAR,
   FORMAS_DE_PAGO_RECIBIDO,
+  nombreCuentaBancaria,
 } from "@/lib/facturacion/pagos";
 import { formatDia, formatImporte, hoyEnMexico } from "@/lib/format";
 import { registrarPago } from "../actions";
@@ -87,7 +91,10 @@ export default async function NuevoPagoPage({
   }
 
   if (!z.uuid().safeParse(cuentaParam).success) notFound();
-  const facturas = await facturasPorCobrar(cuentaParam);
+  const [facturas, bancos] = await Promise.all([
+    facturasPorCobrar(cuentaParam),
+    cuentasBancariasActivas(),
+  ]);
   const hoy = hoyEnMexico();
   // Un pago es de una razón social y una moneda: un formulario por cada combinación.
   const grupos = new Map<string, typeof facturas>();
@@ -186,6 +193,30 @@ export default async function NuevoPagoPage({
                           className="h-10 font-normal"
                         />
                       </label>
+                      {bancos.length > 0 ? (
+                        <label className={`${etiquetaCampo} sm:col-span-2`}>
+                          <span>
+                            Cuenta donde cayó{" "}
+                            <span className="font-normal text-muted-foreground">
+                              (opcional)
+                            </span>
+                          </span>
+                          <NativeSelect
+                            name="cuenta_bancaria_id"
+                            defaultValue=""
+                            className="h-10 w-full font-normal"
+                          >
+                            <NativeSelectOption value="">
+                              Sin indicar
+                            </NativeSelectOption>
+                            {bancos.map((b) => (
+                              <NativeSelectOption key={b.id} value={b.id}>
+                                {nombreCuentaBancaria(b)} · {b.moneda}
+                              </NativeSelectOption>
+                            ))}
+                          </NativeSelect>
+                        </label>
+                      ) : null}
                       {moneda !== "MXN" ? (
                         <label className={`${etiquetaCampo} sm:col-span-2`}>
                           <span>

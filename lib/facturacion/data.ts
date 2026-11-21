@@ -241,7 +241,7 @@ export async function facturasPorCobrar(cuentaId?: string) {
 }
 
 const COLUMNAS_PAGO =
-  "id, cuenta_id, razon_social_id, fecha, monto, moneda, tipo_cambio, forma_pago, referencia, notas, rep_folio, rep_uuid, anticipo_factura_id, created_at, created_by, cuentas (nombre), razones_sociales (razon_social, rfc)";
+  "id, cuenta_id, razon_social_id, fecha, monto, moneda, tipo_cambio, forma_pago, referencia, notas, rep_folio, rep_uuid, anticipo_factura_id, cuenta_bancaria_id, created_at, created_by, cuentas (nombre), razones_sociales (razon_social, rfc), cuentas_bancarias (nombre, terminacion)";
 
 type SaldoPago = { aplicado: number; por_aplicar: number };
 
@@ -452,4 +452,17 @@ export async function saldosDeOrdenes(contratoId: string) {
       { monto: o.monto, facturado: o.facturado ?? 0, saldo: o.saldo },
     ]),
   );
+}
+
+/** Cuentas bancarias de MOT vigentes, para decir a cuál cayó un pago. */
+export async function cuentasBancariasActivas() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("cuentas_bancarias")
+    .select("id, nombre, terminacion, moneda")
+    .eq("activo", true)
+    .order("orden")
+    .order("nombre");
+  if (error) throw new Error("No se pudieron cargar las cuentas bancarias.");
+  return data;
 }

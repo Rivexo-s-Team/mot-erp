@@ -43,6 +43,8 @@ export type DatosPago = {
   forma_pago: string;
   referencia: string;
   notas: string;
+  /** Cuenta de MOT donde cayó el pago; vacío si no se indicó. */
+  cuenta_bancaria_id: string;
 };
 
 export type PagoLeido =
@@ -71,6 +73,7 @@ export function leerPago(campos: Record<string, string>): PagoLeido {
     forma_pago: texto("forma_pago"),
     referencia: texto("referencia").slice(0, 100),
     notas: texto("notas").slice(0, 2000),
+    cuenta_bancaria_id: texto("cuenta_bancaria_id"),
   };
   if (!UUID.test(datos.razon_social))
     return { ok: false, error: "Falta la razón social que paga." };
@@ -88,6 +91,8 @@ export function leerPago(campos: Record<string, string>): PagoLeido {
     return { ok: false, error: "Falta la moneda del pago." };
   if (!FORMAS_DE_PAGO_RECIBIDO.some((f) => f.value === datos.forma_pago))
     return { ok: false, error: "Elige la forma de pago." };
+  if (datos.cuenta_bancaria_id !== "" && !UUID.test(datos.cuenta_bancaria_id))
+    return { ok: false, error: "Elige la cuenta bancaria de la lista." };
   if (datos.tipo_cambio !== "") {
     if (datos.moneda === "MXN")
       return { ok: false, error: "Un pago en pesos no lleva tipo de cambio." };
@@ -149,3 +154,9 @@ export const nombreFormaPago = (clave: string | null) =>
   clave === FORMA_ANTICIPO
     ? "30 · Aplicación de anticipos"
     : (FORMAS_PAGO.find((f) => f.value === clave)?.label ?? clave ?? "—");
+
+/** "BBVA dólares · terminación 4321", para listas y fichas. */
+export const nombreCuentaBancaria = (c: {
+  nombre: string;
+  terminacion: string | null;
+}) => (c.terminacion ? `${c.nombre} · terminación ${c.terminacion}` : c.nombre);
