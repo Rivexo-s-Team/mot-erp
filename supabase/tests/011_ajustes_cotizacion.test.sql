@@ -129,7 +129,7 @@ select throws_ok(
 );
 
 -- Motivos de pérdida ----------------------------------------------------------
-select is((select count(*)::int from public.motivos_perdida where activo), 7, 'hay 7 motivos de pérdida');
+select is((select count(*)::int from public.motivos_perdida where activo), 8, 'hay 8 motivos de pérdida');
 select throws_ok(
   $$update public.oportunidades set etapa = 'perdida' where id = '00000000-0000-0000-0000-0000000000b2'$$,
   '23514', null, 'perdida sigue exigiendo un motivo'
