@@ -33,6 +33,12 @@ export function periodoDeMes(mes: unknown): string | null {
 /** "2026-11-17" → "2026-11". */
 export const mesDeDia = (dia: string) => dia.slice(0, 7);
 
+/**
+ * El mes que toca facturar hoy: las rentas van a mes vencido (D51), así que es
+ * el mes que acaba de terminar. mesVencido("2026-12-03") → "2026-11".
+ */
+export const mesVencido = (hoy: string) => desplazarMes(mesDeDia(hoy), -1);
+
 /** "2026-11" o "2026-11-01" → "noviembre de 2026". */
 export function nombreMes(mes: string): string {
   const [anio, numero] = mes.split("-");

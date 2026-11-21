@@ -12,7 +12,7 @@ import { centavosATexto } from "@/lib/cargos/campos";
 import { rentasDelMes } from "@/lib/cargos/data";
 import {
   desplazarMes,
-  mesDeDia,
+  mesVencido,
   nombreMes,
   periodoDeMes,
   rentasPorContrato,
@@ -30,11 +30,10 @@ export default async function RentasPage({
   if (!tienePermiso(sesion, "precios.ver")) redirect("/");
   const edita = tienePermiso(sesion, "cargos.editar");
   const { mes: mesParam, listo, error } = await searchParams;
-  // Sin elegir, el mes en curso.
+  // Sin elegir, el mes que acaba de terminar: las rentas van a mes vencido (D51).
+  const vencido = mesVencido(hoyEnMexico());
   const mes =
-    typeof mesParam === "string" && periodoDeMes(mesParam)
-      ? mesParam
-      : mesDeDia(hoyEnMexico());
+    typeof mesParam === "string" && periodoDeMes(mesParam) ? mesParam : vencido;
   const rentas = await rentasDelMes(`${mes}-01`);
   const resumen = resumenRentas(rentas);
   const grupos = rentasPorContrato(rentas);
@@ -47,7 +46,7 @@ export default async function RentasPage({
       <PageHeader
         migas={[{ label: "Cargos por facturar", href: "/cargos" }]}
         title="Rentas del mes"
-        description="Un cargo por cada Robox rentado en los contratos vigentes. Quedan pendientes de facturar."
+        description={`Un cargo por cada Robox rentado en los contratos vigentes. Se facturan a mes vencido: hoy toca ${nombreMes(vencido)}.`}
       ></PageHeader>
 
       <form
