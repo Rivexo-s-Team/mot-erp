@@ -1,3 +1,4 @@
+import { resumenInstalacion } from "@/lib/clientes/campos";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
@@ -68,6 +69,12 @@ export default async function OrdenCampoPage({
       "Equipo",
       o.equipos_cliente ? nombreEquipo(o.equipos_cliente) : "Sin definir",
     ],
+    ...(o.equipos_cliente && resumenInstalacion(o.equipos_cliente)
+      ? ([["Instalación", resumenInstalacion(o.equipos_cliente)]] as [
+          string,
+          string,
+        ][])
+      : []),
     ["Robox", o.robox?.numero_serie ?? "Sin definir"],
     ["Técnico", nombres.get(o.tecnico_id) ?? "—"],
   ];

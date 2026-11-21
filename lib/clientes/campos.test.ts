@@ -6,6 +6,8 @@ import {
   CAMPOS_REQUISITO,
   camposContacto,
   camposEquipo,
+  faltantesDeInstalacion,
+  resumenInstalacion,
   camposPlanta,
   direccionPlanta,
 } from "./campos";
@@ -200,5 +202,43 @@ describe("requisito de planta", () => {
       esquema.safeParse({ categoria: "otro", nombre: "REPSE", detalle: "" })
         .success,
     ).toBe(false);
+  });
+});
+
+describe("datos de instalación del sitio", () => {
+  const nada = {
+    tipo_conexion: null,
+    distancia_reservorio_m: null,
+    voltaje: null,
+    corriente: null,
+  };
+
+  it("sin datos: resumen vacío y faltan los cuatro", () => {
+    expect(resumenInstalacion(nada)).toBe("");
+    expect(faltantesDeInstalacion(nada)).toEqual([
+      "voltaje",
+      "corriente",
+      "distancia al reservorio",
+      "conexiones",
+    ]);
+  });
+
+  it("completos: una línea y no falta nada", () => {
+    const e = {
+      tipo_conexion: "NPT de 1/2",
+      distancia_reservorio_m: 4.5,
+      voltaje: "220 V trifásico",
+      corriente: "16 A",
+    };
+    expect(resumenInstalacion(e)).toBe(
+      "220 V trifásico · 16 A · a 4.5 m del reservorio · conexión NPT de 1/2",
+    );
+    expect(faltantesDeInstalacion(e)).toEqual([]);
+  });
+
+  it("a medias: dice lo que hay y lo que falta", () => {
+    const e = { ...nada, voltaje: "440 V" };
+    expect(resumenInstalacion(e)).toBe("440 V");
+    expect(faltantesDeInstalacion(e)).toHaveLength(3);
   });
 });

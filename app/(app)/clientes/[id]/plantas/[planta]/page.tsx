@@ -10,6 +10,7 @@ import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import {
   direccionPlanta,
   etiquetaCategoria,
+  faltantesDeInstalacion,
   TOMA_MUESTRAS,
 } from "@/lib/clientes/campos";
 import { obtenerPlanta, type PlantaCompleta } from "@/lib/clientes/data";
@@ -100,6 +101,11 @@ export default async function PlantaPage({
                   </div>
                 ))}
               </dl>
+              {faltantesDeInstalacion(e).length > 0 ? (
+                <p className="pt-1 text-sm text-aviso">
+                  Para instalar falta: {faltantesDeInstalacion(e).join(", ")}.
+                </p>
+              ) : null}
               {e.notas ? (
                 <p className="pt-1 text-sm text-muted-foreground">{e.notas}</p>
               ) : null}
@@ -154,6 +160,14 @@ function datosEquipo(e: PlantaCompleta["equipos"][number]): [string, string][] {
     ],
     ["Contenedores", contenedores],
     ["Conexión", e.tipo_conexion],
+    [
+      "Distancia",
+      e.distancia_reservorio_m !== null
+        ? `${e.distancia_reservorio_m} m al reservorio`
+        : null,
+    ],
+    ["Voltaje", e.voltaje],
+    ["Corriente", e.corriente],
     ["Altura", e.altura],
     ["Localización", e.localizacion],
     [
