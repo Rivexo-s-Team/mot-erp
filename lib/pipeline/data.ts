@@ -18,7 +18,7 @@ export async function directorioComercial() {
 }
 
 const COLUMNAS =
-  "id, nombre, etapa, tipo, origen, volumen_estimado_l, responsable_id, fecha_cierre, motivo_perdida, motivo_perdida_id, motivos_perdida (nombre), cuenta_id, planta_id, canal_venta_id, notas, updated_at, cuentas!inner (id, nombre, deleted_at), plantas (nombre), canales_venta (nombre)";
+  "id, nombre, etapa, tipo, origen, volumen_estimado_l, responsable_id, fecha_cierre, siguiente_paso, siguiente_paso_fecha, motivo_perdida, motivo_perdida_id, motivos_perdida (nombre), cuenta_id, planta_id, canal_venta_id, notas, updated_at, cuentas!inner (id, nombre, deleted_at), plantas (nombre), canales_venta (nombre)";
 
 /**
  * Oportunidades para el tablero. `tablero`: las abiertas más las ganadas y

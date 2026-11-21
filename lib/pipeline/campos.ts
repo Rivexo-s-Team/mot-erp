@@ -12,9 +12,13 @@ export const ETAPAS: Opcion[] = [
   { value: "seguimiento", label: "Seguimiento" },
   { value: "ganada", label: "Ganada" },
   { value: "perdida", label: "Perdida" },
+  // No es una venta perdida: el prospecto no va (sin presupuesto, ya tiene servicio…).
+  { value: "descartada", label: "Descartada" },
 ];
 
-export const ETAPAS_CERRADAS = ["ganada", "perdida"];
+export const ETAPAS_CERRADAS = ["ganada", "perdida", "descartada"];
+/** Etapas que piden un motivo al marcarlas. */
+export const ETAPAS_CON_MOTIVO = ["perdida", "descartada"];
 export const ETAPAS_ABIERTAS = ETAPAS.filter(
   (e) => !ETAPAS_CERRADAS.includes(e.value),
 );
@@ -107,6 +111,22 @@ export function camposOportunidad(
       tipo: "numero",
       opcional: true,
     },
+    {
+      name: "siguiente_paso",
+      label: "Siguiente paso",
+      tipo: "texto",
+      opcional: true,
+      max: 200,
+      ayuda:
+        "Qué toca hacer: llamar, mandar la propuesta, retomar cuando abran presupuesto…",
+    },
+    {
+      name: "siguiente_paso_fecha",
+      label: "Fecha del siguiente paso",
+      tipo: "fecha",
+      opcional: true,
+      ayuda: "Ese día aparece en Inicio como seguimiento por hacer.",
+    },
     { name: "notas", label: "Notas", tipo: "textoLargo", opcional: true },
   ];
 }
@@ -135,21 +155,37 @@ export function camposActividad(
   ];
 }
 
+/** Etapas en las que ya no hay nada que seguir: la venta se ganó o se perdió. */
+export const ETAPAS_SIN_SEGUIMIENTO = ["ganada", "perdida"];
+
+/**
+ * ¿El siguiente paso ya toca (hoy o antes)? Cuenta en las abiertas y también
+ * en las descartadas: "sin presupuesto, retomar en enero" debe avisar en enero.
+ */
+export const seguimientoVencido = (
+  o: { etapa: string; siguiente_paso_fecha: string | null },
+  hoy: string,
+) =>
+  o.siguiente_paso_fecha !== null &&
+  o.siguiente_paso_fecha <= hoy &&
+  !ETAPAS_SIN_SEGUIMIENTO.includes(o.etapa);
+
 /** Cambio de etapa. `motivos` es la lista de motivos de pérdida vigentes. */
 export function camposEtapa(motivos: Opcion[]): Campo[] {
   return [
     { name: "etapa", label: "Etapa", tipo: "opciones", opciones: ETAPAS },
     {
       name: "motivo_perdida_id",
-      label: "Motivo de la pérdida",
+      label: "Motivo",
       tipo: "referencia",
       opcional: true,
       opciones: motivos,
-      ayuda: "Solo si la marcas como perdida. La lista se edita en Catálogos.",
+      ayuda:
+        "Solo si la marcas como perdida o descartada. La lista se edita en Catálogos.",
     },
     {
       name: "motivo_perdida",
-      label: "Detalle de la pérdida",
+      label: "Detalle del motivo",
       tipo: "textoLargo",
       opcional: true,
     },
@@ -157,12 +193,15 @@ export function camposEtapa(motivos: Opcion[]): Campo[] {
 }
 
 export const validarEtapa: Validador = (v) =>
-  v.etapa === "perdida" &&
+  ETAPAS_CON_MOTIVO.includes(String(v.etapa)) &&
   String(v.motivo_perdida_id ?? "") === "" &&
   String(v.motivo_perdida ?? "").trim() === ""
     ? {
         campo: "motivo_perdida_id",
-        mensaje: "Elige por qué se perdió, o escríbelo en el detalle.",
+        mensaje:
+          v.etapa === "descartada"
+            ? "Elige por qué se descarta, o escríbelo en el detalle."
+            : "Elige por qué se perdió, o escríbelo en el detalle.",
       }
     : null;
 

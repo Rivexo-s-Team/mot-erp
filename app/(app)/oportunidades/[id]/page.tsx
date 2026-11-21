@@ -13,7 +13,12 @@ import { valoresIniciales } from "@/lib/forms/campos";
 import { ESTADOS } from "@/lib/cotizaciones/campos";
 import { contratoDeOportunidad } from "@/lib/contratos/data";
 import { cotizacionesDeOportunidad } from "@/lib/cotizaciones/data";
-import { formatDia, formatFecha, formatImporte } from "@/lib/format";
+import {
+  formatDia,
+  formatFecha,
+  formatImporte,
+  hoyEnMexico,
+} from "@/lib/format";
 import { listarMuestras } from "@/lib/laboratorio/data";
 import {
   avisoDeMuestras,
@@ -21,6 +26,7 @@ import {
   ETAPAS,
   etiqueta,
   ORIGENES,
+  seguimientoVencido,
   TIPOS,
   TIPOS_ACTIVIDAD,
 } from "@/lib/pipeline/campos";
@@ -43,7 +49,9 @@ export default async function OportunidadPage({
 }: PageProps<"/oportunidades/[id]">) {
   const sesion = await requirePermiso("oportunidades.ver");
   const { id } = await params;
-  const marcarPerdida = (await searchParams).marcar === "perdida";
+  const { marcar } = await searchParams;
+  const marcarComo =
+    marcar === "perdida" || marcar === "descartada" ? marcar : null;
   if (!z.uuid().safeParse(id).success) notFound();
   const [o, { nombres }] = await Promise.all([
     obtenerOportunidad(id),
@@ -94,7 +102,23 @@ export default async function OportunidadPage({
   const motivo = [o.motivos_perdida?.nombre, o.motivo_perdida]
     .filter(Boolean)
     .join(". ");
-  if (motivo) datos.push(["Motivo de la pérdida", motivo]);
+  if (motivo)
+    datos.push([
+      o.etapa === "descartada" ? "Motivo del descarte" : "Motivo de la pérdida",
+      motivo,
+    ]);
+  if (o.siguiente_paso || o.siguiente_paso_fecha)
+    datos.push([
+      seguimientoVencido(o, hoyEnMexico())
+        ? "Siguiente paso (ya toca)"
+        : "Siguiente paso",
+      [
+        o.siguiente_paso,
+        o.siguiente_paso_fecha ? formatDia(o.siguiente_paso_fecha) : null,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    ]);
 
   return (
     <>
@@ -114,13 +138,13 @@ export default async function OportunidadPage({
         ) : null}
       </PageHeader>
 
-      {marcarPerdida && o.etapa !== "perdida" ? (
+      {marcarComo && o.etapa !== marcarComo ? (
         <p
           role="status"
           className="mb-4 rounded-lg border border-aviso/40 bg-aviso/10 px-3 py-2 text-sm text-aviso"
         >
-          Para marcarla como perdida, elige la etapa «Perdida» aquí abajo y
-          escribe el motivo.
+          Para marcarla como {marcarComo}, elige la etapa «
+          {etiqueta(ETAPAS, marcarComo)}» aquí abajo e indica el motivo.
         </p>
       ) : null}
 

@@ -12,6 +12,8 @@ export type Conteos = {
   muestrasEnProceso: number | null;
   informesBorrador: number | null;
   oportunidadesAbiertas: number | null;
+  /** Oportunidades cuyo siguiente paso ya toca. */
+  seguimientosPorHacer: number | null;
   cargosPorFacturar: number | null;
   facturasPorCobrar: number | null;
   facturasVencidas: number | null;
@@ -89,6 +91,15 @@ export function pendientes(c: Conteos): Pendiente[] {
       detalle: "Ventas en curso",
       href: "/oportunidades",
       tono: "neutro",
+    });
+  if (c.seguimientosPorHacer !== null)
+    lista.push({
+      clave: "seguimientos",
+      titulo: "Seguimientos por hacer",
+      valor: c.seguimientosPorHacer,
+      detalle: "Oportunidades cuyo siguiente paso ya toca",
+      href: "/oportunidades",
+      tono: c.seguimientosPorHacer > 0 ? "aviso" : "neutro",
     });
   if (c.cargosPorFacturar !== null)
     lista.push({

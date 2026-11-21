@@ -53,6 +53,7 @@ export async function conteosDeInicio(sesion: Sesion): Promise<Conteos> {
     muestrasEnProceso,
     informesBorrador,
     oportunidadesAbiertas,
+    seguimientosPorHacer,
     cargosPorFacturar,
     porCobrar,
   ] = await Promise.all([
@@ -99,7 +100,17 @@ export async function conteosDeInicio(sesion: Sesion): Promise<Conteos> {
         supabase
           .from("oportunidades")
           .select("id", { count: "exact", head: true })
+          .not("etapa", "in", "(ganada,perdida,descartada)")
+          .is("deleted_at", null),
+      ),
+    ),
+    si(puede("oportunidades.ver"), () =>
+      cuenta(
+        supabase
+          .from("oportunidades")
+          .select("id", { count: "exact", head: true })
           .not("etapa", "in", "(ganada,perdida)")
+          .lte("siguiente_paso_fecha", hoy)
           .is("deleted_at", null),
       ),
     ),
@@ -124,6 +135,7 @@ export async function conteosDeInicio(sesion: Sesion): Promise<Conteos> {
     muestrasEnProceso,
     informesBorrador,
     oportunidadesAbiertas,
+    seguimientosPorHacer,
     cargosPorFacturar,
     facturasPorCobrar: porCobrar ? porCobrar.length : null,
     facturasVencidas: porCobrar

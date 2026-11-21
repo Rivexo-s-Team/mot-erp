@@ -65,6 +65,8 @@ export default async function EditarOportunidadPage({
               tipo: o.tipo,
               origen: o.origen,
               responsable_id: o.responsable_id,
+              siguiente_paso: o.siguiente_paso,
+              siguiente_paso_fecha: o.siguiente_paso_fecha,
               canal_venta_id: o.canal_venta_id,
               volumen_estimado_l: o.volumen_estimado_l,
               notas: o.notas,

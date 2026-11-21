@@ -6,10 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
-import { formatFecha } from "@/lib/format";
+import { formatDia, formatFecha, hoyEnMexico } from "@/lib/format";
 import {
   ETAPAS,
   ETAPAS_CERRADAS,
+  ETAPAS_CON_MOTIVO,
+  seguimientoVencido,
   etiqueta,
   TIPOS_CORTOS,
 } from "@/lib/pipeline/campos";
@@ -39,6 +41,16 @@ export default async function OportunidadesPage({
   const columnas = cerradas
     ? ETAPAS.filter((e) => ETAPAS_CERRADAS.includes(e.value))
     : ETAPAS;
+  // Perdida y descartada comparten la última columna, una sobre otra.
+  const grupos = cerradas
+    ? columnas.map((e) => [e])
+    : [
+        ...columnas
+          .filter((e) => !ETAPAS_CON_MOTIVO.includes(e.value))
+          .map((e) => [e]),
+        columnas.filter((e) => ETAPAS_CON_MOTIVO.includes(e.value)),
+      ];
+  const hoy = hoyEnMexico();
   const enlace = (t?: string) => {
     const q = new URLSearchParams();
     if (cerradas) q.set("ver", "cerradas");
@@ -53,10 +65,10 @@ export default async function OportunidadesPage({
         title="Oportunidades"
         description={
           cerradas
-            ? "Todas las ventas ganadas y perdidas."
+            ? "Todas las ventas ganadas, perdidas y descartadas."
             : edita
-              ? "Ventas por etapa, hasta ganada o perdida. Arrastra una tarjeta para cambiarla de etapa."
-              : "Ventas por etapa, hasta ganada o perdida."
+              ? "Ventas por etapa, hasta ganada, perdida o descartada. Arrastra una tarjeta para cambiarla de etapa."
+              : "Ventas por etapa, hasta ganada, perdida o descartada."
         }
       >
         <Link
@@ -93,49 +105,59 @@ export default async function OportunidadesPage({
 
       {/* Celular: etapas una debajo de otra. Escritorio: columnas con desplazamiento horizontal. */}
       <div className="flex flex-col gap-4 lg:-mx-6 lg:flex-row lg:gap-2 lg:overflow-x-auto lg:px-6 lg:pb-4 xl:mx-0 xl:overflow-visible xl:px-0">
-        {columnas.map((etapa) => {
-          const tarjetas = oportunidades.filter((o) => o.etapa === etapa.value);
-          return (
-            <ColumnaEtapa
-              key={etapa.value}
-              etapa={etapa.value}
-              nombre={etapa.label}
-              activa={edita}
-              className="lg:min-h-40 lg:w-56 lg:shrink-0 xl:w-auto xl:min-w-0 xl:flex-1 xl:shrink"
-            >
-              <h2
-                className={`mb-2 flex items-end justify-between gap-2 border-b-2 pb-1.5 text-sm leading-tight font-semibold xl:min-h-11 ${etapa.value === "ganada" ? "border-exito text-exito" : etapa.value === "perdida" ? "border-muted-foreground/40 text-muted-foreground" : "border-primary/30"}`}
-              >
-                <span className="min-w-0 break-words">{etapa.label}</span>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
-                  {tarjetas.length}
-                </span>
-              </h2>
-              {tarjetas.length === 0 ? (
-                <p className="hidden rounded-xl border border-dashed px-2 py-4 text-center text-xs text-muted-foreground lg:block">
-                  —
-                </p>
-              ) : (
-                <ul className="space-y-2">
-                  {tarjetas.map((o) => (
-                    <li key={o.id}>
-                      <TarjetaArrastrable
-                        id={o.id}
-                        etapa={o.etapa}
-                        activa={edita}
-                      >
-                        <TarjetaOportunidad
-                          o={o}
-                          responsable={nombres.get(o.responsable_id)}
-                        />
-                      </TarjetaArrastrable>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </ColumnaEtapa>
-          );
-        })}
+        {grupos.map((grupo) => (
+          <div
+            key={grupo[0]?.value}
+            className="flex flex-col gap-4 lg:w-56 lg:shrink-0 xl:w-auto xl:min-w-0 xl:flex-1 xl:shrink"
+          >
+            {grupo.map((etapa) => {
+              const tarjetas = oportunidades.filter(
+                (o) => o.etapa === etapa.value,
+              );
+              return (
+                <ColumnaEtapa
+                  key={etapa.value}
+                  etapa={etapa.value}
+                  nombre={etapa.label}
+                  activa={edita}
+                  className={grupo.length > 1 ? "lg:min-h-28" : "lg:min-h-40"}
+                >
+                  <h2
+                    className={`mb-2 flex items-end justify-between gap-2 border-b-2 pb-1.5 text-sm leading-tight font-semibold xl:min-h-11 ${etapa.value === "ganada" ? "border-exito text-exito" : etapa.value === "perdida" || etapa.value === "descartada" ? "border-muted-foreground/40 text-muted-foreground" : "border-primary/30"}`}
+                  >
+                    <span className="min-w-0 break-words">{etapa.label}</span>
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
+                      {tarjetas.length}
+                    </span>
+                  </h2>
+                  {tarjetas.length === 0 ? (
+                    <p className="hidden rounded-xl border border-dashed px-2 py-4 text-center text-xs text-muted-foreground lg:block">
+                      —
+                    </p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {tarjetas.map((o) => (
+                        <li key={o.id}>
+                          <TarjetaArrastrable
+                            id={o.id}
+                            etapa={o.etapa}
+                            activa={edita}
+                          >
+                            <TarjetaOportunidad
+                              o={o}
+                              responsable={nombres.get(o.responsable_id)}
+                              hoy={hoy}
+                            />
+                          </TarjetaArrastrable>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </ColumnaEtapa>
+              );
+            })}
+          </div>
+        ))}
       </div>
     </>
   );
@@ -144,9 +166,11 @@ export default async function OportunidadesPage({
 function TarjetaOportunidad({
   o,
   responsable,
+  hoy,
 }: {
   o: Oportunidad;
   responsable?: string;
+  hoy: string;
 }) {
   return (
     <Link href={`/oportunidades/${o.id}`} className="block" draggable={false}>
@@ -169,6 +193,18 @@ function TarjetaOportunidad({
               <span className="truncate">{o.canales_venta.nombre}</span>
             </Badge>
           ) : null}
+          {o.siguiente_paso_fecha &&
+          o.etapa !== "ganada" &&
+          o.etapa !== "perdida" ? (
+            <Badge
+              variant={seguimientoVencido(o, hoy) ? "destructive" : "outline"}
+              className="max-w-full justify-start"
+            >
+              <span className="truncate">
+                Seguir {formatDia(o.siguiente_paso_fecha)}
+              </span>
+            </Badge>
+          ) : null}
           {o.etapa === "ganada" ? (
             <Badge variant="aviso" className="max-w-full justify-start">
               <span className="truncate">Pendiente de contrato</span>
@@ -178,7 +214,7 @@ function TarjetaOportunidad({
             <Badge variant="outline">{formatFecha(o.fecha_cierre)}</Badge>
           ) : null}
         </div>
-        {o.etapa === "perdida" ? (
+        {o.etapa === "perdida" || o.etapa === "descartada" ? (
           <p className="text-xs text-muted-foreground">
             Motivo: {o.motivos_perdida?.nombre ?? o.motivo_perdida ?? "—"}
           </p>

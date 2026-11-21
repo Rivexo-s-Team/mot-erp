@@ -9,6 +9,7 @@ const NADA: Conteos = {
   muestrasEnProceso: null,
   informesBorrador: null,
   oportunidadesAbiertas: null,
+  seguimientosPorHacer: null,
   cargosPorFacturar: null,
   facturasPorCobrar: null,
   facturasVencidas: null,
