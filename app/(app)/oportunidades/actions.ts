@@ -9,6 +9,7 @@ import { requirePermiso } from "@/lib/auth/session";
 import { aFila, esquemaCampos, type Valores } from "@/lib/forms/campos";
 import {
   ETAPAS,
+  ETAPAS_CON_MOTIVO,
   camposEtapa,
   camposActividad,
   camposOportunidad,
@@ -83,10 +84,12 @@ export async function cambiarEtapa(
     valores,
   );
   if (!parsed.success)
-    return { error: "Si la marcas como perdida, escribe el motivo." };
+    return {
+      error: "Si la marcas como perdida o descartada, indica el motivo.",
+    };
 
   const { etapa } = parsed.data;
-  const perdida = etapa === "perdida";
+  const perdida = ETAPAS_CON_MOTIVO.includes(String(etapa));
   const { data, error } = await (
     await tabla("oportunidades")
   )
@@ -118,8 +121,10 @@ export async function moverEtapa(
   await requirePermiso(PERMISO);
   if (!esId(id) || !ETAPAS.some((e) => e.value === etapa))
     return { error: "Movimiento no válido." };
-  if (etapa === "perdida")
-    return { error: "Para marcarla como perdida, abre la oportunidad." };
+  if (ETAPAS_CON_MOTIVO.includes(etapa))
+    return {
+      error: "Para marcarla así hace falta el motivo: abre la oportunidad.",
+    };
   const { data, error } = await (
     await tabla("oportunidades")
   )

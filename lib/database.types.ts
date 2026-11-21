@@ -2101,6 +2101,8 @@ export type Database = {
           origen: string;
           planta_id: string | null;
           responsable_id: string;
+          siguiente_paso: string | null;
+          siguiente_paso_fecha: string | null;
           tipo: string;
           updated_at: string;
           volumen_estimado_l: number | null;
@@ -2122,6 +2124,8 @@ export type Database = {
           origen: string;
           planta_id?: string | null;
           responsable_id: string;
+          siguiente_paso?: string | null;
+          siguiente_paso_fecha?: string | null;
           tipo: string;
           updated_at?: string;
           volumen_estimado_l?: number | null;
@@ -2142,6 +2146,8 @@ export type Database = {
           origen?: string;
           planta_id?: string | null;
           responsable_id?: string;
+          siguiente_paso?: string | null;
+          siguiente_paso_fecha?: string | null;
           tipo?: string;
           updated_at?: string;
           volumen_estimado_l?: number | null;

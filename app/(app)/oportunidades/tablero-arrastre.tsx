@@ -86,9 +86,9 @@ export function ColumnaEtapa({
         const { id, etapa: origen } = dato;
         if (!id || origen === etapa) return;
         setError(null);
-        // Perder una venta pide el motivo: se captura en la ficha.
-        if (etapa === "perdida") {
-          router.push(`/oportunidades/${id}?marcar=perdida`);
+        // Perder o descartar pide el motivo: se captura en la ficha.
+        if (etapa === "perdida" || etapa === "descartada") {
+          router.push(`/oportunidades/${id}?marcar=${etapa}`);
           return;
         }
         iniciar(async () => {

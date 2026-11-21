@@ -6,6 +6,7 @@ import {
   camposOportunidad,
   ETAPAS,
   ETAPAS_ABIERTAS,
+  seguimientoVencido,
   validarEtapa,
   avisoDeMuestras,
 } from "./campos";
@@ -13,7 +14,7 @@ import {
 const ID = "7b0c1a52-6f5e-4c0e-9a57-2d0a1f3b9c11";
 
 describe("etapas", () => {
-  it("son las 9 confirmadas, en el orden del proceso", () => {
+  it("son las 9 confirmadas más descartada, en el orden del proceso", () => {
     expect(ETAPAS.map((e) => e.value)).toEqual([
       "primer_contacto",
       "presentacion",
@@ -24,8 +25,73 @@ describe("etapas", () => {
       "seguimiento",
       "ganada",
       "perdida",
+      "descartada",
     ]);
     expect(ETAPAS_ABIERTAS).toHaveLength(7);
+  });
+
+  it("descartar pide motivo, igual que perder", () => {
+    expect(
+      validarEtapa({
+        etapa: "descartada",
+        motivo_perdida_id: "",
+        motivo_perdida: "",
+      })?.mensaje,
+    ).toBe("Elige por qué se descarta, o escríbelo en el detalle.");
+    expect(
+      validarEtapa({
+        etapa: "descartada",
+        motivo_perdida_id: "",
+        motivo_perdida: "Sin presupuesto",
+      }),
+    ).toBeNull();
+    expect(
+      validarEtapa({
+        etapa: "seguimiento",
+        motivo_perdida_id: "",
+        motivo_perdida: "",
+      }),
+    ).toBeNull();
+  });
+
+  it("el siguiente paso vence el día que toca; avisa también en las descartadas", () => {
+    const hoy = "2037-01-15";
+    expect(
+      seguimientoVencido(
+        { etapa: "seguimiento", siguiente_paso_fecha: "2037-01-15" },
+        hoy,
+      ),
+    ).toBe(true);
+    expect(
+      seguimientoVencido(
+        { etapa: "seguimiento", siguiente_paso_fecha: "2037-01-16" },
+        hoy,
+      ),
+    ).toBe(false);
+    expect(
+      seguimientoVencido(
+        { etapa: "seguimiento", siguiente_paso_fecha: null },
+        hoy,
+      ),
+    ).toBe(false);
+    expect(
+      seguimientoVencido(
+        { etapa: "descartada", siguiente_paso_fecha: "2037-01-01" },
+        hoy,
+      ),
+    ).toBe(true);
+    expect(
+      seguimientoVencido(
+        { etapa: "perdida", siguiente_paso_fecha: "2037-01-01" },
+        hoy,
+      ),
+    ).toBe(false);
+    expect(
+      seguimientoVencido(
+        { etapa: "ganada", siguiente_paso_fecha: "2037-01-01" },
+        hoy,
+      ),
+    ).toBe(false);
   });
 });
 
@@ -34,6 +100,8 @@ describe("oportunidad", () => {
   const esquema = esquemaCampos(campos);
   const base = {
     nombre: "Renta de Robox",
+    siguiente_paso: "",
+    siguiente_paso_fecha: "",
     planta_id: "",
     tipo: "nuevo",
     origen: "prospeccion",
