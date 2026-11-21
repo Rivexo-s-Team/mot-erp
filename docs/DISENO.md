@@ -93,7 +93,7 @@ cotizaciones            Versionadas, ligadas a la oportunidad. Moneda USD.
   └─ cotizacion_lineas  Concepto, equipo del cliente, litros, precio unitario, unidad (litro | mes | evento | servicio).
 ```
 
-**Etapas del pipeline** (confirmadas por el director comercial): primer contacto → presentación → visita → muestra → resultados de laboratorio → cotización → seguimiento → **ganada / perdida**. Tipos de oportunidad: cliente nuevo, ampliación (up sell) y venta cruzada (cross sell) (D49).
+**Etapas del pipeline** (confirmadas por el director comercial): primer contacto → presentación → visita → muestra → resultados de laboratorio → cotización → seguimiento → **ganada / perdida / descartada** (D55). Tipos de oportunidad: cliente nuevo, ampliación (up sell) y venta cruzada (cross sell) (D49).
 
 **Cotizador por litro:** guarda el precio de referencia del aceite nuevo, su fuente (comprobante del cliente o internet, con archivo o URL) y la fecha. Calcula `max(0.70 × precio_referencia, 2.50 USD)`. El porcentaje y el piso son parámetros configurables, no constantes en el código.
 
@@ -392,6 +392,7 @@ Ninguna bloquea el arranque. Cada una se resuelve antes de la etapa indicada.
 | D52 | **Por litro se cobra el reservorio completo**, no los litros que pasaron por el filtro: el aceite da varias vueltas por el Robox. El precio de referencia, cuando el cliente no comparte lo que paga por su aceite, es el precio económico de mercado; MOT cobra alrededor de 30 % menos. | Confirmado por Juan Pablo el 20 nov 2026. Coincide con lo construido (cargo = volumen del reservorio × tarifa; cotizador al 70 % con piso). Elegir renta o por litro es criterio comercial; MOT prefiere por litro porque deja más. |
 | D53 | **Laboratorio: los resultados se capturan a mano**, como hoy (de la bitácora al sistema). Leerlos directo de los equipos queda para después: los de número ácido y humedad solo tienen USB o salida de teclado. **Los límites por parámetro son los mismos para todos los aceites.** | Acordado con Evelyn y Fernando el 20 nov 2026. Fernando enviará soporte técnico para revisar la conexión de los equipos. |
 | D54 | **Quién hace qué** (20 nov 2026): comercial, Juan Pablo (y Edgar, el otro vendedor); agenda y órdenes de servicio, Daniel y Erika; flota de Robox, la opera Daniel y la deciden Fernando y Juan Pablo según lo comercial; laboratorio, Evelyn; cargos, facturas, pagos y cobranza, Claudia (con Fernando). | Definido por Fernando. Faltan los usuarios de Claudia, Erika y Edgar (P20). |
+| D55 | **Pipeline: descartar y siguiente paso.** (1) Nueva etapa de cierre **Descartada**: el prospecto no va (ya tiene servicio, sin presupuesto, no le interesa). No es una venta perdida, porque nunca hubo una oportunidad real. Pide motivo, de la misma lista que las perdidas o escrito; se agregó "Sin presupuesto por ahora". Se puede retomar moviéndola a una etapa abierta. En el tablero comparte la última columna con Perdida. (2) Cada oportunidad lleva un **siguiente paso** con fecha, opcional. Cuando la fecha llega aparece en rojo en su tarjeta y cuenta en Inicio como "Seguimientos por hacer". Avisa en las abiertas y también en las descartadas, para el caso "sin presupuesto este año, retomar en enero"; en ganadas y perdidas ya no. | Pedido por Juan Pablo el 20 nov 2026. Reusar la lista de motivos evita un catálogo más. El aviso en descartadas es decisión de Rivexo: sin él, descartar a un prospecto por presupuesto haría que se olvidara. |
 
 ---
 
@@ -428,8 +429,8 @@ Primera revisión del sistema con Fernando (Dirección), Juan Pablo (Comercial),
 
 | Qué | Quién | Dónde cae |
 |---|---|---|
-| Descartar un prospecto con su motivo (ya tiene servicio, sin presupuesto, no le interesa), distinto de una venta perdida | Juan Pablo | Pipeline. Ajuste chico |
-| Retomar después: prospectos sin presupuesto este año, con fecha para volver a buscarlos | Juan Pablo | Pipeline. Ajuste chico |
+| Descartar un prospecto con su motivo (ya tiene servicio, sin presupuesto, no le interesa), distinto de una venta perdida | Juan Pablo | Hecho (D55) |
+| Retomar después: prospectos sin presupuesto este año, con fecha para volver a buscarlos | Juan Pablo | Hecho (D55): siguiente paso con fecha |
 | Datos de instalación del sitio antes de llevar el Robox: voltaje, corriente, distancia al reservorio, conexiones, largo de manguera (3 a 6 m) | Daniel | Equipos del cliente. Ajuste chico |
 | Requisitos de seguridad por planta (cofia y sin anillos en GOPLAS; casco, chaleco y botas en Nacobre; alta del IMSS en Condumex) | Daniel, Fernando | Ya existe (requisitos de planta). Falta cargarlos: Daniel manda el Excel |
 | IMSS, REPSE y demás papeles consultables en el celular para enseñarlos en la caseta | Fernando | Ya existe (documentos de acceso). Falta revisar que se abran cómodo desde `/campo` y subir los archivos |
