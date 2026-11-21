@@ -1031,6 +1031,46 @@ export type Database = {
         };
         Relationships: [];
       };
+      cuentas_bancarias: {
+        Row: {
+          activo: boolean;
+          banco: string | null;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          moneda: string;
+          nombre: string;
+          orden: number;
+          terminacion: string | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          activo?: boolean;
+          banco?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          moneda?: string;
+          nombre: string;
+          orden?: number;
+          terminacion?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          activo?: boolean;
+          banco?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          moneda?: string;
+          nombre?: string;
+          orden?: number;
+          terminacion?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       documentos_acceso: {
         Row: {
           archivo_nombre: string | null;
@@ -2785,6 +2825,7 @@ export type Database = {
           anticipo_factura_id: string | null;
           created_at: string;
           created_by: string | null;
+          cuenta_bancaria_id: string | null;
           cuenta_id: string;
           deleted_at: string | null;
           fecha: string;
@@ -2805,6 +2846,7 @@ export type Database = {
           anticipo_factura_id?: string | null;
           created_at?: string;
           created_by?: string | null;
+          cuenta_bancaria_id?: string | null;
           cuenta_id: string;
           deleted_at?: string | null;
           fecha: string;
@@ -2824,6 +2866,7 @@ export type Database = {
           anticipo_factura_id?: string | null;
           created_at?: string;
           created_by?: string | null;
+          cuenta_bancaria_id?: string | null;
           cuenta_id?: string;
           deleted_at?: string | null;
           fecha?: string;
@@ -2866,6 +2909,13 @@ export type Database = {
             columns: ["anticipo_factura_id"];
             isOneToOne: false;
             referencedRelation: "facturas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pagos_cuenta_bancaria_id_fkey";
+            columns: ["cuenta_bancaria_id"];
+            isOneToOne: false;
+            referencedRelation: "cuentas_bancarias";
             referencedColumns: ["id"];
           },
           {
