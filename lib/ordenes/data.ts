@@ -27,7 +27,7 @@ export async function directorioTecnicos() {
 }
 
 const COLUMNAS =
-  "id, folio, tipo, estado, cuenta_id, planta_id, contrato_id, equipo_cliente_id, robox_id, tecnico_id, acompanante_id, fecha_programada, fecha_real, notas, updated_at, cuentas (nombre), plantas (nombre), equipos_cliente (identificador, alias), robox (numero_serie)";
+  "id, folio, tipo, estado, cuenta_id, planta_id, contrato_id, equipo_cliente_id, robox_id, tecnico_id, acompanante_id, fecha_programada, fecha_real, notas, updated_at, cuentas (nombre), plantas (nombre), equipos_cliente (identificador, alias, tipo_conexion, distancia_reservorio_m, voltaje, corriente, localizacion), robox (numero_serie)";
 
 export async function listarOrdenes(filtro: {
   estado?: string;

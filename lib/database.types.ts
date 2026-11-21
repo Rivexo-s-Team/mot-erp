@@ -1095,9 +1095,11 @@ export type Database = {
           alias: string | null;
           altura: string | null;
           aplicacion: string | null;
+          corriente: string | null;
           created_at: string;
           created_by: string | null;
           deleted_at: string | null;
+          distancia_reservorio_m: number | null;
           frecuencia_cambio_aceite: string | null;
           id: string;
           identificador: string;
@@ -1110,6 +1112,7 @@ export type Database = {
           tipo_conexion: string | null;
           toma_muestras: string | null;
           updated_at: string;
+          voltaje: string | null;
           volumen_contenedor_l: number | null;
           volumen_reservorio_l: number | null;
         };
@@ -1119,9 +1122,11 @@ export type Database = {
           alias?: string | null;
           altura?: string | null;
           aplicacion?: string | null;
+          corriente?: string | null;
           created_at?: string;
           created_by?: string | null;
           deleted_at?: string | null;
+          distancia_reservorio_m?: number | null;
           frecuencia_cambio_aceite?: string | null;
           id?: string;
           identificador: string;
@@ -1134,6 +1139,7 @@ export type Database = {
           tipo_conexion?: string | null;
           toma_muestras?: string | null;
           updated_at?: string;
+          voltaje?: string | null;
           volumen_contenedor_l?: number | null;
           volumen_reservorio_l?: number | null;
         };
@@ -1142,9 +1148,11 @@ export type Database = {
           alias?: string | null;
           altura?: string | null;
           aplicacion?: string | null;
+          corriente?: string | null;
           created_at?: string;
           created_by?: string | null;
           deleted_at?: string | null;
+          distancia_reservorio_m?: number | null;
           frecuencia_cambio_aceite?: string | null;
           id?: string;
           identificador?: string;
@@ -1157,6 +1165,7 @@ export type Database = {
           tipo_conexion?: string | null;
           toma_muestras?: string | null;
           updated_at?: string;
+          voltaje?: string | null;
           volumen_contenedor_l?: number | null;
           volumen_reservorio_l?: number | null;
         };

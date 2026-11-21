@@ -92,7 +92,7 @@ export async function obtenerPlanta(cuentaId: string, plantaId: string) {
     supabase
       .from("equipos_cliente")
       .select(
-        "id, identificador, alias, aplicacion, marca, aceite_id, volumen_reservorio_l, numero_contenedores, volumen_contenedor_l, tipo_conexion, altura, localizacion, temperatura_operacion_c, frecuencia_cambio_aceite, toma_muestras, notas, aceites (marca, nombre_comercial)",
+        "id, identificador, alias, aplicacion, marca, aceite_id, volumen_reservorio_l, numero_contenedores, volumen_contenedor_l, tipo_conexion, distancia_reservorio_m, voltaje, corriente, altura, localizacion, temperatura_operacion_c, frecuencia_cambio_aceite, toma_muestras, notas, aceites (marca, nombre_comercial)",
       )
       .eq("planta_id", plantaId)
       .is("deleted_at", null)

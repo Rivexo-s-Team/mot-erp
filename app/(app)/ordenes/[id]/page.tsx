@@ -1,3 +1,4 @@
+import { resumenInstalacion } from "@/lib/clientes/campos";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
@@ -115,6 +116,11 @@ export default async function OrdenPage({
         o.equipos_cliente ? nombreEquipo(o.equipos_cliente) : "Sin definir",
       ],
     );
+    if (o.equipos_cliente)
+      datos.push([
+        "Datos de instalación",
+        resumenInstalacion(o.equipos_cliente) || "Sin capturar",
+      ]);
     if (o.contrato_id && tienePermiso(sesion, "contratos.ver")) {
       datos.push([
         "Contrato",

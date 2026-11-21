@@ -284,11 +284,37 @@ export function camposEquipo(aceites: Opcion[], conCosto: boolean): Campo[] {
       tipo: "numero",
       opcional: true,
     },
+    // Datos de instalación: los pide Operación antes de llevar el Robox.
     {
       name: "tipo_conexion",
-      label: "Tipo de conexión",
+      label: "Conexiones disponibles",
       tipo: "texto",
       opcional: true,
+      ayuda: "Tipo y medida de la conexión al reservorio. Ejemplo: NPT de 1/2.",
+    },
+    {
+      name: "distancia_reservorio_m",
+      label: "Distancia al reservorio (metros)",
+      tipo: "numero",
+      opcional: true,
+      ayuda:
+        "Desde donde quedará el Robox hasta el reservorio. Define el largo de manguera.",
+    },
+    {
+      name: "voltaje",
+      label: "Voltaje disponible",
+      tipo: "texto",
+      opcional: true,
+      max: 60,
+      ayuda: "Como lo dice la planta. Ejemplo: 220 V trifásico.",
+    },
+    {
+      name: "corriente",
+      label: "Corriente disponible",
+      tipo: "texto",
+      opcional: true,
+      max: 60,
+      ayuda: "Ejemplo: 16 A.",
     },
     { name: "altura", label: "Altura", tipo: "texto", opcional: true, max: 60 },
     {
@@ -339,4 +365,37 @@ export function camposEquipo(aceites: Opcion[], conCosto: boolean): Campo[] {
     );
   }
   return campos;
+}
+
+// Datos de instalación del sitio -------------------------------------------------
+
+export type DatosInstalacion = {
+  tipo_conexion: string | null;
+  distancia_reservorio_m: number | null;
+  voltaje: string | null;
+  corriente: string | null;
+};
+
+/** Lo que ya se sabe del sitio para instalar el Robox, en una línea. Vacío si no hay nada. */
+export function resumenInstalacion(e: DatosInstalacion): string {
+  return [
+    e.voltaje,
+    e.corriente,
+    e.distancia_reservorio_m !== null
+      ? `a ${e.distancia_reservorio_m} m del reservorio`
+      : null,
+    e.tipo_conexion ? `conexión ${e.tipo_conexion}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+/** Qué datos de instalación faltan por recabar en la planta. */
+export function faltantesDeInstalacion(e: DatosInstalacion): string[] {
+  const faltan: string[] = [];
+  if (!e.voltaje) faltan.push("voltaje");
+  if (!e.corriente) faltan.push("corriente");
+  if (e.distancia_reservorio_m === null) faltan.push("distancia al reservorio");
+  if (!e.tipo_conexion) faltan.push("conexiones");
+  return faltan;
 }
