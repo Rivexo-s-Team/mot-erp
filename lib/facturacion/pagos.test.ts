@@ -6,6 +6,7 @@ import {
   estadoCobro,
   FORMAS_DE_PAGO_RECIBIDO,
   leerPago,
+  nombreCuentaBancaria,
   nombreFormaPago,
   requiereComplemento,
 } from "./pagos";
@@ -57,6 +58,7 @@ describe("leerPago", () => {
         forma_pago: "03",
         referencia: "SPEI 8841",
         notas: "",
+        cuenta_bancaria_id: "",
       },
       aplicaciones: [{ factura_id: F1, monto: "116" }],
     });
@@ -132,5 +134,41 @@ describe("nombreFormaPago", () => {
   it("la aplicación de anticipos no se ofrece al registrar un pago con dinero", () => {
     expect(FORMAS_DE_PAGO_RECIBIDO.some((f) => f.value === "30")).toBe(false);
     expect(leerPago({ ...base, forma_pago: "30" }).ok).toBe(false);
+  });
+});
+
+describe("cuenta bancaria del pago", () => {
+  const base = {
+    razon_social: "11111111-1111-4111-8111-111111111111",
+    fecha: "2026-11-20",
+    monto: "100.00",
+    moneda: "USD",
+    forma_pago: "03",
+  };
+
+  it("es opcional y, si viene, debe ser una de la lista", () => {
+    expect(leerPago(base).ok).toBe(true);
+    expect(
+      leerPago({
+        ...base,
+        cuenta_bancaria_id: "22222222-2222-4222-8222-222222222222",
+      }),
+    ).toMatchObject({
+      ok: true,
+      datos: { cuenta_bancaria_id: "22222222-2222-4222-8222-222222222222" },
+    });
+    expect(leerPago({ ...base, cuenta_bancaria_id: "otra" })).toEqual({
+      ok: false,
+      error: "Elige la cuenta bancaria de la lista.",
+    });
+  });
+
+  it("se nombra con su terminación", () => {
+    expect(
+      nombreCuentaBancaria({ nombre: "BBVA dólares", terminacion: "4321" }),
+    ).toBe("BBVA dólares · terminación 4321");
+    expect(nombreCuentaBancaria({ nombre: "Caja", terminacion: null })).toBe(
+      "Caja",
+    );
   });
 });

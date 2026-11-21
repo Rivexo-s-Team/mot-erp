@@ -36,6 +36,7 @@ describe("catálogos", () => {
       "aceites",
       "actividades",
       "canales_venta",
+      "cuentas_bancarias",
       "fallas",
       "motivos_perdida",
       "parametros_laboratorio",

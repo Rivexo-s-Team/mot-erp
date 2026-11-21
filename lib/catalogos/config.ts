@@ -26,7 +26,8 @@ export type TablaCatalogo =
   | "tipos_documento_acceso"
   | "parametros_laboratorio"
   | "canales_venta"
-  | "motivos_perdida";
+  | "motivos_perdida"
+  | "cuentas_bancarias";
 
 export type Catalogo = {
   slug: string;
@@ -468,6 +469,56 @@ export const CATALOGOS: Catalogo[] = [
     columnas: [{ titulo: "Motivo", valor: (f) => texto(f.nombre) }],
     campos: [
       { name: "nombre", label: "Motivo", tipo: "texto" },
+      campoOrden,
+      campoActivo,
+    ],
+  },
+  {
+    slug: "cuentas-bancarias",
+    tabla: "cuentas_bancarias",
+    titulo: "Cuentas bancarias",
+    singular: "cuenta bancaria",
+    descripcion:
+      "Cuentas de MOT donde recibe pagos. Sirven para anotar a cuál cayó cada pago.",
+    permisoVer: "facturacion.ver",
+    permisoEditar: "facturacion.editar",
+    ordenarPor: ["orden", "nombre"],
+    nombre: (f) => texto(f.nombre),
+    columnas: [
+      { titulo: "Cuenta", valor: (f) => texto(f.nombre) },
+      { titulo: "Banco", valor: (f) => texto(f.banco) },
+      { titulo: "Terminación", valor: (f) => texto(f.terminacion) },
+      { titulo: "Moneda", valor: (f) => texto(f.moneda) },
+    ],
+    campos: [
+      {
+        name: "nombre",
+        label: "Nombre para reconocerla",
+        tipo: "texto",
+        max: 80,
+        ayuda: "Ejemplo: BBVA dólares.",
+      },
+      { name: "banco", label: "Banco", tipo: "texto", opcional: true, max: 80 },
+      {
+        name: "terminacion",
+        label: "Últimos 4 dígitos",
+        tipo: "texto",
+        opcional: true,
+        max: 4,
+        patron: "^\\d{4}$",
+        mensajePatron:
+          "Solo los últimos 4 dígitos. No captures el número completo ni la CLABE.",
+      },
+      {
+        name: "moneda",
+        label: "Moneda",
+        tipo: "opciones",
+        opciones: [
+          { value: "MXN", label: "MXN" },
+          { value: "USD", label: "USD" },
+        ],
+        valorInicial: "MXN",
+      },
       campoOrden,
       campoActivo,
     ],

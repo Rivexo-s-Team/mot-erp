@@ -19,7 +19,11 @@ import {
   obtenerPago,
 } from "@/lib/facturacion/data";
 import { folioFactura } from "@/lib/facturacion/facturas";
-import { nombreFormaPago, requiereComplemento } from "@/lib/facturacion/pagos";
+import {
+  nombreCuentaBancaria,
+  nombreFormaPago,
+  requiereComplemento,
+} from "@/lib/facturacion/pagos";
 import { formatDia, formatImporte } from "@/lib/format";
 import { directorioTecnicos } from "@/lib/ordenes/data";
 import { aplicarPago, eliminarPago, quitarAplicacion } from "../actions";
@@ -87,6 +91,11 @@ export default async function PagoPage({
       </Link>,
     ]);
   else if (p.referencia) datos.push(["Referencia", p.referencia]);
+  if (p.cuentas_bancarias)
+    datos.push([
+      "Cuenta donde cayó",
+      nombreCuentaBancaria(p.cuentas_bancarias),
+    ]);
   if (p.tipo_cambio !== null)
     datos.push(["Tipo de cambio del pago", String(p.tipo_cambio)]);
   datos.push([

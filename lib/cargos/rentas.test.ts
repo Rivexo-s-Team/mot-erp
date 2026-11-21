@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   desplazarMes,
+  mesVencido,
   mesDeDia,
   nombreMes,
   periodoDeMes,
@@ -43,6 +44,12 @@ describe("mes de las rentas", () => {
     expect(desplazarMes("2026-01", -1)).toBe("2025-12");
     expect(desplazarMes("2026-12", 1)).toBe("2027-01");
     expect(desplazarMes("2026-11", 0)).toBe("2026-11");
+  });
+
+  it("a mes vencido: hoy toca el mes que acaba de terminar", () => {
+    expect(mesVencido("2026-12-03")).toBe("2026-11");
+    expect(mesVencido("2026-11-30")).toBe("2026-10");
+    expect(mesVencido("2027-01-01")).toBe("2026-12");
   });
 });
 
