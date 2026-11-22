@@ -10,6 +10,7 @@ with nuevos (rol, nombre, puesto) as (
     ('tecnico', 'Tomás Técnico', 'Especialista de campo'),
     ('laboratorio', 'Laura Laboratorio', 'Responsable de laboratorio'),
     ('administracion', 'Adrián Administración', 'Administración'),
+    ('coordinacion', 'Carla Coordinación', 'Coordinación de servicio'),
     ('cliente', 'Clara Cliente', 'Mantenimiento (Rassini)')
 ),
 usuarios as (
