@@ -459,15 +459,29 @@ export default async function RoboxPage({ params }: PageProps<"/flota/[id]">) {
             </>
           ) : null}
 
-          {historial.length > 0 ? (
+          {historial.length > 0 || edita ? (
             <section>
-              <h2 className="mb-3 text-lg font-semibold tracking-tight">
-                Historial de almacén
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
-                  {historial.length}
-                </span>
-              </h2>
-              <Card className="gap-0 divide-y py-0">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Historial de almacén
+                  <span className="ml-2 text-sm font-normal text-muted-foreground">
+                    {historial.length}
+                  </span>
+                </h2>
+                {edita ? (
+                  <Link href={`${base}/historial/nuevo`} className={botonChico}>
+                    Registrar movimiento de almacén
+                  </Link>
+                ) : null}
+              </div>
+              {historial.length === 0 ? (
+                <Card className="px-4 py-6 text-center text-sm text-muted-foreground">
+                  Aún no hay movimientos de almacén de este Robox.
+                </Card>
+              ) : null}
+              <Card
+                className={`gap-0 divide-y py-0 ${historial.length === 0 ? "hidden" : ""}`}
+              >
                 {historial.map((h) => (
                   <div key={h.id} className="px-4 py-2.5 text-sm">
                     <div className="flex flex-wrap items-baseline justify-between gap-x-3">
