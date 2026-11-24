@@ -37,6 +37,7 @@ const TONOS: Record<TipoEstado, Record<string, Tono>> = {
   },
   robox: {
     disponible: "info",
+    bloqueado: "aviso",
     en_cliente: "exito",
     en_taller: "aviso",
     baja: "neutro",

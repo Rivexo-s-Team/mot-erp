@@ -24,14 +24,16 @@ describe("Robox", () => {
     notas: "",
   };
 
-  it("los estados son los cuatro del diseño", () => {
+  it("los estados son los del diseño más bloqueado", () => {
     expect(ESTADOS_ROBOX.map((e) => e.value)).toEqual([
       "disponible",
+      "bloqueado",
       "en_cliente",
       "en_taller",
       "baja",
     ]);
     expect(etiquetaEstado("en_taller")).toBe("En taller");
+    expect(etiquetaEstado("bloqueado")).toBe("Bloqueado");
   });
 
   it("solo exige número de serie y estado", () => {

@@ -81,6 +81,7 @@ Alejandro (Rivexo) dirige el proyecto. Es ingeniero mecatrónico, no programador
 
 - La existencia de una parte no se guarda: es la suma de `inventario_movimientos` (vista `inventario_existencias`). Los movimientos solo se agregan; nunca se editan ni se borran. Un error se corrige con otro movimiento.
 - El ajuste por conteo lo calcula la base (`ajustar_existencia(parte, contada)`): se indica cuántas piezas hay y registra la diferencia.
+- Estados del Robox: disponible, bloqueado (en almacén pero apartado para un cliente; para quién va en las notas; D60), en cliente, en taller y baja. "En cliente" lo pone y lo quita la asignación a un contrato; los demás se ponen a mano. Un Robox bloqueado se puede asignar; al terminar la asignación vuelve a disponible.
 - Los filtros de cada Robox están en `filtros_instalados` (solo partes con `es_filtro`). Al cerrar una orden con Robox que usó un filtro, un trigger retira el anterior e instala el nuevo. La alerta de cambio se calcula en `lib/flota/filtros.ts` (sin base, con pruebas) con el parámetro `filtro_cambio_meses` y la última lectura de "filter used".
 - Las partes usadas en una orden (`os_partes`) viajan con la captura. Al cerrar la orden, un trigger registra sus salidas; a mano no se puede atribuir un movimiento a una orden.
 
