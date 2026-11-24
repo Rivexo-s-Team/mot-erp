@@ -1,39 +1,56 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
-import { cerrarSesion } from "@/app/(auth)/actions";
-import { BrandScreen } from "@/components/brand/brand-screen";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { FileText, FlaskConical, Wrench } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { requireSesionPortal } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Portal de clientes" };
 
-export default function PortalPage() {
-  return (
-    <BrandScreen
-      title="Portal de clientes"
-      description="Aquí podrás consultar tus informes de laboratorio, órdenes de servicio y facturas. Estará disponible próximamente."
-    >
-      <Suspense fallback={<Skeleton className="h-10 w-full" />}>
-        <PortalSesion />
-      </Suspense>
-    </BrandScreen>
-  );
-}
+const SECCIONES = [
+  {
+    icono: FlaskConical,
+    titulo: "Laboratorio",
+    texto: "Informes de análisis de aceite de tus equipos, con sus tendencias.",
+  },
+  {
+    icono: FileText,
+    titulo: "Facturas y pagos",
+    texto: "Facturas con saldo, pagos aplicados y descarga de XML y PDF.",
+  },
+  {
+    icono: Wrench,
+    titulo: "Órdenes de servicio",
+    texto: "Visitas realizadas en tus plantas, con su reporte firmado.",
+  },
+];
 
-async function PortalSesion() {
+export default async function PortalPage() {
   const sesion = await requireSesionPortal();
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm">
-        Entraste como <span className="font-medium">{sesion.nombre}</span>.
-      </p>
-      <form action={cerrarSesion}>
-        <Button type="submit" variant="outline" className="h-10 w-full">
-          Cerrar sesión
-        </Button>
-      </form>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight text-balance">
+          {sesion.cuenta.nombre}
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Hola, {sesion.nombre}. Aquí podrás consultar la información de tu
+          empresa con Molecular Oil Technology.
+        </p>
+      </div>
+      <ul className="grid gap-3 md:grid-cols-3">
+        {SECCIONES.map(({ icono: Icono, titulo, texto }) => (
+          <li key={titulo}>
+            <Card className="h-full gap-2 px-4 py-4">
+              <Icono aria-hidden className="size-5 text-primary" />
+              <p className="font-medium">{titulo}</p>
+              <p className="text-sm text-muted-foreground">{texto}</p>
+              <p className="text-xs font-medium text-muted-foreground">
+                Disponible próximamente
+              </p>
+            </Card>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

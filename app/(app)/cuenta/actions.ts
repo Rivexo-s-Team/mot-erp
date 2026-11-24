@@ -5,13 +5,14 @@ import {
   type ActionResult,
   type CambiarPasswordInput,
 } from "@/lib/auth/schemas";
-import { requireSesion } from "@/lib/auth/session";
+import { getSesion } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 
 export async function cambiarPassword(
   input: CambiarPasswordInput,
 ): Promise<ActionResult | { ok: true }> {
-  await requireSesion();
+  // Sirve igual para el personal de MOT y para los usuarios del portal.
+  if (!(await getSesion())) return { error: "Tu sesión ya no está activa." };
   const parsed = cambiarPasswordSchema.safeParse(input);
   if (!parsed.success) return { error: "Revisa la contraseña." };
 

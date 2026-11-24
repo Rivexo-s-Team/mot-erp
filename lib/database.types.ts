@@ -3600,6 +3600,49 @@ export type Database = {
         };
         Relationships: [];
       };
+      usuarios_portal: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          cuenta_id: string;
+          id: string;
+          perfil_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id: string;
+          id?: string;
+          perfil_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          cuenta_id?: string;
+          id?: string;
+          perfil_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "usuarios_portal_cuenta_id_fkey";
+            columns: ["cuenta_id"];
+            isOneToOne: false;
+            referencedRelation: "cuentas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "usuarios_portal_perfil_id_fkey";
+            columns: ["perfil_id"];
+            isOneToOne: true;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       visitas_programadas: {
         Row: {
           activa: boolean;
@@ -3853,6 +3896,16 @@ export type Database = {
         Args: { p_cargos: string[]; p_razon_social: string };
         Returns: string;
       };
+      crear_usuario_portal: {
+        Args: {
+          p_correo: string;
+          p_cuenta: string;
+          p_nombre: string;
+          p_puesto: string;
+          p_usuario: string;
+        };
+        Returns: string;
+      };
       directorio_comercial: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -3888,6 +3941,7 @@ export type Database = {
         Returns: undefined;
       };
       iva_tasa: { Args: Record<PropertyKey, never>; Returns: number };
+      mi_cuenta_portal: { Args: Record<PropertyKey, never>; Returns: string };
       mi_rol_id: { Args: Record<PropertyKey, never>; Returns: string };
       mis_permisos: { Args: Record<PropertyKey, never>; Returns: string[] };
       pagos_unicos_de_contrato: {
@@ -3900,6 +3954,13 @@ export type Database = {
           moneda: string;
           precio: number;
           tarifa_id: string;
+        }[];
+      };
+      portal_mi_cuenta: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          cuenta_id: string;
+          nombre: string;
         }[];
       };
       programar_visita: {

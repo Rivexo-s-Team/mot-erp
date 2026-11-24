@@ -22,7 +22,11 @@ export default async function UsuariosPage() {
   const supabase = await createClient();
   const { data: usuarios, error } = await supabase
     .from("perfiles")
-    .select("id, nombre, correo, puesto, activo, roles (nombre)")
+    .select(
+      "id, nombre, correo, puesto, activo, roles!inner (nombre, es_interno)",
+    )
+    // Los usuarios del portal se administran en la ficha de su cliente.
+    .eq("roles.es_interno", true)
     .order("nombre");
   if (error) throw new Error("No se pudieron cargar los usuarios.");
 
@@ -30,7 +34,7 @@ export default async function UsuariosPage() {
     <>
       <PageHeader
         title="Usuarios"
-        description="Quién entra al sistema y con qué rol."
+        description="Quién de MOT entra al sistema y con qué rol. Los usuarios del portal se dan de alta en la ficha de cada cliente."
       >
         <Link
           href="/usuarios/nuevo"

@@ -293,3 +293,9 @@ cross join (values
   ('Instalación del Robox', 1000, false, 20)
 ) as v (concepto, precio, es_anticipo, orden)
 where c.notas = 'Contrato de ejemplo.';
+
+-- Portal de clientes: Clara Cliente pertenece a Rassini.
+insert into public.usuarios_portal (perfil_id, cuenta_id)
+select pf.id, c.id
+from public.perfiles pf, public.cuentas c
+where pf.correo = 'cliente@mot.test' and c.nombre = 'Rassini';

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { EstadoContratoBadge } from "@/components/contrato-estado-badge";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { resumenCredito } from "@/lib/facturacion/credito";
 import {
@@ -20,6 +20,8 @@ import { listarContratos, nombreContrato } from "@/lib/contratos/data";
 import { formatDia } from "@/lib/format";
 import { ETAPAS, etiqueta } from "@/lib/pipeline/campos";
 import { oportunidadesDeCuenta } from "@/lib/pipeline/data";
+import { usuariosPortalDeCuenta } from "@/lib/portal/data";
+import { cambiarAccesoPortal } from "../portal-actions";
 
 export default async function CuentaPage({
   params,
@@ -47,6 +49,11 @@ export default async function CuentaPage({
   const veFacturacion = tienePermiso(sesion, "facturacion.ver");
   const editaFacturacion = tienePermiso(sesion, "facturacion.editar");
   const credito = veFacturacion ? await creditoDeCuenta(cuenta.id) : null;
+  // Acceso al portal: lo administra quien administra usuarios.
+  const administraUsuarios = tienePermiso(sesion, "usuarios.administrar");
+  const usuariosPortal = administraUsuarios
+    ? await usuariosPortalDeCuenta(cuenta.id)
+    : [];
   const equiposPorPlanta = await contarEquiposPorPlanta(
     cuenta.plantas.map((p) => p.id),
   );
@@ -267,6 +274,42 @@ export default async function CuentaPage({
                 <p className="text-sm text-muted-foreground">
                   {o.plantas?.nombre ?? "Toda la cuenta"}
                 </p>
+              </Tarjeta>
+            ))}
+          </Seccion>
+        ) : null}
+
+        {administraUsuarios ? (
+          <Seccion
+            titulo="Acceso al portal"
+            vacio="Nadie de este cliente tiene acceso al portal."
+            agregar={{ href: `${base}/portal/nuevo`, texto: "Dar acceso" }}
+          >
+            {usuariosPortal.map((u) => (
+              <Tarjeta key={u.id} href={null}>
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <p className="font-medium">{u.nombre}</p>
+                  <Badge variant={u.activo ? "exito" : "neutro"}>
+                    {u.activo ? "Activo" : "Sin acceso"}
+                  </Badge>
+                </div>
+                <p className="text-sm break-all text-muted-foreground">
+                  {u.correo}
+                </p>
+                {u.puesto ? <p className="text-sm">{u.puesto}</p> : null}
+                <form
+                  action={cambiarAccesoPortal.bind(
+                    null,
+                    cuenta.id,
+                    u.id,
+                    !u.activo,
+                  )}
+                  className="pt-1"
+                >
+                  <Button type="submit" variant="outline" size="sm">
+                    {u.activo ? "Quitar acceso" : "Reactivar acceso"}
+                  </Button>
+                </form>
               </Tarjeta>
             ))}
           </Seccion>
