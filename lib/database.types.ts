@@ -3444,6 +3444,54 @@ export type Database = {
         };
         Relationships: [];
       };
+      robox_historial: {
+        Row: {
+          anotaciones: string | null;
+          created_at: string;
+          created_by: string | null;
+          detalle: string | null;
+          documento: string | null;
+          fecha: string;
+          id: string;
+          movimiento: string;
+          origen: string;
+          robox_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          anotaciones?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          detalle?: string | null;
+          documento?: string | null;
+          fecha: string;
+          id?: string;
+          movimiento: string;
+          origen?: string;
+          robox_id: string;
+        };
+        Update: {
+          anotaciones?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          detalle?: string | null;
+          documento?: string | null;
+          fecha?: string;
+          id?: string;
+          movimiento?: string;
+          origen?: string;
+          robox_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "robox_historial_robox_id_fkey";
+            columns: ["robox_id"];
+            isOneToOne: false;
+            referencedRelation: "robox";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       rol_permisos: {
         Row: {
           created_at: string;

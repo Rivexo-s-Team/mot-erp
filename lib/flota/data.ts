@@ -257,6 +257,19 @@ export async function filtrosDeRobox(roboxId: string) {
   return data;
 }
 
+/** Historial de almacén de un Robox (altas, salidas, entradas, limpiezas), el más reciente primero. */
+export async function historialDeRobox(roboxId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("robox_historial")
+    .select("id, fecha, movimiento, documento, detalle, anotaciones, origen")
+    .eq("robox_id", roboxId)
+    .order("fecha", { ascending: false })
+    .order("created_at", { ascending: false });
+  if (error) throw new Error("No se pudo cargar el historial del Robox.");
+  return data;
+}
+
 /** Partes del catálogo marcadas como filtro, para elegir cuál se instaló. */
 export async function filtrosParaElegir() {
   const supabase = await createClient();
