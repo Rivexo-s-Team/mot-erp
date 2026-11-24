@@ -4,6 +4,8 @@ import type { Campo, Opcion, Validador } from "@/lib/forms/campos";
 
 export const ESTADOS_ROBOX: Opcion[] = [
   { value: "disponible", label: "Disponible" },
+  // En almacén, pero apartado para un cliente: para quién va en las notas.
+  { value: "bloqueado", label: "Bloqueado" },
   { value: "en_cliente", label: "En cliente" },
   { value: "en_taller", label: "En taller" },
   { value: "baja", label: "Baja" },
