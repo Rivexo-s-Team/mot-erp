@@ -11,6 +11,20 @@ export const ESTADOS_ROBOX: Opcion[] = [
   { value: "baja", label: "Baja" },
 ];
 
+/** Movimientos del historial de almacén de un Robox (D61). */
+export const MOVIMIENTOS_HISTORIAL: Opcion[] = [
+  { value: "alta_almacen", label: "Alta en almacén" },
+  { value: "salida_almacen", label: "Salida de almacén" },
+  { value: "entrada_almacen", label: "Entrada a almacén" },
+  { value: "limpieza", label: "Limpieza" },
+  { value: "reparacion", label: "Reparación" },
+  { value: "otro", label: "Otro movimiento" },
+];
+
+export const etiquetaMovimiento = (movimiento: string) =>
+  MOVIMIENTOS_HISTORIAL.find((m) => m.value === movimiento)?.label ??
+  movimiento;
+
 export const etiquetaEstado = (estado: string) =>
   ESTADOS_ROBOX.find((e) => e.value === estado)?.label ?? estado;
 

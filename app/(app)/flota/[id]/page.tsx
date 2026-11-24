@@ -12,10 +12,15 @@ import {
   textoVigencia,
   TIPOS_CONTRATO,
 } from "@/lib/contratos/campos";
-import { MOVIDO_POR, nombreEquipo } from "@/lib/flota/campos";
+import {
+  etiquetaMovimiento,
+  MOVIDO_POR,
+  nombreEquipo,
+} from "@/lib/flota/campos";
 import {
   asignacionesDeRobox,
   filtrosDeRobox,
+  historialDeRobox,
   mesesCambioFiltro,
   carruselDeAsignacion,
   movimientosDeAsignacion,
@@ -45,15 +50,23 @@ export default async function RoboxPage({ params }: PageProps<"/flota/[id]">) {
 
   const edita = tienePermiso(sesion, "flota.editar");
   const veContratos = tienePermiso(sesion, "contratos.ver");
-  const [ubicacion, asignaciones, filtros, lecturas, meses, delLaboratorio] =
-    await Promise.all([
-      ubicaciones({ roboxIds: [robox.id] }),
-      asignacionesDeRobox(robox.id),
-      filtrosDeRobox(robox.id),
-      ultimasLecturasDeFiltro([robox.id]),
-      mesesCambioFiltro(),
-      recomendacionesDeLaboratorio([robox.id]),
-    ]);
+  const [
+    ubicacion,
+    asignaciones,
+    filtros,
+    lecturas,
+    meses,
+    delLaboratorio,
+    historial,
+  ] = await Promise.all([
+    ubicaciones({ roboxIds: [robox.id] }),
+    asignacionesDeRobox(robox.id),
+    filtrosDeRobox(robox.id),
+    ultimasLecturasDeFiltro([robox.id]),
+    mesesCambioFiltro(),
+    recomendacionesDeLaboratorio([robox.id]),
+    historialDeRobox(robox.id),
+  ]);
   const hoy = hoyEnMexico();
   const instalados = filtros.filter((f) => f.fecha_retiro === null);
   const retirados = filtros.filter((f) => f.fecha_retiro !== null);
@@ -444,6 +457,45 @@ export default async function RoboxPage({ params }: PageProps<"/flota/[id]">) {
                 )}
               </section>
             </>
+          ) : null}
+
+          {historial.length > 0 ? (
+            <section>
+              <h2 className="mb-3 text-lg font-semibold tracking-tight">
+                Historial de almacén
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  {historial.length}
+                </span>
+              </h2>
+              <Card className="gap-0 divide-y py-0">
+                {historial.map((h) => (
+                  <div key={h.id} className="px-4 py-2.5 text-sm">
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                      <p className="font-medium">
+                        {etiquetaMovimiento(h.movimiento)}
+                      </p>
+                      <p className="text-muted-foreground tabular-nums">
+                        {formatDia(h.fecha)}
+                      </p>
+                    </div>
+                    {h.detalle || h.documento ? (
+                      <p className="break-words text-muted-foreground">
+                        {[h.detalle, h.documento].filter(Boolean).join(" · ")}
+                      </p>
+                    ) : null}
+                    {h.anotaciones ? (
+                      <p className="break-words">{h.anotaciones}</p>
+                    ) : null}
+                  </div>
+                ))}
+              </Card>
+              {historial.some((h) => h.origen === "excel_inventario") ? (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Incluye los movimientos del inventario en Excel de MOT, hasta
+                  el 30/10/2025.
+                </p>
+              ) : null}
+            </section>
           ) : null}
 
           {anteriores.length > 0 ? (

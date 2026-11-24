@@ -7,6 +7,8 @@ import {
   camposMovimiento,
   ESTADOS_ROBOX,
   etiquetaEstado,
+  etiquetaMovimiento,
+  MOVIMIENTOS_HISTORIAL,
   nombreEquipo,
   problemaMovimiento,
   validarAsignacion,
@@ -175,5 +177,14 @@ describe("carrusel y movimientos", () => {
       /último movimiento/,
     );
     expect(problemaMovimiento({ ...base, fecha: "2026-02-10" })).toBeNull();
+  });
+});
+
+describe("historial de almacén", () => {
+  it("nombra cada movimiento; uno desconocido sale tal cual", () => {
+    expect(etiquetaMovimiento("salida_almacen")).toBe("Salida de almacén");
+    expect(etiquetaMovimiento("reparacion")).toBe("Reparación");
+    expect(etiquetaMovimiento("xyz")).toBe("xyz");
+    expect(MOVIMIENTOS_HISTORIAL).toHaveLength(6);
   });
 });
