@@ -47,7 +47,7 @@ begin
   return n;
 end $$;
 
-select is((select count(*)::int from public.roles), 7, 'hay 7 roles');
+select is((select count(*)::int from public.roles), 8, 'hay 8 roles');
 select is(
   (select count(*)::int from pg_tables where schemaname = 'public' and not rowsecurity),
   0, 'todas las tablas de public tienen RLS activado'
@@ -58,7 +58,7 @@ select pruebas.entrar('direccion');
 select is(pruebas.cuenta('parametros_negocio'), (select n from pruebas.total_parametros), 'dirección ve los parámetros');
 select cmp_ok(pruebas.cuenta('bitacora'), '>', 0, 'dirección ve la bitácora');
 select cmp_ok(pruebas.cuenta('perfiles'), '>=', 7, 'dirección ve todos los perfiles');
-select is(pruebas.cuenta('roles'), 7, 'dirección ve todos los roles');
+select is(pruebas.cuenta('roles'), 8, 'dirección ve todos los roles');
 select cmp_ok(pruebas.cuenta('permisos'), '>=', 5, 'dirección ve los permisos');
 select ok(public.tiene_permiso('usuarios.administrar'), 'dirección administra usuarios');
 

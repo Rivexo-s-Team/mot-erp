@@ -11,6 +11,7 @@ with nuevos (rol, nombre, puesto) as (
     ('laboratorio', 'Laura Laboratorio', 'Responsable de laboratorio'),
     ('administracion', 'Adrián Administración', 'Administración'),
     ('coordinacion', 'Carla Coordinación', 'Coordinación de servicio'),
+    ('administracion_coordinacion', 'Ana Administración y Coordinación', 'Administración y coordinación'),
     ('cliente', 'Clara Cliente', 'Mantenimiento (Rassini)')
 ),
 usuarios as (
