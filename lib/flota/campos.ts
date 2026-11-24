@@ -25,6 +25,47 @@ export const etiquetaMovimiento = (movimiento: string) =>
   MOVIMIENTOS_HISTORIAL.find((m) => m.value === movimiento)?.label ??
   movimiento;
 
+/** Captura de un movimiento de almacén. `hoy` es la fecha que se propone. */
+export function camposHistorial(hoy: string): Campo[] {
+  return [
+    {
+      name: "movimiento",
+      label: "Movimiento",
+      tipo: "opciones",
+      opciones: MOVIMIENTOS_HISTORIAL,
+      valorInicial: "salida_almacen",
+    },
+    { name: "fecha", label: "Fecha", tipo: "fecha", valorInicial: hoy },
+    {
+      name: "detalle",
+      label: "Detalle",
+      tipo: "texto",
+      opcional: true,
+      max: 200,
+      ayuda:
+        "A dónde va o de dónde regresa, o qué se le hizo. Ejemplo: Hacia Goplas Lechería para Husky Y-11.",
+    },
+    {
+      name: "documento",
+      label: "Pase de salida u otro documento",
+      tipo: "texto",
+      opcional: true,
+      max: 80,
+      ayuda: "Ejemplo: Pase de salida 26-014.",
+    },
+    {
+      name: "anotaciones",
+      label: "Anotaciones",
+      tipo: "textoLargo",
+      opcional: true,
+    },
+  ];
+}
+
+/** Un movimiento de almacén ya ocurrió: su fecha no puede ser posterior a hoy. */
+export const fechaDeHistorialValida = (fecha: string, hoy: string) =>
+  /^\d{4}-\d{2}-\d{2}$/.test(fecha) && fecha <= hoy;
+
 export const etiquetaEstado = (estado: string) =>
   ESTADOS_ROBOX.find((e) => e.value === estado)?.label ?? estado;
 

@@ -4,10 +4,12 @@ import {
   CAMPOS_ROBOX,
   camposAsignacion,
   camposCarrusel,
+  camposHistorial,
   camposMovimiento,
   ESTADOS_ROBOX,
   etiquetaEstado,
   etiquetaMovimiento,
+  fechaDeHistorialValida,
   MOVIMIENTOS_HISTORIAL,
   nombreEquipo,
   problemaMovimiento,
@@ -186,5 +188,29 @@ describe("historial de almacén", () => {
     expect(etiquetaMovimiento("reparacion")).toBe("Reparación");
     expect(etiquetaMovimiento("xyz")).toBe("xyz");
     expect(MOVIMIENTOS_HISTORIAL).toHaveLength(6);
+  });
+
+  it("la captura propone salida de almacén con la fecha de hoy; solo movimiento y fecha son obligatorios", () => {
+    const campos = camposHistorial("2037-02-10");
+    const base = valoresIniciales(campos);
+    expect(base).toMatchObject({
+      movimiento: "salida_almacen",
+      fecha: "2037-02-10",
+    });
+    expect(esquemaCampos(campos).safeParse(base).success).toBe(true);
+    expect(
+      esquemaCampos(campos).safeParse({ ...base, fecha: "" }).success,
+    ).toBe(false);
+    expect(
+      esquemaCampos(campos).safeParse({ ...base, movimiento: "prestamo" })
+        .success,
+    ).toBe(false);
+  });
+
+  it("no se registra un movimiento con fecha futura", () => {
+    expect(fechaDeHistorialValida("2037-02-10", "2037-02-10")).toBe(true);
+    expect(fechaDeHistorialValida("2037-02-09", "2037-02-10")).toBe(true);
+    expect(fechaDeHistorialValida("2037-02-11", "2037-02-10")).toBe(false);
+    expect(fechaDeHistorialValida("mañana", "2037-02-10")).toBe(false);
   });
 });
