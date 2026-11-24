@@ -249,6 +249,12 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# Recuperación de contraseña: correo en español con enlace a /restablecer.
+# En el proyecto en la nube la misma plantilla se configura en Auth > Emails.
+[auth.email.template.recovery]
+subject = "Restablece tu contraseña del Sistema MOT"
+content_path = "./supabase/templates/recuperar.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

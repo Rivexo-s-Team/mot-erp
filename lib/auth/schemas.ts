@@ -67,5 +67,20 @@ export const cambiarPasswordSchema = z
   });
 export type CambiarPasswordInput = z.infer<typeof cambiarPasswordSchema>;
 
+/** Pedir el correo de recuperación de contraseña. */
+export const recuperarSchema = z.object({ correo });
+
+/** Motivos por los que no se pudo recuperar o restablecer, para explicarlos en pantalla. */
+export const MENSAJES_RECUPERACION: Record<string, string> = {
+  correo: "Escribe un correo válido.",
+  espera:
+    "Ya se pidió un correo hace un momento. Espera unos minutos e intenta de nuevo.",
+  enlace:
+    "El enlace ya se usó o venció. Pide uno nuevo; sirve una sola vez y dura una hora.",
+  password: `Las dos contraseñas deben ser iguales y tener al menos ${PASSWORD_MIN} caracteres.`,
+  igual: "La contraseña nueva debe ser distinta a la anterior.",
+  fallo: "No se pudo cambiar la contraseña. Intenta de nuevo.",
+};
+
 /** Resultado de una acción de formulario. */
 export type ActionResult = { error: string } | undefined;
