@@ -1,7 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const RUTAS_PUBLICAS = ["/login"];
+const RUTAS_PUBLICAS = ["/login", "/recuperar"];
+// Se entra con o sin sesión: a la contraseña nueva se llega desde el correo.
+const RUTAS_ABIERTAS = ["/restablecer"];
 
 /**
  * Renueva la sesión de Supabase en cada petición y manda a /login a quien no
@@ -41,6 +43,7 @@ export async function proxy(request: NextRequest) {
   const conSesion = Boolean(data?.claims.sub);
   const { pathname } = request.nextUrl;
   const esPublica = RUTAS_PUBLICAS.includes(pathname);
+  if (RUTAS_ABIERTAS.includes(pathname)) return response;
 
   if (!conSesion && !esPublica) return redirigir(request, response, "/login");
   if (conSesion && esPublica) return redirigir(request, response, "/");
