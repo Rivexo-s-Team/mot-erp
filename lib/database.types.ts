@@ -1671,6 +1671,8 @@ export type Database = {
           id: string;
           observaciones: string | null;
           planta_id: string;
+          publicado_at: string | null;
+          publicado_por: string | null;
           recomienda_cambio_filtro: boolean;
           updated_at: string;
           validado_at: string | null;
@@ -1691,6 +1693,8 @@ export type Database = {
           id?: string;
           observaciones?: string | null;
           planta_id: string;
+          publicado_at?: string | null;
+          publicado_por?: string | null;
           recomienda_cambio_filtro?: boolean;
           updated_at?: string;
           validado_at?: string | null;
@@ -1710,6 +1714,8 @@ export type Database = {
           id?: string;
           observaciones?: string | null;
           planta_id?: string;
+          publicado_at?: string | null;
+          publicado_por?: string | null;
           recomienda_cambio_filtro?: boolean;
           updated_at?: string;
           validado_at?: string | null;
@@ -1743,6 +1749,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "plantas";
             referencedColumns: ["id", "cuenta_id"];
+          },
+          {
+            foreignKeyName: "informes_publicado_por_fkey";
+            columns: ["publicado_por"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
           },
           {
             foreignKeyName: "informes_valido_id_fkey";
@@ -3954,6 +3967,22 @@ export type Database = {
           moneda: string;
           precio: number;
           tarifa_id: string;
+        }[];
+      };
+      portal_informe: { Args: { p_informe: string }; Returns: Json };
+      portal_informes: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          condicion_general: string;
+          equipo: string;
+          equipo_alias: string;
+          fecha_emision: string;
+          folio: string;
+          id: string;
+          muestras: number;
+          planta: string;
+          publicado_at: string;
+          recomienda_cambio_filtro: boolean;
         }[];
       };
       portal_mi_cuenta: {
