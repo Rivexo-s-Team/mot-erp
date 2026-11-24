@@ -13,6 +13,7 @@ export default async function NuevoUsuarioPage() {
   const { data: roles } = await supabase
     .from("roles")
     .select("id, nombre")
+    .eq("es_interno", true)
     .order("nombre");
 
   return (

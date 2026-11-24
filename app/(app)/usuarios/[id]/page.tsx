@@ -21,12 +21,17 @@ export default async function EditarUsuarioPage({
   const [{ data: usuario }, { data: roles }] = await Promise.all([
     supabase
       .from("perfiles")
-      .select("id, nombre, correo, puesto, rol_id, activo")
+      .select("id, nombre, correo, puesto, rol_id, activo, roles (es_interno)")
       .eq("id", id.data)
       .maybeSingle(),
-    supabase.from("roles").select("id, nombre").order("nombre"),
+    supabase
+      .from("roles")
+      .select("id, nombre")
+      .eq("es_interno", true)
+      .order("nombre"),
   ]);
-  if (!usuario) notFound();
+  // Los del portal se administran en la ficha de su cliente.
+  if (!usuario || !usuario.roles.es_interno) notFound();
 
   return (
     <div className="mx-auto max-w-xl">

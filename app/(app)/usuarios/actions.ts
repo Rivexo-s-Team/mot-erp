@@ -23,6 +23,8 @@ export async function crearUsuario(
   if (!parsed.success) return { error: "Revisa los datos del formulario." };
   const { nombre, correo, puesto, rolId, password } = parsed.data;
 
+  if (!(await esRolInterno(rolId))) return { error: "Elige un rol de MOT." };
+
   // 1. Acceso (correo y contraseña): requiere la llave secreta.
   const admin = createAdminClient();
   const { data: creado, error: authError } = await admin.auth.admin.createUser({
@@ -73,11 +75,15 @@ export async function editarUsuario(
     };
   }
 
+  if (!(await esRolInterno(rolId))) return { error: "Elige un rol de MOT." };
+
   const supabase = await createClient();
   const { data: actualizado, error } = await supabase
     .from("perfiles")
     .update({ nombre, puesto: puesto || null, rol_id: rolId, activo })
     .eq("id", id)
+    // Nunca un usuario del portal: esos se administran en su cliente.
+    .in("rol_id", await idsDeRolesInternos())
     .select("id");
   if (error || actualizado.length === 0)
     return { error: "No se pudo guardar el usuario." };
@@ -96,4 +102,18 @@ export async function editarUsuario(
 
   revalidatePath("/usuarios");
   redirect("/usuarios");
+}
+
+/** Roles de MOT. El rol del portal no se asigna desde Usuarios. */
+async function idsDeRolesInternos(): Promise<string[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("roles")
+    .select("id")
+    .eq("es_interno", true);
+  return (data ?? []).map((r) => r.id);
+}
+
+async function esRolInterno(rolId: string): Promise<boolean> {
+  return (await idsDeRolesInternos()).includes(rolId);
 }

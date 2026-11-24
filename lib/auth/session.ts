@@ -1,6 +1,7 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { cache } from "react";
+import { miCuentaPortal } from "@/lib/portal/data";
 import { createClient } from "@/lib/supabase/server";
 
 export type Sesion = {
@@ -65,12 +66,19 @@ export async function requireSesion(): Promise<Sesion> {
   redirect(data?.claims.sub ? "/sin-acceso" : "/login");
 }
 
-/** Exige sesión de un usuario del portal de clientes. Los internos van al inicio. */
-export async function requireSesionPortal(): Promise<Sesion> {
+export type SesionPortal = Sesion & { cuenta: { id: string; nombre: string } };
+
+/**
+ * Exige sesión de un usuario del portal de clientes, con la cuenta a la que
+ * pertenece. Los internos van al inicio; quien no tiene cuenta, a /sin-acceso.
+ */
+export async function requireSesionPortal(): Promise<SesionPortal> {
   const sesion = await getSesion();
   if (sesion) {
     if (sesion.rol.esInterno) redirect("/");
-    return sesion;
+    const cuenta = await miCuentaPortal();
+    if (!cuenta) redirect("/sin-acceso");
+    return { ...sesion, cuenta };
   }
 
   const supabase = await createClient();
