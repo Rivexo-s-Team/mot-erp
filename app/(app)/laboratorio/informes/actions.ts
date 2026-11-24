@@ -207,6 +207,28 @@ export async function reabrirInforme(id: string): Promise<ActionResult> {
   return undefined;
 }
 
+/**
+ * Publica un informe validado en el portal del cliente, o lo retira. Solo
+ * cambia eso: la base no deja tocar nada más de un informe validado.
+ */
+export async function publicarInforme(
+  id: string,
+  publicar: boolean,
+): Promise<ActionResult> {
+  await requirePermiso("laboratorio.validar");
+  if (!esId(id)) return { error: "Registro no válido." };
+  const supabase = await cliente();
+  const { data, error } = await supabase
+    .from("informes")
+    .update({ publicado_at: publicar ? new Date().toISOString() : null })
+    .eq("id", id)
+    .eq("estado", "validado")
+    .select("id");
+  if (error || !data?.[0]) return { error: mensajeError(error) };
+  refrescar(id);
+  return undefined;
+}
+
 /** Quita un informe en borrador creado por error. */
 export async function eliminarInforme(id: string): Promise<ActionResult> {
   await requirePermiso("laboratorio.editar");

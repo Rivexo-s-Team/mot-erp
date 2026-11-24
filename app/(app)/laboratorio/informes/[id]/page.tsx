@@ -120,8 +120,21 @@ export default async function InformePage({
             Condición general: {CONDICIONES[contenido.condicionGeneral]}
           </Badge>
         ) : null}
+        {validado ? (
+          <Badge variant={informe.publicado_at ? "exito" : "neutro"}>
+            {informe.publicado_at
+              ? `En el portal desde el ${formatDia(informe.publicado_at.slice(0, 10))}`
+              : "Sin publicar en el portal"}
+          </Badge>
+        ) : null}
         {valida && acciones.validar && contenido.muestras.length > 0 ? (
           <InformeAccion informeId={informe.id} accion="validar" />
+        ) : null}
+        {valida && validado ? (
+          <InformeAccion
+            informeId={informe.id}
+            accion={informe.publicado_at ? "retirar" : "publicar"}
+          />
         ) : null}
         {valida && acciones.reabrir ? (
           <InformeAccion informeId={informe.id} accion="reabrir" />

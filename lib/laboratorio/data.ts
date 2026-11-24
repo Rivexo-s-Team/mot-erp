@@ -183,7 +183,7 @@ export async function contextoDeMuestra(m: Muestra): Promise<ContextoMuestra> {
 // Informes -----------------------------------------------------------------------
 
 const COLUMNAS_INFORME =
-  "id, folio, cuenta_id, planta_id, equipo_cliente_id, estado, fecha_emision, observaciones, recomienda_cambio_filtro, elaboro_id, valido_id, validado_at, contenido, created_at, cuentas (nombre), plantas (nombre), equipos_cliente (identificador, alias, aceites (marca, nombre_comercial, viscosidad_nominal_40c)), informe_muestras (muestra_id)";
+  "id, folio, cuenta_id, planta_id, equipo_cliente_id, estado, fecha_emision, observaciones, recomienda_cambio_filtro, elaboro_id, valido_id, validado_at, publicado_at, contenido, created_at, cuentas (nombre), plantas (nombre), equipos_cliente (identificador, alias, aceites (marca, nombre_comercial, viscosidad_nominal_40c)), informe_muestras (muestra_id)";
 
 export async function listarInformes(filtro: { estado?: string }) {
   const supabase = await createClient();

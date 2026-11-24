@@ -4,11 +4,15 @@ import { useState, useTransition } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
+  publicarInforme,
   reabrirInforme,
   validarInforme,
 } from "@/app/(app)/laboratorio/informes/actions";
 
-type Props = { informeId: string; accion: "validar" | "reabrir" };
+type Props = {
+  informeId: string;
+  accion: "validar" | "reabrir" | "publicar" | "retirar";
+};
 
 const TEXTOS = {
   validar: {
@@ -21,11 +25,22 @@ const TEXTOS = {
     boton: "Reabrir para corregir",
     ocupado: "Reabriendo…",
     confirmar:
-      "¿Reabrir el informe? Se borra la validación y vuelve a borrador; habrá que validarlo de nuevo.",
+      "¿Reabrir el informe? Se borra la validación y vuelve a borrador; habrá que validarlo de nuevo. Si estaba publicado, el cliente deja de verlo.",
+  },
+  publicar: {
+    boton: "Publicar en el portal",
+    ocupado: "Publicando…",
+    confirmar:
+      "¿Publicar el informe? Los usuarios del portal de este cliente podrán verlo y descargar su PDF.",
+  },
+  retirar: {
+    boton: "Retirar del portal",
+    ocupado: "Retirando…",
+    confirmar: "¿Retirar el informe del portal? El cliente dejará de verlo.",
   },
 };
 
-/** Botón para validar un informe o reabrir uno ya validado. */
+/** Botón para validar un informe, reabrirlo, o publicarlo en el portal y retirarlo. */
 export function InformeAccion({ informeId, accion }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [ocupado, iniciar] = useTransition();
@@ -37,7 +52,9 @@ export function InformeAccion({ informeId, accion }: Props) {
     iniciar(async () => {
       const r = await (accion === "validar"
         ? validarInforme(informeId)
-        : reabrirInforme(informeId));
+        : accion === "reabrir"
+          ? reabrirInforme(informeId)
+          : publicarInforme(informeId, accion === "publicar"));
       if (r?.error) setError(r.error);
     });
   };
@@ -47,7 +64,9 @@ export function InformeAccion({ informeId, accion }: Props) {
       <Button
         type="button"
         size="sm"
-        variant={accion === "validar" ? "default" : "outline"}
+        variant={
+          accion === "validar" || accion === "publicar" ? "default" : "outline"
+        }
         className="h-8"
         disabled={ocupado}
         onClick={ejecutar}
