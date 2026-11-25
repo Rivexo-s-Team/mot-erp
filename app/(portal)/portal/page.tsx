@@ -11,17 +11,21 @@ const SECCIONES: {
   titulo: string;
   texto: string;
   href?: string;
+  accion?: string;
 }[] = [
   {
     icono: FlaskConical,
     titulo: "Laboratorio",
     texto: "Informes de análisis de aceite de tus equipos, con sus tendencias.",
     href: "/portal/informes",
+    accion: "Ver informes",
   },
   {
     icono: FileText,
     titulo: "Facturas y pagos",
     texto: "Facturas con saldo, pagos aplicados y descarga de XML y PDF.",
+    href: "/portal/facturas",
+    accion: "Ver facturas",
   },
   {
     icono: Wrench,
@@ -45,7 +49,7 @@ export default async function PortalPage() {
         </p>
       </div>
       <ul className="grid gap-3 md:grid-cols-3">
-        {SECCIONES.map(({ icono: Icono, titulo, texto, href }) => (
+        {SECCIONES.map(({ icono: Icono, titulo, texto, href, accion }) => (
           <li key={titulo}>
             {href ? (
               <Link href={href} className="block h-full">
@@ -53,9 +57,7 @@ export default async function PortalPage() {
                   <Icono aria-hidden className="size-5 text-primary" />
                   <p className="font-medium">{titulo}</p>
                   <p className="text-sm text-muted-foreground">{texto}</p>
-                  <p className="text-sm font-medium text-primary">
-                    Ver informes
-                  </p>
+                  <p className="text-sm font-medium text-primary">{accion}</p>
                 </Card>
               </Link>
             ) : (
