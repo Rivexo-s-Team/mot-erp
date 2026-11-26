@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { requireSesionPortal } from "@/lib/auth/session";
@@ -16,12 +15,6 @@ export default async function OrdenesPortalPage() {
   return (
     <div className="space-y-4">
       <div>
-        <Link
-          href="/portal"
-          className="text-sm text-primary underline-offset-4 hover:underline"
-        >
-          Portal
-        </Link>
         <h1 className="text-2xl font-semibold tracking-tight">
           Órdenes de servicio
         </h1>

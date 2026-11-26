@@ -18,12 +18,6 @@ export default async function PagosPortalPage() {
   return (
     <div className="space-y-5">
       <div>
-        <Link
-          href="/portal"
-          className="text-sm text-primary underline-offset-4 hover:underline"
-        >
-          Portal
-        </Link>
         <h1 className="text-2xl font-semibold tracking-tight">
           Facturas y pagos
         </h1>

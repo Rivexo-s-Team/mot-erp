@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { cerrarSesion } from "@/app/(auth)/actions";
 import { Logo } from "@/components/brand/logo";
+import { PortalNav } from "@/components/portal/portal-nav";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireSesionPortal } from "@/lib/auth/session";
@@ -23,6 +24,9 @@ export default function PortalLayout({ children }: LayoutProps<"/">) {
             <Usuario />
           </Suspense>
         </div>
+        <Suspense>
+          <PortalNav />
+        </Suspense>
       </header>
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
         <Suspense
