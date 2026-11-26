@@ -4019,6 +4019,20 @@ export type Database = {
           nombre: string;
         }[];
       };
+      portal_orden: { Args: { p_orden: string }; Returns: Json };
+      portal_ordenes: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          equipo: string;
+          equipo_alias: string;
+          fecha: string;
+          folio: string;
+          id: string;
+          planta: string;
+          robox: string;
+          tecnico: string;
+        }[];
+      };
       portal_pagos: {
         Args: Record<PropertyKey, never>;
         Returns: {

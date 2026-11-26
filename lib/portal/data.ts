@@ -1,6 +1,7 @@
 import "server-only";
 import type { direccionPlanta } from "@/lib/clientes/campos";
 import type { ContenidoInforme } from "@/lib/laboratorio/informe";
+import type { FilasDeCaptura } from "@/lib/ordenes/captura";
 import { createClient } from "@/lib/supabase/server";
 
 export type UsuarioPortal = {
@@ -173,4 +174,50 @@ export async function rutaArchivoFacturaPortal(
     p_tipo: tipo,
   });
   return data ?? null;
+}
+
+// Órdenes de servicio ------------------------------------------------------------
+
+/** Visitas cerradas en las plantas de la cuenta del usuario del portal, de la más reciente a la más antigua. */
+export async function ordenesDelPortal() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("portal_ordenes");
+  if (error) throw new Error("No se pudieron cargar las órdenes.");
+  return data;
+}
+
+export type OrdenPortal = {
+  orden: {
+    id: string;
+    folio: string;
+    tipo: string;
+    estado: string;
+    fecha_programada: string;
+    fecha_real: string | null;
+    cliente: string;
+    planta: string;
+    direccion: Parameters<typeof direccionPlanta>[0];
+    robox: string | null;
+    tecnico: string | null;
+    acompanante: string | null;
+  };
+  equipo: {
+    identificador: string;
+    alias: string | null;
+    aplicacion: string | null;
+    aceite: string | null;
+  } | null;
+  filas: FilasDeCaptura;
+  catalogos: Record<
+    "actividades" | "fallas" | "partes",
+    { id: string; nombre: string }[]
+  >;
+};
+
+/** Una visita cerrada de la cuenta del usuario del portal, o null si no le toca. */
+export async function ordenDelPortal(id: string): Promise<OrdenPortal | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("portal_orden", { p_orden: id });
+  if (error) throw new Error("No se pudo cargar la orden.");
+  return (data as OrdenPortal | null) ?? null;
 }

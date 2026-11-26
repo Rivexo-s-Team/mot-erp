@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   aCargaUtil,
+  armarCaptura,
   CAMPOS_LECTURA,
   capturaInicial,
   capturaVacia,
@@ -258,5 +259,51 @@ describe("borrador en el teléfono", () => {
     });
     expect(r).toEqual({ captura: sistema, pendiente: false });
     expect(capturaInicial(sistema, null).captura).toBe(sistema);
+  });
+});
+
+describe("armarCaptura", () => {
+  it("arma la captura a partir de sus renglones guardados", () => {
+    const c = armarCaptura({
+      orden: {
+        id_caso: "RAS1-08",
+        temperatura_aceite_c: 45.5,
+        volumen_reservorio_l: null,
+        observaciones: "Sin novedad",
+      },
+      lecturas: [
+        { momento: "inicial", presion_bar: 3.51, modelo: null },
+        { momento: "otro", presion_bar: 9 },
+      ],
+      actividades: [{ actividad_id: "a1", cantidad: 2 }],
+      fallas: [{ falla_id: "f1" }],
+      partes: [{ parte_id: "p1", cantidad: "1" }],
+      firmas: [
+        {
+          rol: "cliente",
+          nombre: "Jair",
+          cargo: null,
+          fecha: "2026-11-02",
+          trazos: [[1, 2, 3, 4]],
+        },
+        { rol: "testigo", nombre: "X", cargo: null, fecha: null, trazos: [] },
+      ],
+    });
+    expect(c.id_caso).toBe("RAS1-08");
+    expect(c.temperatura_aceite_c).toBe("45.5");
+    expect(c.volumen_reservorio_l).toBe("");
+    expect(c.lecturas.inicial.presion_bar).toBe("3.51");
+    expect(c.lecturas.inicial.modelo).toBe("");
+    expect(c.lecturas.posterior.presion_bar).toBe("");
+    expect(c.actividades).toEqual({ a1: "2" });
+    expect(c.fallas).toEqual(["f1"]);
+    expect(c.partes).toEqual({ p1: "1" });
+    expect(c.firmas.cliente).toEqual({
+      nombre: "Jair",
+      cargo: "",
+      fecha: "2026-11-02",
+      trazos: [[1, 2, 3, 4]],
+    });
+    expect(c.firmas.tecnico.nombre).toBe("");
   });
 });

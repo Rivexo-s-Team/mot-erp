@@ -4,12 +4,7 @@ import { listarContratos, nombreContrato } from "@/lib/contratos/data";
 import { ubicaciones } from "@/lib/flota/data";
 import { createClient } from "@/lib/supabase/server";
 import { ESTADOS_ABIERTOS, type OpcionesOrden } from "./campos";
-import {
-  CAMPOS_LECTURA,
-  capturaVacia,
-  type Captura,
-  type RolFirma,
-} from "./captura";
+import { armarCaptura, capturaVacia, type Captura } from "./captura";
 
 /** Lecturas de órdenes de servicio. RLS decide qué ve cada rol. */
 
@@ -250,33 +245,17 @@ export async function obtenerCaptura(ordenId: string): Promise<{
   )
     throw new Error("No se pudo cargar la captura de la orden.");
 
-  const captura = capturaVacia();
   const o = orden.data;
-  if (!o) return { captura, hayCaptura: false };
+  if (!o) return { captura: capturaVacia(), hayCaptura: false };
 
-  captura.id_caso = texto(o.id_caso);
-  captura.temperatura_aceite_c = texto(o.temperatura_aceite_c);
-  captura.volumen_reservorio_l = texto(o.volumen_reservorio_l);
-  captura.observaciones = texto(o.observaciones);
-  for (const l of lecturas.data) {
-    if (l.momento !== "inicial" && l.momento !== "posterior") continue;
-    const fila = l as unknown as Record<string, string | number | null>;
-    for (const c of CAMPOS_LECTURA)
-      captura.lecturas[l.momento][c.name] = texto(fila[c.name]);
-  }
-  for (const a of actividades.data)
-    captura.actividades[a.actividad_id] = texto(a.cantidad);
-  captura.fallas = fallas.data.map((f) => f.falla_id);
-  for (const p of partes.data) captura.partes[p.parte_id] = texto(p.cantidad);
-  for (const f of firmas.data) {
-    if (f.rol !== "tecnico" && f.rol !== "cliente") continue;
-    captura.firmas[f.rol as RolFirma] = {
-      nombre: f.nombre,
-      cargo: texto(f.cargo),
-      fecha: texto(f.fecha),
-      trazos: Array.isArray(f.trazos) ? (f.trazos as number[][]) : [],
-    };
-  }
+  const captura = armarCaptura({
+    orden: o,
+    lecturas: lecturas.data,
+    actividades: actividades.data,
+    fallas: fallas.data,
+    firmas: firmas.data,
+    partes: partes.data,
+  });
 
   const hayCaptura =
     lecturas.data.length > 0 ||
