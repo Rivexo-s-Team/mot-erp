@@ -3969,6 +3969,33 @@ export type Database = {
           tarifa_id: string;
         }[];
       };
+      portal_factura: { Args: { p_factura: string }; Returns: Json };
+      portal_factura_archivo: {
+        Args: { p_factura: string; p_tipo: string };
+        Returns: string;
+      };
+      portal_facturas: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          dias_credito: number;
+          es_anticipo: boolean;
+          fecha: string;
+          folio: string;
+          id: string;
+          metodo_pago: string;
+          moneda: string;
+          orden_compra: string;
+          pagado: number;
+          razon_social: string;
+          rfc: string;
+          saldo: number;
+          serie: string;
+          tiene_pdf: boolean;
+          tiene_xml: boolean;
+          total: number;
+          uuid_fiscal: string;
+        }[];
+      };
       portal_informe: { Args: { p_informe: string }; Returns: Json };
       portal_informes: {
         Args: Record<PropertyKey, never>;
@@ -3992,6 +4019,24 @@ export type Database = {
           nombre: string;
         }[];
       };
+      portal_pagos: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          aplicaciones: Json;
+          aplicado: number;
+          es_anticipo: boolean;
+          fecha: string;
+          forma_pago: string;
+          id: string;
+          moneda: string;
+          monto: number;
+          por_aplicar: number;
+          razon_social: string;
+          rep_folio: string;
+          rep_uuid: string;
+        }[];
+      };
+      portal_ve_archivo_factura: { Args: { p_ruta: string }; Returns: boolean };
       programar_visita: {
         Args: { p_tecnico?: string; p_visita: string };
         Returns: string;
