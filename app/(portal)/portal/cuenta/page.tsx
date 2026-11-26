@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { PasswordForm } from "@/app/(app)/cuenta/password-form";
 import {
   Card,
@@ -17,12 +16,6 @@ export default async function CuentaPortalPage() {
 
   return (
     <div className="mx-auto max-w-xl space-y-4">
-      <Link
-        href="/portal"
-        className="text-sm text-primary underline-offset-4 hover:underline"
-      >
-        Portal
-      </Link>
       <h1 className="text-2xl font-semibold tracking-tight">Mi cuenta</h1>
       <Card>
         <CardHeader>
