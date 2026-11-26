@@ -31,6 +31,8 @@ const SECCIONES: {
     icono: Wrench,
     titulo: "Órdenes de servicio",
     texto: "Visitas realizadas en tus plantas, con su reporte firmado.",
+    href: "/portal/ordenes",
+    accion: "Ver visitas",
   },
 ];
 

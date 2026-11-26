@@ -299,3 +299,55 @@ export function capturaInicial(
     ? { captura: borrador.captura, pendiente: true }
     : { captura: delSistema, pendiente: false };
 }
+
+/** Renglones de la base de los que se arma una captura. */
+export type FilasDeCaptura = {
+  orden: {
+    id_caso: string | null;
+    temperatura_aceite_c: string | number | null;
+    volumen_reservorio_l: string | number | null;
+    observaciones: string | null;
+  };
+  lecturas: Record<string, unknown>[];
+  actividades: { actividad_id: string; cantidad: string | number | null }[];
+  fallas: { falla_id: string }[];
+  firmas: {
+    rol: string;
+    nombre: string;
+    cargo: string | null;
+    fecha: string | null;
+    trazos: unknown;
+  }[];
+  partes: { parte_id: string; cantidad: string | number | null }[];
+};
+
+const comoTexto = (v: unknown) =>
+  v === null || v === undefined ? "" : String(v);
+
+/** Arma la captura a partir de sus renglones guardados. */
+export function armarCaptura(f: FilasDeCaptura): Captura {
+  const captura = capturaVacia();
+  captura.id_caso = comoTexto(f.orden.id_caso);
+  captura.temperatura_aceite_c = comoTexto(f.orden.temperatura_aceite_c);
+  captura.volumen_reservorio_l = comoTexto(f.orden.volumen_reservorio_l);
+  captura.observaciones = comoTexto(f.orden.observaciones);
+  for (const l of f.lecturas) {
+    if (l.momento !== "inicial" && l.momento !== "posterior") continue;
+    for (const c of CAMPOS_LECTURA)
+      captura.lecturas[l.momento][c.name] = comoTexto(l[c.name]);
+  }
+  for (const a of f.actividades)
+    captura.actividades[a.actividad_id] = comoTexto(a.cantidad);
+  captura.fallas = f.fallas.map((x) => x.falla_id);
+  for (const x of f.partes) captura.partes[x.parte_id] = comoTexto(x.cantidad);
+  for (const x of f.firmas) {
+    if (x.rol !== "tecnico" && x.rol !== "cliente") continue;
+    captura.firmas[x.rol] = {
+      nombre: x.nombre,
+      cargo: comoTexto(x.cargo),
+      fecha: comoTexto(x.fecha),
+      trazos: Array.isArray(x.trazos) ? (x.trazos as number[][]) : [],
+    };
+  }
+  return captura;
+}
