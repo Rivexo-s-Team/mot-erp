@@ -1,3 +1,4 @@
+import { hoyEnMexico } from "@/lib/format";
 import type { Campo, Opcion, Validador } from "@/lib/forms/campos";
 
 /** Flota de Robox (DISENO §4.3). */
@@ -156,10 +157,38 @@ export function camposAsignacion(
   return campos;
 }
 
+/**
+ * Una asignación dice dónde está el Robox hoy: con "Hasta" lleno ya terminó y
+ * el Robox queda libre. Por eso no se aceptan fechas futuras: una fecha de
+ * regreso prevista lo liberaría desde ahora.
+ */
+export const validarAsignacionAl =
+  (hoy: string): Validador =>
+  (v) => {
+    const inicio = String(v.fecha_inicio ?? "");
+    const fin = String(v.fecha_fin ?? "");
+    if (inicio && fin && fin < inicio)
+      return {
+        campo: "fecha_fin",
+        mensaje: "No puede ser anterior al inicio.",
+      };
+    if (inicio > hoy)
+      return {
+        campo: "fecha_inicio",
+        mensaje:
+          "No puede ser una fecha futura: asigna el Robox el día que salga.",
+      };
+    if (fin > hoy)
+      return {
+        campo: "fecha_fin",
+        mensaje:
+          "Déjalo vacío mientras el Robox siga con el cliente; se llena el día que regresa.",
+      };
+    return null;
+  };
+
 export const validarAsignacion: Validador = (v) =>
-  v.fecha_inicio && v.fecha_fin && v.fecha_fin < v.fecha_inicio
-    ? { campo: "fecha_fin", mensaje: "No puede ser anterior al inicio." }
-    : null;
+  validarAsignacionAl(hoyEnMexico())(v);
 
 export function camposCarrusel(equipos: Opcion[]): Campo[] {
   return [

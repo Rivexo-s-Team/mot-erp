@@ -175,6 +175,24 @@ function Formulario({
     return () => window.clearTimeout(t);
   }, [estado, captura, enviar]);
 
+  // Al salir de la pantalla (por ejemplo con "Volver a la orden" justo después
+  // de firmar) lo pendiente se envía de inmediato, sin esperar los segundos de
+  // gracia: si no, el último cambio se quedaba solo en el teléfono.
+  useEffect(() => {
+    return () => {
+      if (!leerLocal(ordenId)?.pendiente) return;
+      const datos = ultima.current;
+      if (problemaCaptura(datos)) return;
+      void guardarCaptura(ordenId, datos)
+        .then((r) => {
+          if (r.ok) escribirLocal(ordenId, datos, false);
+        })
+        .catch(() => {
+          // Sin señal: sigue pendiente y se envía al volver a abrir la captura.
+        });
+    };
+  }, [ordenId]);
+
   useEffect(() => {
     const alVolverSenal = () => {
       if (leerLocal(ordenId)?.pendiente) void enviar();

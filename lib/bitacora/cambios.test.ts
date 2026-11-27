@@ -6,6 +6,7 @@ import {
   nombreTabla,
   rangoDeFechas,
   resumen,
+  TABLAS,
   textoValor,
 } from "./cambios";
 
@@ -98,6 +99,12 @@ describe("textoValor y resumen", () => {
         datos_nuevos: { monto: 100 },
       }),
     ).toBe("monto: 100");
+  });
+  it("nombra todas las tablas que llevan bitácora en la base", () => {
+    // La lista sale de los triggers registrar_bitacora de las migraciones.
+    const conBitacora =
+      "aceites cargos condiciones_credito contrato_tarifas contratos cotizacion_lineas cotizaciones equipos_cliente_costos factura_conceptos facturas informes muestra_resultados muestras ordenes_compra pago_aplicaciones pagos parametros_laboratorio parametros_negocio perfiles portal_proveedor razones_sociales rol_permisos usuarios_portal";
+    expect(Object.keys(TABLAS).sort()).toEqual(conBitacora.split(" "));
   });
   it("una tabla sin nombre se muestra tal cual", () => {
     expect(nombreTabla("facturas")).toBe("Facturas");

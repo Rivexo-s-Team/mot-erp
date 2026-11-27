@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   Smartphone,
   SlidersHorizontal,
+  ChartColumn,
   History,
   Users,
   type LucideIcon,
@@ -49,6 +50,7 @@ const ICONOS: Record<IconoMenu, LucideIcon> = {
   parametros: SlidersHorizontal,
   usuarios: Users,
   bitacora: History,
+  direccion: ChartColumn,
 };
 
 type NavLinksProps = {
