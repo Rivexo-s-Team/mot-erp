@@ -22,6 +22,7 @@ describe("menuPara", () => {
         "catalogos.ver",
         "parametros.ver",
         "usuarios.administrar",
+        "bitacora.ver",
       ]),
     ).toEqual([
       "/",
@@ -43,6 +44,7 @@ describe("menuPara", () => {
       "/catalogos",
       "/parametros",
       "/usuarios",
+      "/bitacora",
     ]);
   });
 
