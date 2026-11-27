@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import type { ReactNode } from "react";
 import { BarrasMensuales } from "@/components/direccion/barras-mensuales";
+import { Cifra } from "@/components/direccion/cifra";
+import { Comercial } from "@/components/direccion/comercial";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { requirePermiso } from "@/lib/auth/session";
+import { requirePermiso, tienePermiso } from "@/lib/auth/session";
+import { resumenComercial } from "@/lib/direccion/comercial";
 import {
   ingresosPorMes,
+  oportunidadesDelTablero,
   porFacturar,
   porPlanta,
   rentasVigentes,
@@ -33,18 +36,25 @@ export const metadata: Metadata = { title: "Dirección" };
 const MESES = 12;
 
 export default async function DireccionPage() {
-  await requirePermiso("direccion.ver");
+  const sesion = await requirePermiso("direccion.ver");
+  // La parte comercial sale de las oportunidades: solo para quien las ve.
+  const veComercial = tienePermiso(sesion, "oportunidades.ver");
   const hoy = hoyEnMexico();
   const meses = ultimosMeses(hoy, MESES);
   const mesActual = meses.at(-1)!;
   const mesAnterior = meses.at(-2)!;
-  const [ingresos, rentas, pendientes, porCobrar, plantas] = await Promise.all([
-    ingresosPorMes(meses[0]!, finDeMes(mesActual)),
-    rentasVigentes(),
-    porFacturar(),
-    facturasPorCobrar(),
-    porPlanta(meses[0]!, finDeMes(mesActual)),
-  ]);
+  const [ingresos, rentas, pendientes, porCobrar, plantas, oportunidades] =
+    await Promise.all([
+      ingresosPorMes(meses[0]!, finDeMes(mesActual)),
+      rentasVigentes(),
+      porFacturar(),
+      facturasPorCobrar(),
+      porPlanta(meses[0]!, finDeMes(mesActual)),
+      veComercial ? oportunidadesDelTablero() : null,
+    ]);
+  const comercial = oportunidades
+    ? resumenComercial(oportunidades, `${meses[0]}T00:00:00-06:00`, hoy)
+    : null;
   const saldos = saldosPorCuenta(
     porCobrar.map((f) => ({
       cuenta_id: f.cuenta_id,
@@ -76,10 +86,10 @@ export default async function DireccionPage() {
     <>
       <PageHeader
         title="Dirección"
-        description="Ingresos y cobranza con lo que ya está capturado. Cada moneda va por separado; nada se convierte."
+        description="Ingresos, cobranza y ventas con lo que ya está capturado. Cada moneda va por separado; nada se convierte."
       />
 
-      {monedas.length === 0 ? (
+      {monedas.length === 0 && !comercial ? (
         <Card className="px-4 py-10 text-center text-sm text-muted-foreground">
           Aún no hay contratos vigentes, cargos ni facturas que mostrar.
         </Card>
@@ -181,33 +191,9 @@ export default async function DireccionPage() {
             </section>
           );
         })}
+        {comercial ? <Comercial r={comercial} meses={MESES} /> : null}
       </div>
     </>
-  );
-}
-
-/** Una cifra del tablero, con su nota y el enlace a la pantalla de donde sale. */
-function Cifra({
-  titulo,
-  valor,
-  nota,
-  href,
-}: {
-  titulo: string;
-  valor: string;
-  nota: ReactNode;
-  href: string;
-}) {
-  return (
-    <li>
-      <Link href={href} className="block h-full">
-        <Card className="h-full gap-1 px-4 py-3 transition-colors hover:border-primary/40 hover:bg-accent/40">
-          <p className="text-sm text-muted-foreground">{titulo}</p>
-          <p className="text-xl font-semibold tabular-nums">{valor}</p>
-          <p className="text-sm text-muted-foreground">{nota}</p>
-        </Card>
-      </Link>
-    </li>
   );
 }
 
