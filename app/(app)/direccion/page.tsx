@@ -3,12 +3,19 @@ import Link from "next/link";
 import { BarrasMensuales } from "@/components/direccion/barras-mensuales";
 import { Cifra } from "@/components/direccion/cifra";
 import { Comercial } from "@/components/direccion/comercial";
+import { Operacion } from "@/components/direccion/operacion";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requirePermiso, tienePermiso } from "@/lib/auth/session";
 import { resumenComercial } from "@/lib/direccion/comercial";
 import {
+  PERIODOS,
+  periodoDe,
+  resumenOperacion,
+} from "@/lib/direccion/operacion";
+import {
   ingresosPorMes,
+  operacionDelTablero,
   oportunidadesDelTablero,
   porFacturar,
   porPlanta,
@@ -33,25 +40,34 @@ import { formatImporte, hoyEnMexico } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Dirección" };
 
-const MESES = 12;
-
-export default async function DireccionPage() {
+export default async function DireccionPage({
+  searchParams,
+}: PageProps<"/direccion">) {
   const sesion = await requirePermiso("direccion.ver");
   // La parte comercial sale de las oportunidades: solo para quien las ve.
   const veComercial = tienePermiso(sesion, "oportunidades.ver");
+  const MESES = periodoDe((await searchParams).meses);
   const hoy = hoyEnMexico();
   const meses = ultimosMeses(hoy, MESES);
   const mesActual = meses.at(-1)!;
   const mesAnterior = meses.at(-2)!;
-  const [ingresos, rentas, pendientes, porCobrar, plantas, oportunidades] =
-    await Promise.all([
-      ingresosPorMes(meses[0]!, finDeMes(mesActual)),
-      rentasVigentes(),
-      porFacturar(),
-      facturasPorCobrar(),
-      porPlanta(meses[0]!, finDeMes(mesActual)),
-      veComercial ? oportunidadesDelTablero() : null,
-    ]);
+  const [
+    ingresos,
+    rentas,
+    pendientes,
+    porCobrar,
+    plantas,
+    oportunidades,
+    operacion,
+  ] = await Promise.all([
+    ingresosPorMes(meses[0]!, finDeMes(mesActual)),
+    rentasVigentes(),
+    porFacturar(),
+    facturasPorCobrar(),
+    porPlanta(meses[0]!, finDeMes(mesActual)),
+    veComercial ? oportunidadesDelTablero() : null,
+    operacionDelTablero(),
+  ]);
   const comercial = oportunidades
     ? resumenComercial(oportunidades, `${meses[0]}T00:00:00-06:00`, hoy)
     : null;
@@ -87,11 +103,28 @@ export default async function DireccionPage() {
       <PageHeader
         title="Dirección"
         description="Ingresos, cobranza y ventas con lo que ya está capturado. Cada moneda va por separado; nada se convierte."
-      />
+      >
+        <nav aria-label="Periodo" className="flex rounded-lg border p-0.5">
+          {PERIODOS.map((p) => (
+            <Link
+              key={p}
+              href={p === 12 ? "/direccion" : `/direccion?meses=${p}`}
+              aria-current={p === MESES ? "page" : undefined}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+                p === MESES
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {p} meses
+            </Link>
+          ))}
+        </nav>
+      </PageHeader>
 
-      {monedas.length === 0 && !comercial ? (
+      {monedas.length === 0 ? (
         <Card className="px-4 py-10 text-center text-sm text-muted-foreground">
-          Aún no hay contratos vigentes, cargos ni facturas que mostrar.
+          Aún no hay contratos vigentes, cargos ni facturas en este periodo.
         </Card>
       ) : null}
 
@@ -192,6 +225,11 @@ export default async function DireccionPage() {
           );
         })}
         {comercial ? <Comercial r={comercial} meses={MESES} /> : null}
+        <Operacion
+          r={resumenOperacion(operacion, meses, hoy)}
+          filtrosPorCambiar={operacion.filtrosPorCambiar}
+          meses={MESES}
+        />
       </div>
     </>
   );

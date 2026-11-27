@@ -1,6 +1,8 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { alertasDeFiltro } from "@/lib/flota/data";
 import type { OportunidadDelTablero } from "./comercial";
+import type { DatosDeOperacion } from "./operacion";
 import type { IngresoDelMes, RenglonDePlanta } from "./tablero";
 
 /** Lecturas del tablero de dirección. Las funciones de base piden `direccion.ver`. */
@@ -73,4 +75,41 @@ export async function oportunidadesDelTablero(): Promise<
     siguiente_paso_fecha: o.siguiente_paso_fecha,
     motivo: o.motivos_perdida?.nombre ?? o.motivo_perdida,
   }));
+}
+
+/**
+ * Flota, visitas y laboratorio para la parte de operación. Con RLS: los
+ * cuatro roles del tablero ven flota, órdenes y laboratorio.
+ */
+export async function operacionDelTablero(): Promise<
+  DatosDeOperacion & { filtrosPorCambiar: number }
+> {
+  const supabase = await createClient();
+  const [robox, ordenes, muestras, informes] = await Promise.all([
+    supabase.from("robox").select("id, estado").is("deleted_at", null),
+    supabase
+      .from("ordenes_servicio")
+      .select("tipo, estado, fecha_programada, fecha_real")
+      .is("deleted_at", null),
+    supabase
+      .from("muestras")
+      .select("estado, fecha_muestreo")
+      .is("deleted_at", null),
+    supabase
+      .from("informes")
+      .select("estado, validado_at, publicado_at")
+      .is("deleted_at", null),
+  ]);
+  if (robox.error || ordenes.error || muestras.error || informes.error)
+    throw new Error("No se pudo cargar la operación.");
+  const alertas = await alertasDeFiltro(
+    robox.data.filter((r) => r.estado !== "baja").map((r) => r.id),
+  );
+  return {
+    robox: robox.data.map((r) => r.estado),
+    ordenes: ordenes.data,
+    muestras: muestras.data,
+    informes: informes.data,
+    filtrosPorCambiar: alertas.size,
+  };
 }
