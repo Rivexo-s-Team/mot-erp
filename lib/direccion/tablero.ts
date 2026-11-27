@@ -111,3 +111,147 @@ export function importeCorto(n: number): string {
   if (n >= 1_000) return `${f(n / 1_000)} k`;
   return f(n);
 }
+
+// Por cliente y planta ----------------------------------------------------------
+
+export type RenglonDePlanta = {
+  cuenta_id: string;
+  cuenta: string;
+  planta_id: string | null;
+  planta: string | null;
+  moneda: string;
+  /** Sin IVA, en el periodo. */
+  facturado: number;
+  renta_mensual: number;
+  robox: number;
+};
+
+export type SaldoDeCuenta = {
+  cuenta_id: string;
+  cuenta: string;
+  moneda: string;
+  saldo: number;
+  vencido: number;
+};
+
+export type CuentaDelTablero = {
+  cuenta_id: string;
+  cuenta: string;
+  facturado: number;
+  renta_mensual: number;
+  robox: number;
+  saldo: number;
+  vencido: number;
+  plantas: {
+    planta_id: string | null;
+    planta: string;
+    facturado: number;
+    renta_mensual: number;
+    robox: number;
+  }[];
+};
+
+const centavos = (n: number) => Math.round(n * 100);
+
+/**
+ * Las cuentas de una moneda con sus plantas y sus totales, de la que más
+ * facturó a la que menos. El saldo es de la cuenta, no de la planta: una
+ * factura puede traer cargos de varias. Suma en centavos.
+ */
+export function cuentasDeMoneda(
+  renglones: RenglonDePlanta[],
+  saldos: SaldoDeCuenta[],
+  moneda: string,
+): CuentaDelTablero[] {
+  const porCuenta = new Map<
+    string,
+    CuentaDelTablero & { f: number; r: number }
+  >();
+  const cuenta = (id: string, nombre: string) => {
+    let c = porCuenta.get(id);
+    if (!c) {
+      c = {
+        cuenta_id: id,
+        cuenta: nombre,
+        facturado: 0,
+        renta_mensual: 0,
+        robox: 0,
+        saldo: 0,
+        vencido: 0,
+        plantas: [],
+        f: 0,
+        r: 0,
+      };
+      porCuenta.set(id, c);
+    }
+    return c;
+  };
+  for (const x of renglones) {
+    if (x.moneda !== moneda) continue;
+    const c = cuenta(x.cuenta_id, x.cuenta);
+    c.f += centavos(x.facturado);
+    c.r += centavos(x.renta_mensual);
+    c.robox += x.robox;
+    c.plantas.push({
+      planta_id: x.planta_id,
+      planta: x.planta ?? "Sin planta",
+      facturado: x.facturado,
+      renta_mensual: x.renta_mensual,
+      robox: x.robox,
+    });
+  }
+  for (const s of saldos) {
+    if (s.moneda !== moneda) continue;
+    // Una cuenta que solo debe (sin contrato vigente ni facturas en el periodo) también sale.
+    const c = cuenta(s.cuenta_id, s.cuenta);
+    c.saldo = s.saldo;
+    c.vencido = s.vencido;
+  }
+  return [...porCuenta.values()]
+    .map(({ f, r, ...c }) => ({
+      ...c,
+      facturado: f / 100,
+      renta_mensual: r / 100,
+      plantas: c.plantas.sort(
+        (a, b) =>
+          b.facturado - a.facturado || a.planta.localeCompare(b.planta, "es"),
+      ),
+    }))
+    .sort(
+      (a, b) =>
+        b.facturado - a.facturado ||
+        b.renta_mensual - a.renta_mensual ||
+        a.cuenta.localeCompare(b.cuenta, "es"),
+    );
+}
+
+/** Saldo y vencido por cuenta y moneda a partir de las facturas por cobrar. Suma en centavos. */
+export function saldosPorCuenta(
+  facturas: {
+    cuenta_id: string;
+    cuenta: string;
+    moneda: string;
+    saldo: number;
+    vencida: boolean;
+  }[],
+): SaldoDeCuenta[] {
+  const m = new Map<string, { nombre: string; s: number; v: number }>();
+  for (const f of facturas) {
+    if (f.saldo <= 0) continue;
+    const clave = `${f.cuenta_id}|${f.moneda}`;
+    const t = m.get(clave) ?? { nombre: f.cuenta, s: 0, v: 0 };
+    t.s += centavos(f.saldo);
+    if (f.vencida) t.v += centavos(f.saldo);
+    m.set(clave, t);
+  }
+  return [...m.entries()].map(([clave, t]) => {
+    const [cuenta_id, moneda] = clave.split("|") as [string, string];
+    return {
+      cuenta_id,
+      cuenta: t.nombre,
+      moneda,
+      saldo: t.s / 100,
+      vencido: t.v / 100,
+    };
+  });
+}

@@ -4101,6 +4101,19 @@ export type Database = {
           por_completar: number;
         }[];
       };
+      tablero_por_planta: {
+        Args: { p_desde: string; p_hasta: string };
+        Returns: {
+          cuenta: string;
+          cuenta_id: string;
+          facturado: number;
+          moneda: string;
+          planta: string;
+          planta_id: string;
+          renta_mensual: number;
+          robox: number;
+        }[];
+      };
       tablero_rentas_vigentes: {
         Args: Record<PropertyKey, never>;
         Returns: {
