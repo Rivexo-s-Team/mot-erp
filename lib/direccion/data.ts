@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import type { IngresoDelMes } from "./tablero";
+import type { IngresoDelMes, RenglonDePlanta } from "./tablero";
 
 /** Lecturas del tablero de dirección. Las funciones de base piden `direccion.ver`. */
 
@@ -31,5 +31,19 @@ export async function porFacturar() {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("tablero_por_facturar");
   if (error) throw new Error("No se pudo cargar lo pendiente de facturar.");
+  return data;
+}
+
+/** Facturado del periodo, renta vigente y Robox por cuenta, planta y moneda. */
+export async function porPlanta(
+  desde: string,
+  hasta: string,
+): Promise<RenglonDePlanta[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("tablero_por_planta", {
+    p_desde: desde,
+    p_hasta: hasta,
+  });
+  if (error) throw new Error("No se pudieron cargar las cifras por planta.");
   return data;
 }
