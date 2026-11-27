@@ -23,9 +23,11 @@ describe("menuPara", () => {
         "parametros.ver",
         "usuarios.administrar",
         "bitacora.ver",
+        "direccion.ver",
       ]),
     ).toEqual([
       "/",
+      "/direccion",
       "/clientes",
       "/oportunidades",
       "/contratos",

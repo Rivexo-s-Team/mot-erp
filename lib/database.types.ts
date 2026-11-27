@@ -4081,6 +4081,35 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: string;
       };
+      tablero_ingresos: {
+        Args: { p_desde: string; p_hasta: string };
+        Returns: {
+          cobrado: number;
+          facturado: number;
+          facturado_total: number;
+          facturas: number;
+          mes: string;
+          moneda: string;
+        }[];
+      };
+      tablero_por_facturar: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          cargos: number;
+          importe: number;
+          moneda: string;
+          por_completar: number;
+        }[];
+      };
+      tablero_rentas_vigentes: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          contratos: number;
+          moneda: string;
+          renta_mensual: number;
+          rentas: number;
+        }[];
+      };
       tiene_permiso: { Args: { p_clave: string }; Returns: boolean };
       umbrales_condicion_aceite: {
         Args: Record<PropertyKey, never>;

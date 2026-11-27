@@ -23,7 +23,8 @@ export type IconoMenu =
   | "catalogos"
   | "parametros"
   | "usuarios"
-  | "bitacora";
+  | "bitacora"
+  | "direccion";
 
 export type EntradaMenu = {
   href: string;
@@ -38,7 +39,15 @@ export type GrupoMenu = { titulo: string | null; entradas: EntradaMenu[] };
 const MENU: GrupoMenu[] = [
   {
     titulo: null,
-    entradas: [{ href: "/", label: "Inicio", icono: "inicio" }],
+    entradas: [
+      { href: "/", label: "Inicio", icono: "inicio" },
+      {
+        href: "/direccion",
+        label: "Dirección",
+        icono: "direccion",
+        permiso: "direccion.ver",
+      },
+    ],
   },
   {
     titulo: "Comercial",

@@ -1,6 +1,6 @@
 -- Un usuario de cada rol ve solo lo que le corresponde.
 begin;
-select plan(54);
+select plan(57);
 
 -- Todo lo de la prueba vive en un esquema temporal y se deshace con el rollback.
 create schema pruebas;
@@ -61,6 +61,7 @@ select cmp_ok(pruebas.cuenta('perfiles'), '>=', 7, 'dirección ve todos los perf
 select is(pruebas.cuenta('roles'), 8, 'dirección ve todos los roles');
 select cmp_ok(pruebas.cuenta('permisos'), '>=', 5, 'dirección ve los permisos');
 select ok(public.tiene_permiso('usuarios.administrar'), 'dirección administra usuarios');
+select ok(public.tiene_permiso('direccion.ver'), 'dirección ve el tablero de dirección');
 
 -- Comercial y Administración: precios sí, usuarios y bitácora no -------------
 select pruebas.entrar('comercial');
@@ -73,6 +74,7 @@ select ok(public.tiene_permiso('precios.ver'), 'comercial ve precios');
 select ok(public.tiene_permiso('inventario.ver') and not public.tiene_permiso('inventario.editar'), 'comercial consulta el inventario pero no lo mueve');
 select ok(public.tiene_permiso('contratos.ver') and not public.tiene_permiso('contratos.editar'), 'comercial consulta contratos pero no los edita');
 select ok(not public.tiene_permiso('usuarios.administrar'), 'comercial no administra usuarios');
+select ok(public.tiene_permiso('direccion.ver'), 'comercial ve el tablero de dirección');
 
 with cambio as (
   update public.parametros_negocio set valor = 0.10
@@ -97,6 +99,7 @@ select is(pruebas.cuenta('parametros_negocio'), 0, 'técnico no ve los parámetr
 select is(pruebas.cuenta('bitacora'), 0, 'técnico no ve la bitácora');
 select is(pruebas.cuenta('perfiles'), 1, 'técnico solo ve su perfil');
 select ok(not public.tiene_permiso('precios.ver'), 'técnico no ve precios');
+select ok(not public.tiene_permiso('direccion.ver'), 'técnico no ve el tablero de dirección');
 select ok(not public.tiene_permiso('cargos.ver'), 'técnico no ve cargos');
 select ok(not public.tiene_permiso('facturacion.ver'), 'técnico no ve nada de facturación');
 select ok(public.tiene_permiso('documentos_acceso.ver') and not public.tiene_permiso('documentos_acceso.editar'), 'técnico consulta documentos de acceso pero no los registra');
