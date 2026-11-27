@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import type { OportunidadDelTablero } from "./comercial";
 import type { IngresoDelMes, RenglonDePlanta } from "./tablero";
 
 /** Lecturas del tablero de dirección. Las funciones de base piden `direccion.ver`. */
@@ -46,4 +47,30 @@ export async function porPlanta(
   });
   if (error) throw new Error("No se pudieron cargar las cifras por planta.");
   return data;
+}
+
+/**
+ * Oportunidades para la parte comercial del tablero. Con RLS: solo las
+ * obtiene quien ve oportunidades.
+ */
+export async function oportunidadesDelTablero(): Promise<
+  OportunidadDelTablero[]
+> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("oportunidades")
+    .select(
+      "etapa, tipo, volumen_estimado_l, fecha_cierre, siguiente_paso_fecha, motivo_perdida, motivos_perdida (nombre), cuentas!inner (deleted_at)",
+    )
+    .is("deleted_at", null)
+    .is("cuentas.deleted_at", null);
+  if (error) throw new Error("No se pudieron cargar las oportunidades.");
+  return data.map((o) => ({
+    etapa: o.etapa,
+    tipo: o.tipo,
+    volumen_estimado_l: o.volumen_estimado_l,
+    fecha_cierre: o.fecha_cierre,
+    siguiente_paso_fecha: o.siguiente_paso_fecha,
+    motivo: o.motivos_perdida?.nombre ?? o.motivo_perdida,
+  }));
 }
