@@ -14,6 +14,7 @@ import {
   nombreEquipo,
   problemaMovimiento,
   validarAsignacion,
+  validarAsignacionAl,
 } from "./campos";
 
 describe("Robox", () => {
@@ -91,6 +92,20 @@ describe("asignación", () => {
     expect(esquema.safeParse(valores).success).toBe(false);
     expect(esquema.safeParse({ ...valores, contrato_id: ID(1) }).success).toBe(
       true,
+    );
+  });
+
+  it("no acepta fechas futuras: liberarían o marcarían el Robox antes de tiempo", () => {
+    const hoy = validarAsignacionAl("2026-11-27");
+    const base = { fecha_inicio: "2026-11-01", fecha_fin: "" };
+    expect(hoy(base)).toBeNull();
+    expect(hoy({ ...base, fecha_fin: "2026-11-27" })).toBeNull();
+    expect(hoy({ ...base, fecha_fin: "2026-12-31" })?.campo).toBe("fecha_fin");
+    expect(hoy({ ...base, fecha_inicio: "2026-12-01" })?.campo).toBe(
+      "fecha_inicio",
+    );
+    expect(hoy({ ...base, fecha_fin: "2026-10-01" })?.mensaje).toBe(
+      "No puede ser anterior al inicio.",
     );
   });
 

@@ -237,7 +237,7 @@ export default async function PagoPage({
                         ? ` · ${a.facturas.metodo_pago}`
                         : ""}
                     </p>
-                    {edita && !p.rep_uuid ? (
+                    {edita && !p.rep_uuid && !esAnticipo ? (
                       <form action={quitarAplicacion.bind(null, p.id, a.id)}>
                         <Button
                           type="submit"

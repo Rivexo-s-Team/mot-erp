@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { claveBorrador, leerBorrador } from "@/lib/ordenes/captura";
@@ -33,11 +33,7 @@ export function CerrarOrden({ ordenId, faltantes, volver, grande }: Props) {
   const [enviando, iniciar] = useTransition();
 
   if (faltantes.length > 0) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        Para cerrar la orden falta {faltantes.join(" y ")}.
-      </p>
-    );
+    return <Faltantes ordenId={ordenId} faltantes={faltantes} />;
   }
 
   const cerrar = () => {
@@ -84,5 +80,33 @@ export function CerrarOrden({ ordenId, faltantes, volver, grande }: Props) {
         </Alert>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Lo que falta para cerrar. Si en este teléfono hay cambios de la captura sin
+ * enviar, lo que "falta" quizá ya está capturado aquí: se avisa eso primero.
+ */
+function Faltantes({
+  ordenId,
+  faltantes,
+}: {
+  ordenId: string;
+  faltantes: string[];
+}) {
+  const [pendiente, setPendiente] = useState(false);
+  useEffect(() => {
+    const revisar = () => setPendiente(hayPendiente(ordenId));
+    revisar();
+    // El envío al salir de la captura tarda un momento en confirmarse.
+    const t = window.setInterval(revisar, 2000);
+    return () => window.clearInterval(t);
+  }, [ordenId]);
+  return (
+    <p className="text-sm text-muted-foreground">
+      {pendiente
+        ? "En este teléfono hay cambios de la captura que aún no llegan al sistema. Abre la captura y espera a que diga “Guardado en el sistema”."
+        : `Para cerrar la orden falta ${faltantes.join(" y ")}.`}
+    </p>
   );
 }

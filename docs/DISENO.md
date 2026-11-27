@@ -411,6 +411,7 @@ Ninguna bloquea el arranque. Cada una se resuelve antes de la etapa indicada.
 | D68 | **Tablero de dirección.** Pantalla "Dirección" con permiso propio (`direccion.ver`): Dirección, Administración (y el rol combinado con Coordinación) y Comercial. Nada se guarda: se calcula al consultar. Dólares y pesos van por separado, sin convertir. Paso 1: facturado del mes (sin IVA), cobrado del mes, renta mensual vigente, por cobrar con lo vencido y por facturar, más la gráfica de facturado y cobrado de los últimos 12 meses (las dos con IVA, para compararlas). "Por facturar" cuenta los cargos pendientes, sueltos o en un borrador de factura. La rentabilidad por planta queda para cuando exista el costeo (D69). | Confirmado por Alejandro el 26 nov 2026. |
 | D69 | **Costeo, primera versión (por construir).** Se capturan todos los costos en un registro simple. Un costo puede ir ligado a un Robox (por ejemplo su reparación) y por él al cliente y la planta donde está, o quedar como gasto general sin cliente. En una segunda etapa se decide cómo repartir los generales (por máquina, por cliente o absorbidos entre todo). | Definido por Alejandro el 26 nov 2026. |
 | D70 | **Corte mensual.** Todo se factura a mes vencido con corte mensual, sea renta de máquina o limpieza por litro: al terminar el mes se generan las rentas de ese mes y se facturan junto con los cargos por litro de las visitas cerradas en el mes. Durante el mes los cargos por litro se acumulan como pendientes. | Confirmado por Alejandro el 26 nov 2026; amplía D51. |
+| D71 | **Correcciones de la revisión de código (26 nov 2026).** (1) Una orden no se da de alta cerrada ni cancelada, una factura nace siempre en borrador y un cargo nunca nace facturado: esos estados solo se alcanzan por el camino que los valida. Una factura eliminada no se recupera. (2) La renta de un mes la debe también el contrato que se dio por terminado después, si su fecha de término cae en ese mes o más adelante; terminado y sin fecha de término no genera. (3) Una asignación de Robox no acepta fechas futuras: "Hasta" se llena el día que regresa. (4) La aplicación de un anticipo no se quita de una factura suelta: se deshace completa. (5) Al salir de la captura, lo pendiente se envía de inmediato. | Hallazgos de la revisión; (2) sigue de D51 y D70 y sustituye a "terminado no genera" de D43. |
 
 ---
 
@@ -436,6 +437,21 @@ MOT compartió el documento "Sistema de procesos operativos" (propuesta de un co
 **Para etapas siguientes:** el proceso 5 (folio único de muestra, punto de muestreo, custodia, reporte de no conformidad, parámetros de aceptación según el aceite) se revisa al planear la Etapa 4. El tablero ejecutivo y los indicadores (disponibilidad, cumplimiento de mantenimiento, MTTR, MTBF, instalaciones a tiempo) son de la Etapa 6.
 
 **Proceso 06, gestión comercial y ventas (26 nov 2026):** llegó como propuesta 1.0, aún sin validar por los dueños. Lo que el sistema ya cubre: registro de prospectos con planta, contactos y origen; tablero de oportunidades con responsable; siguiente paso con fecha y aviso cuando vence (D55); pérdida y descarte con motivo; muestras de diagnóstico ligadas a la oportunidad; cotización con precio piso (D10 a D17); la regla de que ganar no basta sin contrato (D11); contratos, condiciones de crédito y anticipos. Lo que propone y no existe: sus nueve etapas (las actuales se acordaron con MOT el 20 nov), importe estimado, probabilidad y fecha estimada de cierre (de ahí salen el pipeline ponderado y el pronóstico), prioridad A/B/C con matriz de seis criterios, impedimento, bitácora de contactos, semáforo por días en la etapa, checklist de entrega a Operaciones, seguimiento posventa y aviso de renovación a 90, 60 y 30 días, y un tablero de indicadores para Dirección. Nada de esto obliga a rehacer lo construido: son campos y pantallas que se agregan. No se construye hasta que MOT lo valide (P24); los indicadores caben en el tablero de dirección de la Etapa 6.
+
+---
+
+## 8 bis. Revisión de código (26 de noviembre de 2026)
+
+Se revisó todo el código en tres frentes (seguridad y permisos, dinero y facturación, operación y laboratorio). No se encontraron fugas de datos entre clientes ni de precios a roles sin permiso. Lo corregido está en D71. Queda pendiente, por orden de importancia:
+
+| Pendiente | Qué pasa hoy |
+|---|---|
+| Captura de una orden desde dos teléfonos a la vez | Cada envío reemplaza toda la captura: si el técnico y su acompañante la abren al mismo tiempo, el último que guarda pisa lo del otro. Mientras se corrige: una sola persona captura cada orden. |
+| Tarifas sin fechas | Una renta que se agrega o se elimina de un contrato cuenta (o deja de contar) para el mes vencido que aún no se genera. Conviene generar las rentas del mes antes de cambiar tarifas. |
+| Terminar o eliminar un contrato | No avisa si tiene visitas recurrentes o un Robox asignado; hay que quitarlos a mano. |
+| Saldo de la orden de compra con anticipo | El anticipo y las rentas a las que se aplica cuentan los dos contra la misma orden de compra, así que puede salir "excedida" sin estarlo. Depende de cómo maneje fiscalmente el anticipo el contador (P8). |
+| Listas muy largas | Órdenes, muestras y lecturas se leen completas; al pasar de unos 1,000 renglones habrá que paginarlas. Hoy hay decenas. |
+| Detalles | El seguimiento de una oportunidad descartada hace más de 90 días se cuenta en Inicio pero no aparece en el tablero (sí en el historial). Inicio no cuenta las órdenes donde el técnico va de acompañante. Una visita mensual programada para el día 31 se recorre al 28. El nombre de quien firma no se guarda hasta que dibuja su firma. El PDF de una orden sin captura muestra los datos propuestos del Robox. Una cotización puede insertarse como aceptada por la API. |
 
 ---
 
