@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   Smartphone,
   SlidersHorizontal,
+  History,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -47,6 +48,7 @@ const ICONOS: Record<IconoMenu, LucideIcon> = {
   catalogos: BookOpen,
   parametros: SlidersHorizontal,
   usuarios: Users,
+  bitacora: History,
 };
 
 type NavLinksProps = {

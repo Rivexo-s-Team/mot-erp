@@ -22,7 +22,8 @@ export type IconoMenu =
   | "campo"
   | "catalogos"
   | "parametros"
-  | "usuarios";
+  | "usuarios"
+  | "bitacora";
 
 export type EntradaMenu = {
   href: string;
@@ -164,6 +165,12 @@ const MENU: GrupoMenu[] = [
         label: "Usuarios",
         icono: "usuarios",
         permiso: "usuarios.administrar",
+      },
+      {
+        href: "/bitacora",
+        label: "Bitácora",
+        icono: "bitacora",
+        permiso: "bitacora.ver",
       },
     ],
   },
